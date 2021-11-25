@@ -1,0 +1,39 @@
+main: com.cavetale.mobarena.MobArenaPlugin
+
+version: 0.1
+api-version: 1.17
+
+name: MobArena
+description: MobArena Plugin
+
+author: StarTux
+website: https://github.com/StarTux/MobArena
+
+depend: [Core, Area, Enemy, Spawn, Sidebar]
+softdepend: []
+
+commands:
+
+  mobarena:
+    aliases: []
+    description: MobArena Command
+    permission: mobarena.mobarena
+    usage: |-
+      /mobarena
+
+  mobarenaadmin:
+    aliases: [maadm]
+    description: MobArena Command
+    permission: mobarena.admin
+    usage: |-
+      /maadm
+
+permissions:
+
+  mobarena.mobarena:
+    description: Use /mobarena
+    default: op
+
+  mobarena.admin:
+    description: Use /mobarenaadmin
+    default: op
