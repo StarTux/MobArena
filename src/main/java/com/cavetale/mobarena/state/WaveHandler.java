@@ -2,7 +2,10 @@ package com.cavetale.mobarena.state;
 
 import com.cavetale.mobarena.Game;
 import com.cavetale.mobarena.save.GameStateTag;
+import java.util.List;
 import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.text.Component;
+import org.bukkit.entity.Player;
 
 final class WaveHandler extends GameStateHandler<GameStateTag> {
     protected WaveHandler(final Game game) {
@@ -34,5 +37,10 @@ final class WaveHandler extends GameStateHandler<GameStateTag> {
     @Override
     public void updateBossBar(BossBar bossBar) {
         game.getCurrentWave().updateBossBar(bossBar);
+    }
+
+    @Override
+    public void onPlayerSidebar(Player player, List<Component> list) {
+        game.getCurrentWave().onPlayerSidebar(player, list);
     }
 }

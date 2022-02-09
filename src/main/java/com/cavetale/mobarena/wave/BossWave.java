@@ -4,12 +4,17 @@ import com.cavetale.enemy.Enemy;
 import com.cavetale.enemy.EnemyType;
 import com.cavetale.mobarena.Game;
 import com.cavetale.mobarena.save.BossWaveTag;
+import java.util.List;
+import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.entity.Player;
+import static net.kyori.adventure.text.Component.join;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 public final class BossWave extends Wave<BossWaveTag> {
     protected  static final EnemyType[] BOSS_TYPES = {
@@ -67,7 +72,7 @@ public final class BossWave extends Wave<BossWaveTag> {
     public void end() {
         for (Player player : game.getPresentPlayers()) {
             player.showTitle(Title.title(displayName,
-                                         Component.text("Defeated!", NamedTextColor.GOLD)));
+                                         Component.text("Defeated!", GOLD)));
             player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, SoundCategory.MASTER, 1.0f, 1.5f);
         }
     }
@@ -93,5 +98,25 @@ public final class BossWave extends Wave<BossWaveTag> {
 
     public Enemy getBoss() {
         return Enemy.ofEnemyId(tag.getBossEnemyId());
+    }
+
+    @Override
+    public void updateBossBar(BossBar bossBar) {
+        Enemy boss = getBoss();
+        if (boss == null) return;
+        bossBar.color(BossBar.Color.RED);
+        bossBar.overlay(BossBar.Overlay.PROGRESS);
+        bossBar.name(boss.getDisplayName());
+        double health = boss.getHealth() / boss.getMaxHealth();
+        bossBar.progress(Math.max(0.0f, Math.min(1.0f, (float) health)));
+    }
+
+    @Override
+    public void onPlayerSidebar(Player player, List<Component> lines) {
+        Enemy boss = getBoss();
+        if (boss == null) return;
+        lines.add(join(noSeparators(),
+                       text("Boss Health ", GRAY),
+                       text((int) Math.round(boss.getHealth()), GREEN)));
     }
 }

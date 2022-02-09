@@ -5,6 +5,7 @@ import com.cavetale.enemy.LivingEnemyWrapper;
 import com.cavetale.mobarena.Game;
 import com.cavetale.mobarena.save.KillWaveTag;
 import com.cavetale.mobarena.state.GameState;
+import com.cavetale.mytems.Mytems;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -12,14 +13,16 @@ import java.util.List;
 import java.util.Map;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Flying;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.entity.Player;
+import static net.kyori.adventure.text.Component.join;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 public final class KillWave extends Wave<KillWaveTag> {
     protected static final Map<EntityType, Integer> ENTITY_MIN_WAVE_MAP = new EnumMap<>(EntityType.class);
@@ -34,7 +37,6 @@ public final class KillWave extends Wave<KillWaveTag> {
         ENTITY_MIN_WAVE_MAP.put(EntityType.ZOMBIE, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.ZOMBIE_VILLAGER, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.SKELETON, idx);
-        ENTITY_MIN_WAVE_MAP.put(EntityType.CREEPER, idx);
         idx = 10;
         ENTITY_MIN_WAVE_MAP.put(EntityType.BLAZE, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.DROWNED, idx);
@@ -78,7 +80,7 @@ public final class KillWave extends Wave<KillWaveTag> {
         }
         tag.setTotalMobCount(mobCount);
         tag.setStillAlive(mobCount);
-        displayName = Component.text("Kill " + mobCount + " mobs", NamedTextColor.DARK_RED);
+        displayName = text("Kill " + mobCount + " Mobs", BLUE);
     }
 
     @Override
@@ -118,7 +120,7 @@ public final class KillWave extends Wave<KillWaveTag> {
         LivingEntity entity = location.getWorld().spawn(location, livingEntityClass, e -> {
                 e.setPersistent(false);
                 e.setRemoveWhenFarAway(false);
-                e.getEquipment().setHelmet(new ItemStack(Material.JACK_O_LANTERN));
+                e.getEquipment().setHelmet(Mytems.KOBOLD_HEAD.createItemStack());
             });
         Enemy enemy = new LivingEnemyWrapper(game.getEnemyContext(), (LivingEntity) entity);
         game.getEnemies().add(enemy);
@@ -158,12 +160,19 @@ public final class KillWave extends Wave<KillWaveTag> {
 
     @Override
     public void updateBossBar(BossBar bossBar) {
-        bossBar.color(BossBar.Color.RED);
+        bossBar.color(BossBar.Color.BLUE);
         bossBar.overlay(BossBar.Overlay.PROGRESS);
         int alive = tag.getStillAlive();
         int total = tag.getTotalMobCount();
-        bossBar.name(Component.text("" + alive + "/" + total + " Enemies", NamedTextColor.DARK_RED));
+        bossBar.name(text("" + alive + "/" + total + " Mobs", BLUE));
         float progress = total > 0 ? (float) alive / (float) total : 0f;
         bossBar.progress(Math.max(0.0f, Math.min(1.0f, progress)));
+    }
+
+    @Override
+    public void onPlayerSidebar(Player player, List<Component> lines) {
+        lines.add(join(noSeparators(),
+                       text("Mobs ", GRAY),
+                       text(tag.getStillAlive(), GREEN)));
     }
 }
