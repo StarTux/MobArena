@@ -92,6 +92,7 @@ public final class RewardHandler extends GameStateHandler<RewardTag> {
     @Override
     public void onPlayerRightClickBlock(PlayerInteractEvent event) {
         Player player = event.getPlayer();
+        if (!game.getGamePlayer(player).getTag().isPlaying()) return;
         Block block = event.getClickedBlock();
         if (!game.getArena().getBossChestVector().isSimilar(block)) return;
         if (getTag().getPlayersOpenedChest().contains(player.getUniqueId())) return;
