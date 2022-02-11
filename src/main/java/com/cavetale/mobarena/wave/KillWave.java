@@ -23,7 +23,10 @@ import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Flying;
+import org.bukkit.entity.Hoglin;
 import org.bukkit.entity.Mob;
+import org.bukkit.entity.Piglin;
+import org.bukkit.entity.PiglinAbstract;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Slime;
@@ -47,28 +50,34 @@ public final class KillWave extends Wave<KillWaveTag> {
     }
 
     static {
+        //ENTITY_MIN_WAVE_MAP.put(EntityType.ENDERMITE, idx);
+        //ENTITY_MIN_WAVE_MAP.put(EntityType.SILVERFISH, idx);
         int idx = 0;
         ENTITY_MIN_WAVE_MAP.put(EntityType.CREEPER, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.ZOMBIE, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.SKELETON, idx);
+        idx = 10;
         ENTITY_MIN_WAVE_MAP.put(EntityType.DROWNED, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.HUSK, idx);
+        ENTITY_MIN_WAVE_MAP.put(EntityType.SLIME, idx);
         idx = 20;
         ENTITY_MIN_WAVE_MAP.put(EntityType.BLAZE, idx);
-        //ENTITY_MIN_WAVE_MAP.put(EntityType.ENDERMITE, idx);
-        //ENTITY_MIN_WAVE_MAP.put(EntityType.SILVERFISH, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.MAGMA_CUBE, idx);
-        ENTITY_MIN_WAVE_MAP.put(EntityType.SLIME, idx);
+        ENTITY_MIN_WAVE_MAP.put(EntityType.PIGLIN, idx);
+        idx = 30;
+        ENTITY_MIN_WAVE_MAP.put(EntityType.HOGLIN, idx);
+        ENTITY_MIN_WAVE_MAP.put(EntityType.WITHER_SKELETON, idx);
         idx = 40;
         ENTITY_MIN_WAVE_MAP.put(EntityType.PHANTOM, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.WITCH, idx);
-        ENTITY_MIN_WAVE_MAP.put(EntityType.WITHER_SKELETON, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.ZOGLIN, idx);
-        idx = 60;
-        ENTITY_MIN_WAVE_MAP.put(EntityType.GHAST, idx);
+        ENTITY_MIN_WAVE_MAP.put(EntityType.ZOMBIFIED_PIGLIN, idx);
+        idx = 50;
         ENTITY_MIN_WAVE_MAP.put(EntityType.PIGLIN_BRUTE, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.PILLAGER, idx);
+        ENTITY_MIN_WAVE_MAP.put(EntityType.GHAST, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.VINDICATOR, idx);
+        idx = 60;
         ENTITY_MIN_WAVE_MAP.put(EntityType.EVOKER, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.RAVAGER, idx);
     }
@@ -151,6 +160,20 @@ public final class KillWave extends Wave<KillWaveTag> {
         } else if (mob instanceof Skeleton skeleton) {
             skeleton.setShouldBurnInDay(false);
             equipHumanoid(mob, difficultyLevel);
+        } else if (mob instanceof PiglinAbstract piglin) {
+            piglin.setImmuneToZombification(true);
+            if (piglin instanceof Piglin piglin2) {
+                piglin2.setIsAbleToHunt(false);
+                for (Material mat : List.copyOf(piglin2.getBarterList())) {
+                    piglin2.removeBarterMaterial(mat);
+                }
+                for (Material mat : List.copyOf(piglin2.getInterestList())) {
+                    piglin2.removeMaterialOfInterest(mat);
+                }
+            }
+        } else if (mob instanceof Hoglin hoglin) {
+            hoglin.setImmuneToZombification(true);
+            hoglin.setIsAbleToBeHunted(false);
         }
         adjustAttributes(mob, difficultyLevel);
         return mob;

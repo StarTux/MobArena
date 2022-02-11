@@ -21,6 +21,7 @@ import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.CreatureSpawnEvent;
@@ -258,6 +259,7 @@ public final class Game {
 
     public void bring(Player player) {
         player.teleport(arena.randomSpawnLocation(), TeleportCause.PLUGIN);
+        player.setGameMode(GameMode.ADVENTURE);
     }
 
     protected void onPlayerSidebar(Player player, List<Component> lines) {

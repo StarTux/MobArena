@@ -1,5 +1,7 @@
 package com.cavetale.mobarena;
 
+import com.cavetale.core.event.block.PlayerBlockAbilityQuery;
+import com.cavetale.core.event.entity.PlayerEntityAbilityQuery;
 import com.cavetale.sidebar.PlayerSidebarEvent;
 import com.cavetale.sidebar.Priority;
 import com.winthier.spawn.Spawn;
@@ -13,9 +15,15 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockExplodeEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.entity.EntityPlaceEvent;
+import org.bukkit.event.player.PlayerBucketEmptyEvent;
+import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -74,6 +82,68 @@ public final class EventListener implements Listener {
     protected void onCreatureSpawn(CreatureSpawnEvent event) {
         plugin.applyGame(event.getEntity().getLocation(), game -> {
                 game.onCreatureSpawn(event);
+            });
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
+    protected void onEntityChangeBlock(EntityChangeBlockEvent event) {
+        plugin.applyGame(event.getBlock().getLocation(), game -> event.setCancelled(true));
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
+    protected void onPlayerBlockAbility(PlayerBlockAbilityQuery event) {
+        plugin.applyGame(event.getBlock().getLocation(), game -> {
+                event.setCancelled(true);
+            });
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
+    protected void onEntityPlace(EntityPlaceEvent event) {
+        plugin.applyGame(event.getEntity().getLocation(), game -> {
+                event.setCancelled(true);
+            });
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
+    protected void onBlockPlace(BlockPlaceEvent event) {
+        plugin.applyGame(event.getBlock().getLocation(), game -> {
+                event.setCancelled(true);
+            });
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
+    protected void onBlockBreak(BlockBreakEvent event) {
+        plugin.applyGame(event.getBlock().getLocation(), game -> {
+                event.setCancelled(true);
+            });
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
+    protected void onPlayerBucketEmpty(PlayerBucketEmptyEvent event) {
+        plugin.applyGame(event.getBlock().getLocation(), game -> {
+                event.setCancelled(true);
+            });
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
+    protected void onPlayerBucketFill(PlayerBucketFillEvent event) {
+        plugin.applyGame(event.getBlock().getLocation(), game -> {
+                event.setCancelled(true);
+            });
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
+    protected void onPlayerEntityAbility(PlayerEntityAbilityQuery event) {
+        plugin.applyGame(event.getEntity().getLocation(), game -> {
+                switch (event.getAction()) {
+                case DAMAGE:
+                case IGNITE:
+                case GIMMICK:
+                case POTION:
+                    return;
+                default:
+                    event.setCancelled(true);
+                }
             });
     }
 

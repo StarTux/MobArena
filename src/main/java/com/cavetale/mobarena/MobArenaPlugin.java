@@ -83,7 +83,7 @@ public final class MobArenaPlugin extends JavaPlugin {
         world.setGameRule(GameRule.LOG_ADMIN_COMMANDS, true);
         world.setGameRule(GameRule.MAX_COMMAND_CHAIN_LENGTH, 1);
         world.setGameRule(GameRule.MAX_ENTITY_CRAMMING, 0);
-        world.setGameRule(GameRule.MOB_GRIEFING, false);
+        world.setGameRule(GameRule.MOB_GRIEFING, true); // Required for creeper explosions to register!
         world.setGameRule(GameRule.NATURAL_REGENERATION, true);
         world.setGameRule(GameRule.PLAYERS_SLEEPING_PERCENTAGE, 101);
         world.setGameRule(GameRule.RANDOM_TICK_SPEED, 0);
