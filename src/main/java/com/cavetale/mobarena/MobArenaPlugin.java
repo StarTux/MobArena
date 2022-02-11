@@ -179,7 +179,7 @@ public final class MobArenaPlugin extends JavaPlugin {
     public Game findOrCreateGame() {
         Game game = null;
         for (Game it : gameList) {
-            if (it == null || it.getName().equals("event")) {
+            if (game == null || it.getName().equals("event")) {
                 game = it;
             }
         }
