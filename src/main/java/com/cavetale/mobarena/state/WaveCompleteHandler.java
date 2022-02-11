@@ -5,7 +5,7 @@ import com.cavetale.mobarena.save.GameStateTag;
 import java.time.Duration;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 final class WaveCompleteHandler extends GameStateHandler<GameStateTag> {
     protected static final Duration DURATION = Duration.ofSeconds(5);
@@ -25,9 +25,9 @@ final class WaveCompleteHandler extends GameStateHandler<GameStateTag> {
 
     @Override
     public void updateBossBar(BossBar bossBar) {
-        bossBar.color(BossBar.Color.GREEN);
+        bossBar.color(BossBar.Color.WHITE);
         bossBar.overlay(BossBar.Overlay.PROGRESS);
         bossBar.progress(1.0f);
-        bossBar.name(Component.text("Wave Complete", NamedTextColor.GREEN));
+        bossBar.name(Component.text("Wave Complete", GRAY));
     }
 }

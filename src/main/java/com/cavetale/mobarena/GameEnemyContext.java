@@ -2,9 +2,11 @@ package com.cavetale.mobarena;
 
 import com.cavetale.enemy.Context;
 import com.cavetale.enemy.Enemy;
+import com.cavetale.enemy.LivingEnemyWrapper;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -28,6 +30,10 @@ public final class GameEnemyContext implements Context {
     @Override
     public void registerTemporaryEntity(Entity entity) {
         game.temporaryEntities.add(entity);
+        if (entity instanceof LivingEntity living) {
+            Enemy enemy = new LivingEnemyWrapper(this, living);
+            game.enemies.add(enemy);
+        }
     }
 
     @Override

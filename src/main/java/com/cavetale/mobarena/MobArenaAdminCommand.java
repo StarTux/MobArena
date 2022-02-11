@@ -9,10 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> {
     protected MobArenaAdminCommand(final MobArenaPlugin plugin) {
@@ -28,7 +28,7 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
             .completers(CommandArgCompleter.supplyList(() -> List.copyOf(plugin.arenaMap.keySet())))
             .description("Start a game")
             .playerCaller(this::start);
-        rootNode.addChild("stop").arguments("<game>")
+        rootNode.addChild("stop").arguments("[game]")
             .completers(CommandArgCompleter.supplyList(() -> plugin.gameList.stream()
                                                        .map(Game::getName)
                                                        .collect(Collectors.toList())))
@@ -51,8 +51,8 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
             sender.sendMessage("Arena " + entry.getKey() + ": " + entry.getValue().getArenaArea());
         }
         for (Game game : plugin.gameList) {
-            sender.sendMessage(Component.text("Game " + game.getName() + ": " + Json.serialize(game.getTag()),
-                                              NamedTextColor.YELLOW));
+            sender.sendMessage(text("Game " + game.getName() + ": " + Json.serialize(game.getTag()),
+                                    YELLOW));
         }
         return true;
     }
@@ -87,16 +87,25 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
         Game game = plugin.startNewGame(arena, "admin");
         game.addPlayer(player);
         game.bring(player);
+        player.sendMessage(text("Game started: " + game.getName(), YELLOW));
         return true;
     }
 
     protected boolean stop(CommandSender sender, String[] args) {
-        if (args.length != 1) return false;
-        String gameName = args[0];
-        Game game = plugin.findGame(gameName);
-        if (game == null) throw new CommandWarn("Game not found: " + gameName);
+        Game game;
+        if (args.length >= 1) {
+            String gameName = args[0];
+            game = plugin.findGame(gameName);
+            if (game == null) throw new CommandWarn("Game not found: " + gameName);
+        } else if (sender instanceof Player) {
+            Player player = (Player) sender;
+            game = plugin.gameAt(player.getLocation());
+            if (game == null) throw new CommandWarn("There is no game here");
+        } else {
+            throw new CommandWarn("[maaadm:stop] Player expected");
+        }
         game.stop();
-        sender.sendMessage(Component.text("Game stopped: " + game.getName(), NamedTextColor.YELLOW));
+        sender.sendMessage(text("Game stopped: " + game.getName(), YELLOW));
         return true;
     }
 
@@ -118,7 +127,7 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
             throw new CommandWarn("No wave is playing!");
         }
         game.getCurrentWave().setFinished(true);
-        sender.sendMessage(Component.text("Skipping wave: " + game.getName(), NamedTextColor.YELLOW));
+        sender.sendMessage(text("Skipping wave: " + game.getName(), YELLOW));
         return true;
     }
 
@@ -133,7 +142,7 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
             throw new CommandWarn("Invalid wave: " + args[0]);
         }
         game.getTag().setCurrentWaveIndex(waveIndex);
-        player.sendMessage(Component.text("Wave index updated: " + waveIndex, NamedTextColor.YELLOW));
+        player.sendMessage(text("Wave index updated: " + waveIndex, YELLOW));
         return true;
     }
 }

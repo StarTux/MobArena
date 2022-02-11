@@ -5,8 +5,13 @@ import com.cavetale.mobarena.save.GameStateTag;
 import com.cavetale.mobarena.util.Time;
 import java.time.Duration;
 import java.util.List;
+import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
+import static net.kyori.adventure.text.Component.join;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 final class GamePrepareHandler extends GameStateHandler<GameStateTag> {
     protected static final Duration DURATION = Duration.ofSeconds(10);
@@ -27,6 +32,16 @@ final class GamePrepareHandler extends GameStateHandler<GameStateTag> {
     @Override
     public void onPlayerSidebar(Player player, List<Component> lines) {
         Duration timeLeft = DURATION.minus(tag.getTime());
-        lines.add(Time.format(timeLeft));
+        lines.add(join(noSeparators(),
+                       text("Time ", GRAY),
+                       Time.format(timeLeft)));
+    }
+
+    @Override
+    public void updateBossBar(BossBar bossBar) {
+        bossBar.color(BossBar.Color.WHITE);
+        bossBar.overlay(BossBar.Overlay.PROGRESS);
+        bossBar.progress(0.0f);
+        bossBar.name(text("Preparing Arena", DARK_GRAY));
     }
 }

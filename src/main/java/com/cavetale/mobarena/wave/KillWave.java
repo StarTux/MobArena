@@ -2,6 +2,7 @@ package com.cavetale.mobarena.wave;
 
 import com.cavetale.enemy.Enemy;
 import com.cavetale.enemy.LivingEnemyWrapper;
+import com.cavetale.enemy.util.ItemBuilder;
 import com.cavetale.mobarena.Game;
 import com.cavetale.mobarena.save.KillWaveTag;
 import com.cavetale.mobarena.state.GameState;
@@ -11,14 +12,25 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Color;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Flying;
-import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Skeleton;
+import org.bukkit.entity.Zombie;
+import org.bukkit.inventory.EntityEquipment;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
+import static java.awt.Color.HSBtoRGB;
 import static net.kyori.adventure.text.Component.join;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
@@ -26,6 +38,7 @@ import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 public final class KillWave extends Wave<KillWaveTag> {
     protected static final Map<EntityType, Integer> ENTITY_MIN_WAVE_MAP = new EnumMap<>(EntityType.class);
+    protected Color leatherArmorColor;
 
     protected KillWave(final Game game) {
         super(game, WaveType.KILL, KillWaveTag.class, KillWaveTag::new);
@@ -35,22 +48,21 @@ public final class KillWave extends Wave<KillWaveTag> {
         int idx = 0;
         ENTITY_MIN_WAVE_MAP.put(EntityType.CREEPER, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.ZOMBIE, idx);
-        ENTITY_MIN_WAVE_MAP.put(EntityType.ZOMBIE_VILLAGER, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.SKELETON, idx);
-        idx = 10;
-        ENTITY_MIN_WAVE_MAP.put(EntityType.BLAZE, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.DROWNED, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.HUSK, idx);
-        ENTITY_MIN_WAVE_MAP.put(EntityType.ENDERMITE, idx);
-        ENTITY_MIN_WAVE_MAP.put(EntityType.SILVERFISH, idx);
+        idx = 20;
+        ENTITY_MIN_WAVE_MAP.put(EntityType.BLAZE, idx);
+        //ENTITY_MIN_WAVE_MAP.put(EntityType.ENDERMITE, idx);
+        //ENTITY_MIN_WAVE_MAP.put(EntityType.SILVERFISH, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.MAGMA_CUBE, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.SLIME, idx);
-        idx = 20;
+        idx = 40;
         ENTITY_MIN_WAVE_MAP.put(EntityType.PHANTOM, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.WITCH, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.WITHER_SKELETON, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.ZOGLIN, idx);
-        idx = 30;
+        idx = 60;
         ENTITY_MIN_WAVE_MAP.put(EntityType.GHAST, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.PIGLIN_BRUTE, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.PILLAGER, idx);
@@ -80,7 +92,7 @@ public final class KillWave extends Wave<KillWaveTag> {
         }
         tag.setTotalMobCount(mobCount);
         tag.setStillAlive(mobCount);
-        displayName = text("Kill " + mobCount + " Mobs", BLUE);
+        displayName = text("Kill All Mobs", BLUE);
     }
 
     @Override
@@ -94,7 +106,10 @@ public final class KillWave extends Wave<KillWaveTag> {
             stillAlive += 1;
             Enemy enemy = Enemy.ofEnemyId(mobSpawn.getEnemyId());
             if (enemy == null || !enemy.isValid()) {
-                spawnMob(mobSpawn);
+                Mob mob = spawnMob(mobSpawn);
+                enemy = new LivingEnemyWrapper(game.getEnemyContext(), mob);
+                game.getEnemies().add(enemy);
+                mobSpawn.setEnemyId(enemy.getEnemyId());
             } else {
                 if (!game.getActivePlayers().contains(enemy.getCurrentTarget())) {
                     enemy.findPlayerTarget();
@@ -105,26 +120,142 @@ public final class KillWave extends Wave<KillWaveTag> {
         if (stillAlive == 0) finished = true;
     }
 
-    protected void spawnMob(KillWaveTag.MobSpawn mobSpawn) {
+    protected Mob spawnMob(KillWaveTag.MobSpawn mobSpawn) {
         Class<? extends Entity> entityClass = mobSpawn.getEntityType().getEntityClass();
-        if (!LivingEntity.class.isAssignableFrom(entityClass)) {
+        if (!Mob.class.isAssignableFrom(entityClass)) {
             mobSpawn.setDead(true);
-            return;
+            return null;
         }
         @SuppressWarnings("unchecked")
-        Class<? extends LivingEntity> livingEntityClass = (Class<? extends LivingEntity>) entityClass;
+        Class<? extends Mob> livingEntityClass = (Class<? extends Mob>) entityClass;
         boolean flying = Flying.class.isAssignableFrom(livingEntityClass);
         Location location = flying
             ? game.getArena().randomFlyingMobLocation()
             : game.getArena().randomMobLocation();
-        LivingEntity entity = location.getWorld().spawn(location, livingEntityClass, e -> {
+        Mob mob = location.getWorld().spawn(location, livingEntityClass, false, e -> {
                 e.setPersistent(false);
                 e.setRemoveWhenFarAway(false);
-                e.getEquipment().setHelmet(Mytems.KOBOLD_HEAD.createItemStack());
             });
-        Enemy enemy = new LivingEnemyWrapper(game.getEnemyContext(), (LivingEntity) entity);
-        game.getEnemies().add(enemy);
-        mobSpawn.setEnemyId(enemy.getEnemyId());
+        final int difficultyLevel = game.getTag().getCurrentWaveIndex() / 10;
+        if (mobSpawn.getEntityType() == EntityType.ZOMBIE) {
+            mob.getEquipment().setHelmet(Mytems.KOBOLD_HEAD.createItemStack());
+        }
+        if (mob instanceof Zombie zombie) {
+            zombie.setShouldBurnInDay(false);
+            equipHumanoid(mob, difficultyLevel);
+        } else if (mob instanceof Skeleton skeleton) {
+            skeleton.setShouldBurnInDay(false);
+            equipHumanoid(mob, difficultyLevel);
+        }
+        adjustAttributes(mob, difficultyLevel);
+        return mob;
+    }
+
+    protected void equipHumanoid(Mob mob, int difficultyLevel) {
+        List<Material> helmets = List.of(Material.LEATHER_HELMET,
+                                         Material.GOLDEN_HELMET,
+                                         Material.IRON_HELMET,
+                                         Material.CHAINMAIL_HELMET,
+                                         Material.DIAMOND_HELMET,
+                                         Material.NETHERITE_HELMET);
+        List<Material> chestplates = List.of(Material.LEATHER_CHESTPLATE,
+                                             Material.GOLDEN_CHESTPLATE,
+                                             Material.IRON_CHESTPLATE,
+                                             Material.CHAINMAIL_CHESTPLATE,
+                                             Material.DIAMOND_CHESTPLATE,
+                                             Material.NETHERITE_CHESTPLATE);
+        List<Material> leggings = List.of(Material.LEATHER_LEGGINGS,
+                                          Material.GOLDEN_LEGGINGS,
+                                          Material.IRON_LEGGINGS,
+                                          Material.CHAINMAIL_LEGGINGS,
+                                          Material.DIAMOND_LEGGINGS,
+                                          Material.NETHERITE_LEGGINGS);
+        List<Material> boots = List.of(Material.LEATHER_BOOTS,
+                                       Material.GOLDEN_BOOTS,
+                                       Material.IRON_BOOTS,
+                                       Material.CHAINMAIL_BOOTS,
+                                       Material.DIAMOND_BOOTS,
+                                       Material.NETHERITE_BOOTS);
+        List<Material> swords = List.of(Material.WOODEN_SWORD,
+                                        Material.STONE_SWORD,
+                                        Material.GOLDEN_SWORD,
+                                        Material.IRON_SWORD,
+                                        Material.DIAMOND_SWORD,
+                                        Material.NETHERITE_SWORD);
+        List<Material> axes = List.of(Material.WOODEN_AXE,
+                                      Material.STONE_AXE,
+                                      Material.GOLDEN_AXE,
+                                      Material.IRON_AXE,
+                                      Material.DIAMOND_AXE,
+                                      Material.NETHERITE_AXE);
+        List<Material> mats = new ArrayList<>();
+        mats.add(helmets.get(Math.min(difficultyLevel, helmets.size() - 1)));
+        mats.add(chestplates.get(Math.min(difficultyLevel, chestplates.size() - 1)));
+        mats.add(leggings.get(Math.min(difficultyLevel, leggings.size() - 1)));
+        mats.add(boots.get(Math.min(difficultyLevel, boots.size() - 1)));
+        mats.add(game.getRandom().nextBoolean()
+                 ? swords.get(Math.min(difficultyLevel, swords.size() - 1))
+                 : axes.get(Math.min(difficultyLevel, axes.size() - 1)));
+        mats.add(difficultyLevel < 3 ? null : Material.SHIELD);
+        List<EquipmentSlot> slots = List.of(EquipmentSlot.HEAD,
+                                            EquipmentSlot.CHEST,
+                                            EquipmentSlot.LEGS,
+                                            EquipmentSlot.FEET,
+                                            EquipmentSlot.HAND,
+                                            EquipmentSlot.OFF_HAND);
+        EntityEquipment eq = mob.getEquipment();
+        for (int i = 0; i < slots.size(); i += 1) {
+            EquipmentSlot slot = slots.get(i);
+            eq.setDropChance(slot, 0.0f);
+            ItemStack oldItem = eq.getItem(slot);
+            if (oldItem != null && oldItem.getType() != Material.AIR) continue;
+            Material mat = mats.get(i);
+            if (mat == null) continue;
+            ItemStack itemStack = new ItemBuilder(mat).removeArmor().removeDamage().create();
+            itemStack.editMeta(m -> {
+                    if (m instanceof LeatherArmorMeta meta) {
+                        if (leatherArmorColor == null) {
+                            leatherArmorColor = Color.fromRGB(0xFFFFFF & HSBtoRGB(game.getRandom().nextFloat(), 1.0f, 1.0f));
+                        }
+                        meta.setColor(leatherArmorColor);
+                    }
+                });
+            eq.setItem(slot, itemStack);
+        }
+    }
+
+    protected void adjustAttributes(Mob mob, int difficultyLevel) {
+        Attribute attribute = null;
+        double value = 0.0;
+        try {
+            attribute = Attribute.GENERIC_ARMOR;
+            value = mob.getAttribute(attribute).getBaseValue() + 7.0f + 3 * (double) difficultyLevel;
+            mob.getAttribute(attribute).setBaseValue(value);
+        } catch (Exception e) {
+            game.getPlugin().getLogger().log(Level.WARNING, mob.getType() + " " + attribute + " " + value, e);
+        }
+        try {
+            attribute = Attribute.GENERIC_ARMOR_TOUGHNESS;
+            value = mob.getAttribute(attribute).getBaseValue() + 2.0 * (double) difficultyLevel;
+            mob.getAttribute(attribute).setBaseValue(value);
+        } catch (Exception e) {
+            game.getPlugin().getLogger().log(Level.WARNING, mob.getType() + " " + attribute + " " + value, e);
+        }
+        try {
+            attribute = Attribute.GENERIC_ATTACK_DAMAGE;
+            value = mob.getAttribute(attribute).getBaseValue() + (double) difficultyLevel;
+            mob.getAttribute(attribute).setBaseValue(value);
+        } catch (Exception e) {
+            game.getPlugin().getLogger().log(Level.WARNING, mob.getType() + " " + attribute + " " + value, e);
+        }
+        try {
+            attribute = Attribute.GENERIC_MAX_HEALTH;
+            value = mob.getAttribute(attribute).getBaseValue() + 2.0 * (double) difficultyLevel;
+            mob.getAttribute(attribute).setBaseValue(value);
+            mob.setHealth(value);
+        } catch (Exception e) {
+            game.getPlugin().getLogger().log(Level.WARNING, mob.getType() + " " + attribute + " " + value, e);
+        }
     }
 
     @Override
@@ -164,7 +295,7 @@ public final class KillWave extends Wave<KillWaveTag> {
         bossBar.overlay(BossBar.Overlay.PROGRESS);
         int alive = tag.getStillAlive();
         int total = tag.getTotalMobCount();
-        bossBar.name(text("" + alive + "/" + total + " Mobs", BLUE));
+        bossBar.name(text("Kill All Mobs", BLUE));
         float progress = total > 0 ? (float) alive / (float) total : 0f;
         bossBar.progress(Math.max(0.0f, Math.min(1.0f, progress)));
     }

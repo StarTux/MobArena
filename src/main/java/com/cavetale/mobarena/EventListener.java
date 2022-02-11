@@ -14,6 +14,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockExplodeEvent;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -66,5 +67,12 @@ public final class EventListener implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     protected void onBlockExplode(BlockExplodeEvent event) {
         plugin.applyGame(event.getBlock().getLocation(), game -> event.blockList().clear());
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
+    protected void onCreatureSpawn(CreatureSpawnEvent event) {
+        plugin.applyGame(event.getEntity().getLocation(), game -> {
+                game.onCreatureSpawn(event);
+            });
     }
 }

@@ -23,6 +23,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -264,5 +265,18 @@ public final class Game {
                       .append(Component.text(tag.getCurrentWaveIndex(), NamedTextColor.GREEN)));
         }
         stateHandler.onPlayerSidebar(player, lines);
+    }
+
+    protected void onCreatureSpawn(CreatureSpawnEvent event) {
+        switch (event.getSpawnReason()) {
+        case REINFORCEMENTS:
+            event.setCancelled(true);
+            break;
+        case SLIME_SPLIT:
+        case MOUNT:
+            temporaryEntities.add(event.getEntity());
+            break;
+        default: break;
+        }
     }
 }

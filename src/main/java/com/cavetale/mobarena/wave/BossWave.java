@@ -8,6 +8,7 @@ import java.util.List;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
+import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.entity.Player;
@@ -54,7 +55,9 @@ public final class BossWave extends Wave<BossWaveTag> {
     public void start() {
         Enemy boss = getBoss();
         if (boss != null) {
-            boss.spawn(game.getArena().randomMobLocation());
+            Location location = game.getArena().randomMobLocation();
+            boss.setSpawnLocation(location);
+            boss.spawn(location);
         }
     }
 
