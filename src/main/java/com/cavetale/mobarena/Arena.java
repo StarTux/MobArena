@@ -12,6 +12,7 @@ import lombok.Data;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
 /**
@@ -97,6 +98,10 @@ public final class Arena {
     public Location randomFlyingMobLocation() {
         if (flyingMobVectorList.isEmpty()) return randomMobLocation();
         return randomVector(flyingMobVectorList).toLocation(getWorld());
+    }
+
+    public Block bossChestBlock() {
+        return bossChestVector.toBlock(getWorld());
     }
 
     public boolean isInArena(Location location) {

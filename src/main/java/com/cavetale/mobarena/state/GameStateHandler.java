@@ -9,6 +9,7 @@ import lombok.Getter;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerInteractEvent;
 
 /**
  * Each subclass of this instance is responsible for running the
@@ -55,4 +56,6 @@ public abstract class GameStateHandler<T extends GameStateTag> {
      * Add lines to the sidebar.
      */
     public void onPlayerSidebar(Player player, List<Component> list) { }
+
+    public void onPlayerRightClickBlock(PlayerInteractEvent event) { }
 }

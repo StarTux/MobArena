@@ -2,6 +2,7 @@ package com.cavetale.mobarena.state;
 
 import com.cavetale.mobarena.Game;
 import com.cavetale.mobarena.save.GameStateTag;
+import com.cavetale.mobarena.wave.WaveType;
 import java.time.Duration;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
@@ -18,7 +19,11 @@ final class WaveCompleteHandler extends GameStateHandler<GameStateTag> {
     public GameState tick() {
         Duration time = tag.getTime();
         if (time.toMillis() > DURATION.toMillis()) {
-            return GameState.WAVE_WARMUP;
+            if (game.getCurrentWave().getWaveType() == WaveType.BOSS) {
+                return GameState.REWARD;
+            } else {
+                return GameState.WAVE_WARMUP;
+            }
         }
         return null;
     }

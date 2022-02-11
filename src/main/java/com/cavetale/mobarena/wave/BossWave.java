@@ -67,12 +67,15 @@ public final class BossWave extends Wave<BossWaveTag> {
         if (boss == null || boss.isDead()) {
             finished = true;
         } else if (!boss.isValid()) { // isSpawned
-            boss.spawn(game.getArena().randomMobLocation());
+            Location location = game.getArena().randomMobLocation();
+            boss.setSpawnLocation(location);
+            boss.spawn(location);
         }
     }
 
     @Override
     public void end() {
+        game.clearEnemies();
         for (Player player : game.getPresentPlayers()) {
             player.showTitle(Title.title(displayName,
                                          Component.text("Defeated!", GOLD)));

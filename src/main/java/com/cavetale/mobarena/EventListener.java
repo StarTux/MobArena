@@ -16,6 +16,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.spigotmc.event.player.PlayerSpawnLocationEvent;
@@ -74,5 +75,18 @@ public final class EventListener implements Listener {
         plugin.applyGame(event.getEntity().getLocation(), game -> {
                 game.onCreatureSpawn(event);
             });
+    }
+
+    @EventHandler(ignoreCancelled = false, priority = EventPriority.LOWEST)
+    protected void onPlayerInteract(PlayerInteractEvent event) {
+        if (!event.hasBlock()) return;
+        switch (event.getAction()) {
+        case RIGHT_CLICK_BLOCK:
+            plugin.applyGame(event.getClickedBlock().getLocation(), game -> {
+                    game.onPlayerRightClickBlock(event);
+                });
+            break;
+        default: return;
+        }
     }
 }

@@ -24,6 +24,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -278,5 +279,9 @@ public final class Game {
             break;
         default: break;
         }
+    }
+
+    protected void onPlayerRightClickBlock(PlayerInteractEvent event) {
+        stateHandler.onPlayerRightClickBlock(event);
     }
 }

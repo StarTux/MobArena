@@ -9,7 +9,8 @@ public enum GameState {
     PREPARE(GamePrepareHandler::new),
     WAVE_WARMUP(WaveWarmupHandler::new),
     WAVE(WaveHandler::new),
-    WAVE_COMPLETE(WaveCompleteHandler::new);
+    WAVE_COMPLETE(WaveCompleteHandler::new),
+    REWARD(RewardHandler::new);
 
     public final Function<Game, GameStateHandler> handlerCtor;
 }
