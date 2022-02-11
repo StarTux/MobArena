@@ -26,6 +26,7 @@ import org.bukkit.entity.Flying;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Skeleton;
+import org.bukkit.entity.Slime;
 import org.bukkit.entity.Zombie;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
@@ -136,6 +137,9 @@ public final class KillWave extends Wave<KillWaveTag> {
         Mob mob = location.getWorld().spawn(location, livingEntityClass, false, e -> {
                 e.setPersistent(false);
                 e.setRemoveWhenFarAway(false);
+                if (e instanceof Slime slime) {
+                    slime.setSize(3);
+                }
             });
         final int difficultyLevel = game.getTag().getCurrentWaveIndex() / 10;
         if (mobSpawn.getEntityType() == EntityType.ZOMBIE) {
