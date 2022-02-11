@@ -14,7 +14,8 @@ import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 final class GamePrepareHandler extends GameStateHandler<GameStateTag> {
-    protected static final Duration DURATION = Duration.ofSeconds(10);
+    protected static final Duration DURATION = Duration.ofSeconds(30);
+    protected static final Duration EVENT_DURATION = Duration.ofSeconds(90);
 
     protected GamePrepareHandler(final Game game) {
         super(game, GameState.PREPARE, GameStateTag.class, GameStateTag::new);
@@ -23,7 +24,8 @@ final class GamePrepareHandler extends GameStateHandler<GameStateTag> {
     @Override
     public GameState tick() {
         Duration time = tag.getTime();
-        if (time.toMillis() > DURATION.toMillis()) {
+        Duration duration = game.getName().equals("event") ? EVENT_DURATION : DURATION;
+        if (time.toMillis() > duration.toMillis()) {
             return GameState.WAVE_WARMUP;
         }
         return null;
@@ -31,7 +33,8 @@ final class GamePrepareHandler extends GameStateHandler<GameStateTag> {
 
     @Override
     public void onPlayerSidebar(Player player, List<Component> lines) {
-        Duration timeLeft = DURATION.minus(tag.getTime());
+        Duration duration = game.getName().equals("event") ? EVENT_DURATION : DURATION;
+        Duration timeLeft = duration.minus(tag.getTime());
         lines.add(join(noSeparators(),
                        text("Time ", GRAY),
                        Time.format(timeLeft)));

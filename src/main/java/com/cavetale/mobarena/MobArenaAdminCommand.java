@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import static net.kyori.adventure.text.Component.text;
@@ -24,8 +25,9 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
         rootNode.addChild("info").denyTabCompletion()
             .description("Info Command")
             .senderCaller(this::info);
-        rootNode.addChild("start").arguments("<arena>")
-            .completers(CommandArgCompleter.supplyList(() -> List.copyOf(plugin.arenaMap.keySet())))
+        rootNode.addChild("start").arguments("[arena] [name]")
+            .completers(CommandArgCompleter.supplyList(() -> List.copyOf(plugin.arenaMap.keySet())),
+                        CommandArgCompleter.NULL)
             .description("Start a game")
             .playerCaller(this::start);
         rootNode.addChild("stop").arguments("[game]")
@@ -44,6 +46,10 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
             .completers(CommandArgCompleter.integer(i -> i >= 0))
             .description("Change wave index")
             .playerCaller(this::wave);
+        rootNode.addChild("joindialogue").arguments("<player>")
+            .completers(CommandArgCompleter.NULL)
+            .description("Show the join dialogue to a player")
+            .senderCaller(this::joinDialogue);
     }
 
     protected boolean info(CommandSender sender, String[] args) {
@@ -58,8 +64,11 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
     }
 
     protected boolean start(Player player, String[] args) {
-        if (args.length > 1) return false;
-        final String name = "admin";
+        if (args.length > 2) return false;
+        String name = "admin";
+        if (args.length >= 2) {
+            name = args[1];
+        }
         if (plugin.findGame(name) != null) {
             throw new CommandWarn("Game " + name + " already playing!");
         }
@@ -84,7 +93,7 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
             String arenaName = options.get(plugin.random.nextInt(options.size()));
             arena = plugin.arenaMap.get(arenaName);
         }
-        Game game = plugin.startNewGame(arena, "admin");
+        Game game = plugin.startNewGame(arena, name);
         game.addPlayer(player);
         game.bring(player);
         player.sendMessage(text("Game started: " + game.getName(), YELLOW));
@@ -143,6 +152,14 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
         }
         game.getTag().setCurrentWaveIndex(waveIndex);
         player.sendMessage(text("Wave index updated: " + waveIndex, YELLOW));
+        return true;
+    }
+
+    protected boolean joinDialogue(CommandSender sender, String[] args) {
+        if (args.length != 1) return false;
+        Player target = Bukkit.getPlayerExact(args[0]);
+        if (target == null) throw new CommandWarn("Player not found: " + args[0]);
+        plugin.openJoinDialogue(target);
         return true;
     }
 }

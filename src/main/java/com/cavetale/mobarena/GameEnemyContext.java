@@ -29,6 +29,7 @@ public final class GameEnemyContext implements Context {
 
     @Override
     public void registerTemporaryEntity(Entity entity) {
+        entity.setPersistent(false);
         game.temporaryEntities.add(entity);
         if (entity instanceof LivingEntity living) {
             Enemy enemy = new LivingEnemyWrapper(this, living);

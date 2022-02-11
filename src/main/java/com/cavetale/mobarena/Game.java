@@ -241,7 +241,7 @@ public final class Game {
         return result;
     }
 
-    protected void clearTemporaryEntities() {
+    public void clearTemporaryEntities() {
         for (Entity entity : temporaryEntities) {
             entity.remove();
         }
@@ -270,12 +270,17 @@ public final class Game {
 
     protected void onCreatureSpawn(CreatureSpawnEvent event) {
         switch (event.getSpawnReason()) {
+        case CUSTOM:
+        case COMMAND:
+            return;
         case REINFORCEMENTS:
             event.setCancelled(true);
             break;
         case SLIME_SPLIT:
         case MOUNT:
-            temporaryEntities.add(event.getEntity());
+        case SPELL:
+        case DEFAULT: // Vex spawn with DEFAULT
+            enemyContext.registerTemporaryEntity(event.getEntity());
             break;
         default: break;
         }

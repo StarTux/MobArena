@@ -1,6 +1,10 @@
 package com.cavetale.mobarena;
 
 import com.cavetale.area.struct.AreasFile;
+import com.cavetale.core.font.GuiOverlay;
+import com.cavetale.mytems.Mytems;
+import com.cavetale.mytems.util.Gui;
+import com.cavetale.mytems.util.Items;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,7 +19,11 @@ import org.bukkit.Difficulty;
 import org.bukkit.GameRule;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 public final class MobArenaPlugin extends JavaPlugin {
     protected final MobArenaCommand mobarenaCommand = new MobArenaCommand(this);
@@ -156,5 +164,65 @@ public final class MobArenaPlugin extends JavaPlugin {
                 consumer.accept(game);
             }
         }
+    }
+
+    public Arena randomUnusedArena() {
+        List<String> options = new ArrayList<>(arenaMap.keySet());
+        for (Game game : gameList) {
+            options.remove(game.getArena().getName());
+        }
+        if (options.isEmpty()) return null;
+        String arenaName = options.get(random.nextInt(options.size()));
+        return arenaMap.get(arenaName);
+    }
+
+    public Game findOrCreateGame() {
+        Game game = null;
+        for (Game it : gameList) {
+            if (it == null || it.getName().equals("event")) {
+                game = it;
+            }
+        }
+        if (game != null) return game;
+        Arena arena = randomUnusedArena();
+        if (arena == null) return null;
+        game = startNewGame(arena, arena.getName());
+        return game;
+    }
+
+    public void openJoinDialogue(Player player) {
+        Game eventGame = findGame("event");
+        if (eventGame != null) {
+            eventGame.addPlayer(player);
+            eventGame.bring(player);
+            player.sendMessage(text("Joined the event!", GREEN));
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "ml add " + player.getName());
+            return;
+        }
+        int size = 3 * 9;
+        Gui gui = new Gui(this)
+            .title(GuiOverlay.BLANK.builder(size, GOLD)
+                   .title(text("Join Mob Arena?", BLACK))
+                   .build());
+        gui.setItem(13, Items.text(Mytems.HALLOWEEN_TOKEN.createIcon(),
+                                   List.of(text("Join MobArena for", GOLD),
+                                           text("1 Halloween Token?", GOLD))),
+                    evt -> {
+                        for (ItemStack itemStack : player.getInventory()) {
+                            if (!Mytems.HALLOWEEN_TOKEN.isItem(itemStack)) continue;
+                            Game game = findOrCreateGame();
+                            if (game == null) {
+                                player.sendMessage(text("Something went wrong!", RED));
+                                return;
+                            }
+                            itemStack.subtract(1);
+                            player.closeInventory();
+                            game.addPlayer(player);
+                            game.bring(player);
+                            return;
+                        }
+                        player.sendMessage(text("You don't have a Halloween Token!", RED));
+                    });
+        gui.open(player);
     }
 }

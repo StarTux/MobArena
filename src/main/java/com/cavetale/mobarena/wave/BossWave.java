@@ -76,6 +76,7 @@ public final class BossWave extends Wave<BossWaveTag> {
     @Override
     public void end() {
         game.clearEnemies();
+        game.clearTemporaryEntities();
         for (Player player : game.getPresentPlayers()) {
             player.showTitle(Title.title(displayName,
                                          Component.text("Defeated!", GOLD)));

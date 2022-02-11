@@ -19,6 +19,7 @@ import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Flying;
@@ -226,33 +227,34 @@ public final class KillWave extends Wave<KillWaveTag> {
 
     protected void adjustAttributes(Mob mob, int difficultyLevel) {
         Attribute attribute = null;
+        AttributeInstance inst = null;
         double value = 0.0;
         try {
             attribute = Attribute.GENERIC_ARMOR;
-            value = mob.getAttribute(attribute).getBaseValue() + 7.0f + 3 * (double) difficultyLevel;
-            mob.getAttribute(attribute).setBaseValue(value);
-        } catch (Exception e) {
-            game.getPlugin().getLogger().log(Level.WARNING, mob.getType() + " " + attribute + " " + value, e);
-        }
-        try {
+            inst = mob.getAttribute(attribute);
+            if (inst != null) {
+                value = inst.getBaseValue() + 7.0f + 3 * (double) difficultyLevel;
+                mob.getAttribute(attribute).setBaseValue(value);
+            }
             attribute = Attribute.GENERIC_ARMOR_TOUGHNESS;
-            value = mob.getAttribute(attribute).getBaseValue() + 2.0 * (double) difficultyLevel;
-            mob.getAttribute(attribute).setBaseValue(value);
-        } catch (Exception e) {
-            game.getPlugin().getLogger().log(Level.WARNING, mob.getType() + " " + attribute + " " + value, e);
-        }
-        try {
+            inst = mob.getAttribute(attribute);
+            if (inst != null) {
+                value = inst.getBaseValue() + 2.0 * (double) difficultyLevel;
+                mob.getAttribute(attribute).setBaseValue(value);
+            }
             attribute = Attribute.GENERIC_ATTACK_DAMAGE;
-            value = mob.getAttribute(attribute).getBaseValue() + (double) difficultyLevel;
-            mob.getAttribute(attribute).setBaseValue(value);
-        } catch (Exception e) {
-            game.getPlugin().getLogger().log(Level.WARNING, mob.getType() + " " + attribute + " " + value, e);
-        }
-        try {
+            inst = mob.getAttribute(attribute);
+            if (inst != null) {
+                value = inst.getBaseValue() + (double) difficultyLevel;
+                mob.getAttribute(attribute).setBaseValue(value);
+            }
             attribute = Attribute.GENERIC_MAX_HEALTH;
-            value = mob.getAttribute(attribute).getBaseValue() + 2.0 * (double) difficultyLevel;
-            mob.getAttribute(attribute).setBaseValue(value);
-            mob.setHealth(value);
+            inst = mob.getAttribute(attribute);
+            if (inst != null) {
+                value = inst.getBaseValue() + 2.0 * (double) difficultyLevel;
+                mob.getAttribute(attribute).setBaseValue(value);
+                mob.setHealth(value);
+            }
         } catch (Exception e) {
             game.getPlugin().getLogger().log(Level.WARNING, mob.getType() + " " + attribute + " " + value, e);
         }
@@ -261,6 +263,7 @@ public final class KillWave extends Wave<KillWaveTag> {
     @Override
     public void end() {
         game.clearEnemies();
+        game.clearTemporaryEntities();
     }
 
     @Override
