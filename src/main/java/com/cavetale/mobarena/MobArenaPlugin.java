@@ -205,7 +205,7 @@ public final class MobArenaPlugin extends JavaPlugin {
                    .title(text("Join Mob Arena?", BLACK))
                    .build());
         gui.setItem(13, Items.text(Mytems.HALLOWEEN_TOKEN.createIcon(),
-                                   List.of(text("Join MobArena for", GOLD),
+                                   List.of(text("Join Mob Arena for", GOLD),
                                            text("1 Halloween Token?", GOLD))),
                     evt -> {
                         for (ItemStack itemStack : player.getInventory()) {
