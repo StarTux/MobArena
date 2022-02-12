@@ -82,6 +82,7 @@ public final class Game {
 
     public void addPlayer(Player player) {
         getGamePlayer(player).getTag().setPlaying(true);
+        getGamePlayer(player).getTag().setDidPlay(true);
     }
 
     public GamePlayer getGamePlayer(Player player) {
@@ -89,6 +90,20 @@ public final class Game {
                 player.showBossBar(bossBar);
                 return new GamePlayer(player);
             });
+    }
+
+    public void prunePlayers() {
+        for (GamePlayer gamePlayer : playerMap.values()) {
+            Player player = gamePlayer.getPlayer();
+            if (player == null) {
+                gamePlayer.tag.setPlaying(false);
+                continue;
+            }
+            if (!arena.isInArena(player.getLocation())) {
+                gamePlayer.tag.setPlaying(false);
+                continue;
+            }
+        }
     }
 
     protected void tick() {

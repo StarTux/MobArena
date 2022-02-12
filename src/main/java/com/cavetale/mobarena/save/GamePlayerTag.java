@@ -8,4 +8,5 @@ public final class GamePlayerTag {
     protected UUID uuid;
     protected String name;
     protected boolean playing;
+    protected boolean didPlay;
 }

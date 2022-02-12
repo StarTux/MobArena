@@ -29,6 +29,11 @@ final class WaveCompleteHandler extends GameStateHandler<GameStateTag> {
     }
 
     @Override
+    public void onExit() {
+        game.prunePlayers();
+    }
+
+    @Override
     public void updateBossBar(BossBar bossBar) {
         bossBar.color(BossBar.Color.WHITE);
         bossBar.overlay(BossBar.Overlay.PROGRESS);
