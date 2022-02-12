@@ -52,6 +52,7 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
             .completers(CommandArgCompleter.NULL)
             .description("Show the join dialogue to a player")
             .senderCaller(this::joinDialogue);
+        rootNode.addChild("addall").playerCaller(this::addall);
     }
 
     protected boolean reload(CommandSender sender, String[] args) {
@@ -168,6 +169,16 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
         Player target = Bukkit.getPlayerExact(args[0]);
         if (target == null) throw new CommandWarn("Player not found: " + args[0]);
         plugin.openJoinDialogue(target);
+        return true;
+    }
+
+    protected boolean addall(Player player, String[] args) {
+        Game game = plugin.gameAt(player.getLocation());
+        if (game == null) throw new CommandWarn("game is null");
+        for (Player other : player.getWorld().getPlayers()) {
+            game.addPlayer(other);
+            game.bring(other);
+        }
         return true;
     }
 }
