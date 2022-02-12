@@ -69,7 +69,6 @@ public final class Game {
 
     protected void changeState(GameState newState) {
         GameState oldState = tag.getState();
-        plugin.getLogger().info(name + " State " + oldState + " -> " + newState);
         GameStateHandler oldHandler = stateHandler;
         tag.setState(newState);
         GameStateHandler newHandler = newState.handlerCtor.apply(this);

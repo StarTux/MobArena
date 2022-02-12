@@ -1,12 +1,14 @@
 package com.cavetale.mobarena.wave;
 
 import com.cavetale.enemy.Enemy;
+import com.cavetale.enemy.LivingEnemy;
 import com.cavetale.enemy.LivingEnemyWrapper;
 import com.cavetale.enemy.util.ItemBuilder;
 import com.cavetale.mobarena.Game;
 import com.cavetale.mobarena.save.KillWaveTag;
 import com.cavetale.mobarena.state.GameState;
 import com.cavetale.mytems.Mytems;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -24,6 +26,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Flying;
 import org.bukkit.entity.Hoglin;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Piglin;
 import org.bukkit.entity.PiglinAbstract;
@@ -36,6 +39,8 @@ import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import static java.awt.Color.HSBtoRGB;
 import static net.kyori.adventure.text.Component.join;
 import static net.kyori.adventure.text.Component.text;
@@ -45,6 +50,7 @@ import static net.kyori.adventure.text.format.NamedTextColor.*;
 public final class KillWave extends Wave<KillWaveTag> {
     protected static final Map<EntityType, Integer> ENTITY_MIN_WAVE_MAP = new EnumMap<>(EntityType.class);
     protected Color leatherArmorColor;
+    protected long lastWarpHome;
 
     protected KillWave(final Game game) {
         super(game, WaveType.KILL, KillWaveTag.class, KillWaveTag::new);
@@ -113,6 +119,11 @@ public final class KillWave extends Wave<KillWaveTag> {
     @Override
     public void tick() {
         int stillAlive = 0;
+        Duration runningTime = Duration.ofMillis(System.currentTimeMillis() - game.getStateHandler().getTag().getStartTime());
+        boolean doWarpHome = (runningTime.toSeconds() % 90L) == 0L && lastWarpHome != runningTime.toSeconds();
+        if (doWarpHome) {
+            lastWarpHome = runningTime.toSeconds();
+        }
         for (KillWaveTag.MobSpawn mobSpawn : tag.getMobSpawnList()) {
             if (mobSpawn.isDead()) continue;
             stillAlive += 1;
@@ -123,7 +134,20 @@ public final class KillWave extends Wave<KillWaveTag> {
                 game.getEnemies().add(enemy);
                 mobSpawn.setEnemyId(enemy.getEnemyId());
             } else {
-                if (!game.getActivePlayers().contains(enemy.getCurrentTarget())) {
+                if (doWarpHome) {
+                    LivingEntity livingEntity = enemy instanceof LivingEnemy livingEnemy
+                        ? livingEnemy.getLivingEntity()
+                        : null;
+                    boolean flying = livingEntity != null
+                        && livingEntity instanceof Flying;
+                    Location location = flying
+                        ? game.getArena().randomFlyingMobLocation()
+                        : game.getArena().randomMobLocation();
+                    enemy.teleport(location);
+                    if (livingEntity != null) {
+                        livingEntity.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 200, 0, true, false, false));
+                    }
+                } else if (!game.getActivePlayers().contains(enemy.getCurrentTarget())) {
                     enemy.findPlayerTarget();
                 }
             }
