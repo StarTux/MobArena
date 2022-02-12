@@ -35,7 +35,7 @@ import static net.kyori.adventure.text.format.TextColor.color;
 import static net.kyori.adventure.text.format.TextDecoration.*;
 
 public final class RewardHandler extends GameStateHandler<RewardTag> {
-    protected static final Duration DURATION = Duration.ofSeconds(60);
+    protected static final Duration DURATION = Duration.ofSeconds(120);
     protected boolean someoneClosed = false;
 
     public RewardHandler(final Game game) {
