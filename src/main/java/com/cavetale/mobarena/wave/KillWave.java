@@ -30,6 +30,7 @@ import org.bukkit.entity.PiglinAbstract;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Slime;
+import org.bukkit.entity.WitherSkeleton;
 import org.bukkit.entity.Zombie;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
@@ -89,7 +90,7 @@ public final class KillWave extends Wave<KillWaveTag> {
 
     @Override
     public void create() {
-        int mobCount = game.getTag().getCurrentWaveIndex() + game.countActivePlayers();
+        int mobCount = ((game.getTag().getCurrentWaveIndex() * 3) / 2) + game.countActivePlayers();
         List<EntityType> entityTypeList = new ArrayList<>(ENTITY_MIN_WAVE_MAP.keySet());
         entityTypeList.removeIf(et -> ENTITY_MIN_WAVE_MAP.get(et) > game.getTag().getCurrentWaveIndex());
         Collections.shuffle(entityTypeList);
@@ -158,6 +159,11 @@ public final class KillWave extends Wave<KillWaveTag> {
             zombie.setShouldBurnInDay(false);
             equipHumanoid(mob, difficultyLevel);
         } else if (mob instanceof Skeleton skeleton) {
+            if (skeleton instanceof WitherSkeleton witherSkeleton) {
+                skeleton.getEquipment().setItemInMainHand(new ItemStack(Material.IRON_SWORD));
+            } else {
+                skeleton.getEquipment().setItemInMainHand(new ItemStack(Material.BOW));
+            }
             skeleton.setShouldBurnInDay(false);
             equipHumanoid(mob, difficultyLevel);
         } else if (mob instanceof PiglinAbstract piglin) {
@@ -256,29 +262,30 @@ public final class KillWave extends Wave<KillWaveTag> {
         Attribute attribute = null;
         AttributeInstance inst = null;
         double value = 0.0;
+        double multiplier = 0.5 * (double) difficultyLevel;
         try {
             attribute = Attribute.GENERIC_ARMOR;
             inst = mob.getAttribute(attribute);
             if (inst != null) {
-                value = inst.getBaseValue() + 7.0f + 3 * (double) difficultyLevel;
+                value = inst.getBaseValue() + 7.0 + 2.0 * multiplier;
                 mob.getAttribute(attribute).setBaseValue(value);
             }
             attribute = Attribute.GENERIC_ARMOR_TOUGHNESS;
             inst = mob.getAttribute(attribute);
             if (inst != null) {
-                value = inst.getBaseValue() + 2.0 * (double) difficultyLevel;
+                value = inst.getBaseValue() + 1.0 * multiplier;
                 mob.getAttribute(attribute).setBaseValue(value);
             }
             attribute = Attribute.GENERIC_ATTACK_DAMAGE;
             inst = mob.getAttribute(attribute);
             if (inst != null) {
-                value = inst.getBaseValue() + (double) difficultyLevel;
+                value = inst.getBaseValue() + multiplier;
                 mob.getAttribute(attribute).setBaseValue(value);
             }
             attribute = Attribute.GENERIC_MAX_HEALTH;
             inst = mob.getAttribute(attribute);
             if (inst != null) {
-                value = inst.getBaseValue() + 2.0 * (double) difficultyLevel;
+                value = inst.getBaseValue() + 2.0 * multiplier;
                 mob.getAttribute(attribute).setBaseValue(value);
                 mob.setHealth(value);
             }

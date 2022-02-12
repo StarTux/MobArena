@@ -157,8 +157,11 @@ public final class EventListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     void onPlayerTeleport(PlayerTeleportEvent event) {
-        if (event.getCause() == PlayerTeleportEvent.TeleportCause.ENDER_PEARL) {
+        switch (event.getCause()) {
+        case ENDER_PEARL:
+        case CHORUS_FRUIT:
             plugin.applyGame(event.getPlayer().getLocation(), game -> event.setCancelled(true));
+        default: break;
         }
     }
 
