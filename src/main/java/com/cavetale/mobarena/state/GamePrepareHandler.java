@@ -15,7 +15,7 @@ import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 final class GamePrepareHandler extends GameStateHandler<GameStateTag> {
     protected static final Duration DURATION = Duration.ofSeconds(30);
-    protected static final Duration EVENT_DURATION = Duration.ofSeconds(90);
+    protected static final Duration EVENT_DURATION = Duration.ofMinutes(5);
 
     protected GamePrepareHandler(final Game game) {
         super(game, GameState.PREPARE, GameStateTag.class, GameStateTag::new);
