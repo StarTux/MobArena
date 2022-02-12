@@ -90,7 +90,7 @@ public final class KillWave extends Wave<KillWaveTag> {
 
     @Override
     public void create() {
-        int mobCount = ((game.getTag().getCurrentWaveIndex() * 3) / 2) + game.countActivePlayers();
+        int mobCount = ((game.getTag().getCurrentWaveIndex() * 2) / 3) + game.countActivePlayers();
         List<EntityType> entityTypeList = new ArrayList<>(ENTITY_MIN_WAVE_MAP.keySet());
         entityTypeList.removeIf(et -> ENTITY_MIN_WAVE_MAP.get(et) > game.getTag().getCurrentWaveIndex());
         Collections.shuffle(entityTypeList);
