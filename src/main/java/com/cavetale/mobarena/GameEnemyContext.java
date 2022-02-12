@@ -21,7 +21,7 @@ public final class GameEnemyContext implements Context {
 
     @Override
     public List<Player> getPlayers() {
-        return game.getActivePlayers();
+        return game.getPresentPlayers();
     }
 
     @Override

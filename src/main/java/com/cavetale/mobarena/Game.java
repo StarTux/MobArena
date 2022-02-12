@@ -269,6 +269,14 @@ public final class Game {
         return result;
     }
 
+    public int countActivePlayers() {
+        int count = 0;
+        for (GamePlayer gamePlayer : playerMap.values()) {
+            if (gamePlayer.getTag().isPlaying()) count += 1;
+        }
+        return count;
+    }
+
     public void clearTemporaryEntities() {
         for (Entity entity : temporaryEntities) {
             entity.remove();

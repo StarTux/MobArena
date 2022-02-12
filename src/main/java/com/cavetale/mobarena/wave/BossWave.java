@@ -4,6 +4,7 @@ import com.cavetale.enemy.Enemy;
 import com.cavetale.enemy.EnemyType;
 import com.cavetale.mobarena.Game;
 import com.cavetale.mobarena.save.BossWaveTag;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import net.kyori.adventure.bossbar.BossBar;
@@ -32,7 +33,6 @@ public final class BossWave extends Wave<BossWaveTag> {
         EnemyType.QUEEN_BEE,
         EnemyType.HEINOUS_HEN,
         EnemyType.SPECTER,
-        EnemyType.SADISTIC_VAMPIRE,
         EnemyType.WICKED_CRONE,
         EnemyType.INFERNAL_PHANTASM,
         EnemyType.GHAST_BOSS,
@@ -44,7 +44,15 @@ public final class BossWave extends Wave<BossWaveTag> {
 
     @Override
     public void create() {
-        EnemyType enemyType = BOSS_TYPES[game.getRandom().nextInt(BOSS_TYPES.length)];
+        EnemyType enemyType;
+        List<EnemyType> options = new ArrayList<>(List.of(BOSS_TYPES));
+        options.removeAll(game.getTag().getDoneBosses());
+        if (options.isEmpty()) {
+            enemyType = BOSS_TYPES[game.getRandom().nextInt(BOSS_TYPES.length)];
+        } else {
+            enemyType = options.get(game.getRandom().nextInt(options.size()));
+            game.getTag().getDoneBosses().add(enemyType);
+        }
         tag.setEnemyType(enemyType);
         Enemy boss = tag.getEnemyType().create(game.getEnemyContext());
         tag.setBossEnemyId(boss.getEnemyId());

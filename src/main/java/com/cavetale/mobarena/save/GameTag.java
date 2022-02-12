@@ -1,7 +1,9 @@
 package com.cavetale.mobarena.save;
 
+import com.cavetale.enemy.EnemyType;
 import com.cavetale.mobarena.state.GameState;
 import com.cavetale.mobarena.wave.WaveType;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.Data;
 
@@ -17,4 +19,5 @@ public final class GameTag {
     protected int currentWaveIndex;
     protected WaveType currentWaveType;
     protected String currentWaveTag;
+    protected List<EnemyType> doneBosses = new ArrayList<>();
 }
