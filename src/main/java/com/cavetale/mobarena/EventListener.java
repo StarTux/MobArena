@@ -22,12 +22,14 @@ import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityPlaceEvent;
+import org.bukkit.event.entity.EntityToggleGlideEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 
 @RequiredArgsConstructor
@@ -150,5 +152,20 @@ public final class EventListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     void onPlayerItemDamage(PlayerItemDamageEvent event) {
         plugin.applyGame(event.getPlayer().getLocation(), game -> event.setCancelled(true));
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    void onPlayerTeleport(PlayerTeleportEvent event) {
+        if (event.getCause() == PlayerTeleportEvent.TeleportCause.ENDER_PEARL) {
+            plugin.applyGame(event.getPlayer().getLocation(), game -> event.setCancelled(true));
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    void onPlayerToggleGlide(EntityToggleGlideEvent event) {
+        if (!(event.getEntity() instanceof Player player)) return;
+        if (event.isGliding()) {
+            plugin.applyGame(player.getLocation(), game -> event.setCancelled(true));
+        }
     }
 }
