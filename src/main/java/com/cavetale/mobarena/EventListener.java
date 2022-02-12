@@ -2,6 +2,7 @@ package com.cavetale.mobarena;
 
 import com.cavetale.core.event.block.PlayerBlockAbilityQuery;
 import com.cavetale.core.event.entity.PlayerEntityAbilityQuery;
+import com.cavetale.core.event.player.PluginPlayerEvent;
 import com.cavetale.sidebar.PlayerSidebarEvent;
 import com.cavetale.sidebar.Priority;
 import com.winthier.spawn.Spawn;
@@ -176,5 +177,14 @@ public final class EventListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     void onPlayerDropItem(PlayerDropItemEvent event) {
         plugin.applyGame(event.getPlayer().getLocation(), game -> event.setCancelled(true));
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    void onPluginPlayer(PluginPlayerEvent event) {
+        switch (event.getName()) {
+        case START_FLYING:
+            plugin.applyGame(event.getPlayer().getLocation(), game -> event.setCancelled(true));
+        default: break;
+        }
     }
 }
