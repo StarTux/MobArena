@@ -163,7 +163,7 @@ public final class RewardHandler extends GameStateHandler<RewardTag> {
                            new ItemStack(Material.ENCHANTED_GOLDEN_APPLE),
                            Mytems.KITTY_COIN.createItemStack());
         }
-        if (lvl == 10) {
+        if (lvl % 10 == 0) {
             return MytemsTag.of(MytemsCategory.SCARLET).getMytems().stream()
                 .map(Mytems::createItemStack).collect(Collectors.toList());
         }
