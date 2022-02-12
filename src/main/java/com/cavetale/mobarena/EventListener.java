@@ -25,6 +25,7 @@ import org.bukkit.event.entity.EntityPlaceEvent;
 import org.bukkit.event.entity.EntityToggleGlideEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -167,5 +168,10 @@ public final class EventListener implements Listener {
         if (event.isGliding()) {
             plugin.applyGame(player.getLocation(), game -> event.setCancelled(true));
         }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    void onPlayerDropItem(PlayerDropItemEvent event) {
+        plugin.applyGame(event.getPlayer().getLocation(), game -> event.setCancelled(true));
     }
 }
