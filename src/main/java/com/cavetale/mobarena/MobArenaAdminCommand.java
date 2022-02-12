@@ -22,6 +22,9 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
 
     @Override
     protected void onEnable() {
+        rootNode.addChild("reload").denyTabCompletion()
+            .description("Reload config.yml")
+            .senderCaller(this::reload);
         rootNode.addChild("info").denyTabCompletion()
             .description("Info Command")
             .senderCaller(this::info);
@@ -52,7 +55,16 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
             .senderCaller(this::joinDialogue);
     }
 
+    protected boolean reload(CommandSender sender, String[] args) {
+        if (args.length != 0) return false;
+        plugin.saveDefaultConfig();
+        plugin.reloadConfig();
+        sender.sendMessage(text("config.yml reloaded", YELLOW));
+        return true;
+    }
+
     protected boolean info(CommandSender sender, String[] args) {
+        if (args.length != 0) return false;
         for (Map.Entry<String, Arena> entry : plugin.arenaMap.entrySet()) {
             sender.sendMessage("Arena " + entry.getKey() + ": " + entry.getValue().getArenaArea());
         }

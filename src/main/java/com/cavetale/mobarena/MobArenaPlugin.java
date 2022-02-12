@@ -34,7 +34,6 @@ public final class MobArenaPlugin extends JavaPlugin {
     protected final Random random = ThreadLocalRandom.current();
     protected File gamesFolder;
 
-
     @Override
     public void onEnable() {
         gamesFolder = new File(getDataFolder(), "games");
@@ -197,6 +196,10 @@ public final class MobArenaPlugin extends JavaPlugin {
             eventGame.bring(player);
             player.sendMessage(text("Joined the event!", GREEN));
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "ml add " + player.getName());
+            return;
+        }
+        if (getConfig().getBoolean("locked")) {
+            player.sendMessage(text("Please wait for Mob Arena to open its gates", GOLD));
             return;
         }
         int size = 3 * 9;
