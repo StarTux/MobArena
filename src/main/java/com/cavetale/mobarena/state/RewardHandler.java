@@ -142,32 +142,33 @@ public final class RewardHandler extends GameStateHandler<RewardTag> {
     }
 
     private List<ItemStack> getRewardPool() {
-        switch (game.getTag().getCurrentWaveIndex() / 10) {
-        case 0: return List.of();
-        case 1: return List.of(new ItemStack(Material.DIAMOND, 4));
-        case 2: return List.of(new ItemStack(Material.GOLDEN_APPLE, 16));
-        case 3: return List.of(new ItemStack(Material.NETHERITE_SCRAP, 4));
-        case 4: return List.of(new ItemStack(Material.GUNPOWDER, 64));
-        case 5: return List.of(new ItemStack(Material.BONE, 64));
-        case 6: return List.of(new ItemStack(Material.TNT, 64));
-        case 7: return List.of(new ItemStack(Material.BONE_BLOCK, 24));
-        case 8: return List.of(new ItemStack(Material.ENCHANTED_GOLDEN_APPLE));
-        case 9: return List.of(Mytems.KITTY_COIN.createItemStack());
-        case 10: return MytemsTag.of(MytemsCategory.SCARLET).getMytems().stream()
-                .map(Mytems::createItemStack).collect(Collectors.toList());
-        default:
-            return Stream.concat(MytemsTag.of(MytemsCategory.ARMOR_PART).getMytems().stream()
-                                 .map(Mytems::createItemStack),
-                                 Stream.of(Mytems.KITTY_COIN.createItemStack(),
-                                           Mytems.RUBY.createItemStack(),
-                                           Mytems.HEART.createItemStack(),
-                                           Mytems.LIGHTNING.createItemStack(),
-                                           Mytems.STAR.createItemStack(),
-                                           Mytems.MOON.createItemStack(),
-                                           Mytems.COPPER_COIN.createItemStack(),
-                                           Mytems.SILVER_COIN.createItemStack(),
-                                           Mytems.GOLDEN_COIN.createItemStack()))
-                .collect(Collectors.toList());
+        int lvl = game.getTag().getCurrentWaveIndex() / 10;
+        if (lvl < 10) {
+            return List.of(new ItemStack(Material.DIAMOND, 4),
+                           new ItemStack(Material.GOLDEN_APPLE, 16),
+                           new ItemStack(Material.NETHERITE_SCRAP, 8),
+                           new ItemStack(Material.GUNPOWDER, 64),
+                           new ItemStack(Material.BLAZE_ROD, 64),
+                           new ItemStack(Material.TNT, 64),
+                           new ItemStack(Material.BONE_BLOCK, 24),
+                           new ItemStack(Material.ENCHANTED_GOLDEN_APPLE),
+                           Mytems.KITTY_COIN.createItemStack());
         }
+        if (lvl == 10) {
+            return MytemsTag.of(MytemsCategory.SCARLET).getMytems().stream()
+                .map(Mytems::createItemStack).collect(Collectors.toList());
+        }
+        return Stream.concat(MytemsTag.of(MytemsCategory.ARMOR_PART).getMytems().stream()
+                             .map(Mytems::createItemStack),
+                             Stream.of(Mytems.KITTY_COIN.createItemStack(),
+                                       Mytems.RUBY.createItemStack(),
+                                       Mytems.HEART.createItemStack(),
+                                       Mytems.LIGHTNING.createItemStack(),
+                                       Mytems.STAR.createItemStack(),
+                                       Mytems.MOON.createItemStack(),
+                                       Mytems.COPPER_COIN.createItemStack(),
+                                       Mytems.SILVER_COIN.createItemStack(),
+                                       Mytems.GOLDEN_COIN.createItemStack()))
+            .collect(Collectors.toList());
     }
 }
