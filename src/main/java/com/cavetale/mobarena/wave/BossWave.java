@@ -5,6 +5,7 @@ import com.cavetale.enemy.EnemyType;
 import com.cavetale.mobarena.Game;
 import com.cavetale.mobarena.save.BossWaveTag;
 import java.util.List;
+import java.util.stream.Collectors;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
@@ -66,6 +67,9 @@ public final class BossWave extends Wave<BossWaveTag> {
         Enemy boss = getBoss();
         if (boss == null || boss.isDead()) {
             finished = true;
+            game.getPlugin().getLogger().info("Boss Wave " + game.getTag().getCurrentWaveIndex() + " defeated by "
+                                              + game.getPresentPlayers().stream().map(Player::getName)
+                                              .collect(Collectors.joining(", ")));
         } else if (!boss.isValid()) { // isSpawned
             Location location = game.getArena().randomMobLocation();
             boss.setSpawnLocation(location);

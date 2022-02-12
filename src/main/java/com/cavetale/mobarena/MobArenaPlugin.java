@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 import java.util.logging.Level;
@@ -185,7 +186,7 @@ public final class MobArenaPlugin extends JavaPlugin {
         if (game != null) return game;
         Arena arena = randomUnusedArena();
         if (arena == null) return null;
-        game = startNewGame(arena, arena.getName());
+        game = startNewGame(arena, UUID.randomUUID().toString());
         return game;
     }
 

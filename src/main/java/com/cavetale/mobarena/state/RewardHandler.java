@@ -3,6 +3,7 @@ package com.cavetale.mobarena.state;
 import com.cavetale.core.font.GuiOverlay;
 import com.cavetale.mobarena.Game;
 import com.cavetale.mobarena.save.RewardTag;
+import com.cavetale.mobarena.util.Time;
 import com.cavetale.mytems.Mytems;
 import com.cavetale.mytems.MytemsCategory;
 import com.cavetale.mytems.MytemsTag;
@@ -14,6 +15,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.kyori.adventure.bossbar.BossBar;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -24,7 +26,9 @@ import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import static net.kyori.adventure.text.Component.join;
 import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 import static net.kyori.adventure.text.format.TextColor.color;
 import static net.kyori.adventure.text.format.TextDecoration.*;
@@ -87,6 +91,14 @@ public final class RewardHandler extends GameStateHandler<RewardTag> {
         bossBar.overlay(BossBar.Overlay.PROGRESS);
         bossBar.progress(1.0f);
         bossBar.name(text("Open Your Reward!", GRAY, BOLD));
+    }
+
+    @Override
+    public void onPlayerSidebar(Player player, List<Component> lines) {
+        Duration timeLeft = DURATION.minus(tag.getTime());
+        lines.add(join(noSeparators(),
+                       text("Time ", GRAY),
+                       Time.format(timeLeft)));
     }
 
     @Override
