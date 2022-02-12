@@ -229,6 +229,18 @@ public final class Game {
             : WaveType.KILL;
         currentWave = waveType.waveCtor.apply(this);
         tag.setCurrentWaveType(currentWave.getWaveType());
+        if (waveIndex > 1 && waveIndex % 10 == 1) {
+            Arena newArena = plugin.randomUnusedArena();
+            if (newArena != null) {
+                plugin.getLogger().info(name + " switching to arena " + newArena.getName());
+                List<Player> present = getPresentPlayers();
+                this.arena = newArena;
+                this.tag.setArenaName(newArena.getName());
+                for (Player player : present) {
+                    bring(player);
+                }
+            }
+        }
         currentWave.create();
     }
 
