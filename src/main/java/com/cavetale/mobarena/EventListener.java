@@ -25,6 +25,7 @@ import org.bukkit.event.entity.EntityPlaceEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.spigotmc.event.player.PlayerSpawnLocationEvent;
@@ -80,9 +81,7 @@ public final class EventListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
     protected void onCreatureSpawn(CreatureSpawnEvent event) {
-        plugin.applyGame(event.getEntity().getLocation(), game -> {
-                game.onCreatureSpawn(event);
-            });
+        plugin.applyGame(event.getEntity().getLocation(), game -> game.onCreatureSpawn(event));
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
@@ -92,44 +91,32 @@ public final class EventListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     protected void onPlayerBlockAbility(PlayerBlockAbilityQuery event) {
-        plugin.applyGame(event.getBlock().getLocation(), game -> {
-                event.setCancelled(true);
-            });
+        plugin.applyGame(event.getBlock().getLocation(), game -> event.setCancelled(true));
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     protected void onEntityPlace(EntityPlaceEvent event) {
-        plugin.applyGame(event.getEntity().getLocation(), game -> {
-                event.setCancelled(true);
-            });
+        plugin.applyGame(event.getEntity().getLocation(), game -> event.setCancelled(true));
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     protected void onBlockPlace(BlockPlaceEvent event) {
-        plugin.applyGame(event.getBlock().getLocation(), game -> {
-                event.setCancelled(true);
-            });
+        plugin.applyGame(event.getBlock().getLocation(), game -> event.setCancelled(true));
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     protected void onBlockBreak(BlockBreakEvent event) {
-        plugin.applyGame(event.getBlock().getLocation(), game -> {
-                event.setCancelled(true);
-            });
+        plugin.applyGame(event.getBlock().getLocation(), game -> event.setCancelled(true));
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     protected void onPlayerBucketEmpty(PlayerBucketEmptyEvent event) {
-        plugin.applyGame(event.getBlock().getLocation(), game -> {
-                event.setCancelled(true);
-            });
+        plugin.applyGame(event.getBlock().getLocation(), game -> event.setCancelled(true));
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     protected void onPlayerBucketFill(PlayerBucketFillEvent event) {
-        plugin.applyGame(event.getBlock().getLocation(), game -> {
-                event.setCancelled(true);
-            });
+        plugin.applyGame(event.getBlock().getLocation(), game -> event.setCancelled(true));
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
@@ -158,5 +145,10 @@ public final class EventListener implements Listener {
             break;
         default: return;
         }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    void onPlayerItemDamage(PlayerItemDamageEvent event) {
+        plugin.applyGame(event.getPlayer().getLocation(), game -> event.setCancelled(true));
     }
 }

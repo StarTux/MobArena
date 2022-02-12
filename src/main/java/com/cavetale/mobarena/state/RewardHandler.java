@@ -24,6 +24,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event.Result;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import static net.kyori.adventure.text.Component.join;
@@ -110,6 +111,8 @@ public final class RewardHandler extends GameStateHandler<RewardTag> {
         if (getTag().getPlayersOpenedChest().contains(player.getUniqueId())) return;
         getTag().getPlayersOpenedChest().add(player.getUniqueId());
         openRewardChest(player);
+        event.setUseItemInHand(Result.DENY);
+        event.setUseInteractedBlock(Result.DENY);
     }
 
     private void openRewardChest(Player player) {
