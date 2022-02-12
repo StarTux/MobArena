@@ -40,6 +40,8 @@ public abstract class GameStateHandler<T extends GameStateTag> {
 
     public abstract GameState tick();
 
+    public abstract void skip();
+
     public void onExit() { };
 
     public void onLoad() { };

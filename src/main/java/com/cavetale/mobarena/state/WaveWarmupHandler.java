@@ -13,6 +13,7 @@ final class WaveWarmupHandler extends GameStateHandler<GameStateTag> {
     protected static final Duration DURATION = Duration.ofSeconds(5);
     protected static final Duration LONG_DURATION = Duration.ofSeconds(15);
     protected long secondsLeft = -1;
+    protected boolean skipped;
 
     protected WaveWarmupHandler(final Game game) {
         super(game, GameState.WAVE_WARMUP, GameStateTag.class, GameStateTag::new);
@@ -35,7 +36,7 @@ final class WaveWarmupHandler extends GameStateHandler<GameStateTag> {
         Duration duration = game.getTag().getCurrentWaveIndex() % 10 == 1
             ? LONG_DURATION
             : DURATION;
-        if (time.toMillis() > duration.toMillis()) {
+        if (skipped || time.toMillis() > duration.toMillis()) {
             for (Player player : game.getPresentPlayers()) {
                 player.sendActionBar(Component.empty());
             }
@@ -50,6 +51,11 @@ final class WaveWarmupHandler extends GameStateHandler<GameStateTag> {
             }
         }
         return null;
+    }
+
+    @Override
+    public void skip() {
+        skipped = true;
     }
 
     @Override

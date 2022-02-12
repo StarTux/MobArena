@@ -16,6 +16,7 @@ import static net.kyori.adventure.text.format.NamedTextColor.*;
 final class GamePrepareHandler extends GameStateHandler<GameStateTag> {
     protected static final Duration DURATION = Duration.ofSeconds(30);
     protected static final Duration EVENT_DURATION = Duration.ofMinutes(5);
+    protected boolean skipped;
 
     protected GamePrepareHandler(final Game game) {
         super(game, GameState.PREPARE, GameStateTag.class, GameStateTag::new);
@@ -25,10 +26,15 @@ final class GamePrepareHandler extends GameStateHandler<GameStateTag> {
     public GameState tick() {
         Duration time = tag.getTime();
         Duration duration = game.getName().equals("event") ? EVENT_DURATION : DURATION;
-        if (time.toMillis() > duration.toMillis()) {
+        if (skipped || time.toMillis() > duration.toMillis()) {
             return GameState.WAVE_WARMUP;
         }
         return null;
+    }
+
+    @Override
+    public void skip() {
+        skipped = true;
     }
 
     @Override

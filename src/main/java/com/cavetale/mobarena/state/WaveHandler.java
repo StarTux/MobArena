@@ -35,6 +35,11 @@ final class WaveHandler extends GameStateHandler<GameStateTag> {
     }
 
     @Override
+    public void skip() {
+        game.getCurrentWave().setFinished(true);
+    }
+
+    @Override
     public void updateBossBar(BossBar bossBar) {
         game.getCurrentWave().updateBossBar(bossBar);
     }

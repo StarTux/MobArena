@@ -37,6 +37,7 @@ import static net.kyori.adventure.text.format.TextDecoration.*;
 public final class RewardHandler extends GameStateHandler<RewardTag> {
     protected static final Duration DURATION = Duration.ofSeconds(120);
     protected boolean someoneClosed = false;
+    protected boolean skipped;
 
     public RewardHandler(final Game game) {
         super(game, GameState.REWARD, RewardTag.class, RewardTag::new);
@@ -83,7 +84,12 @@ public final class RewardHandler extends GameStateHandler<RewardTag> {
             }
             if (allHave) complete = true;
         }
-        return complete ? GameState.WAVE_WARMUP : null;
+        return (skipped || complete) ? GameState.WAVE_WARMUP : null;
+    }
+
+    @Override
+    public void skip() {
+        skipped = true;
     }
 
     @Override

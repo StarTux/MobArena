@@ -4,7 +4,6 @@ import com.cavetale.core.command.AbstractCommand;
 import com.cavetale.core.command.CommandArgCompleter;
 import com.cavetale.core.command.CommandWarn;
 import com.cavetale.core.util.Json;
-import com.cavetale.mobarena.state.GameState;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -144,11 +143,8 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
         } else {
             throw new CommandWarn("[maaadm:skip] Player expected");
         }
-        if (game.getTag().getState() != GameState.WAVE) {
-            throw new CommandWarn("No wave is playing!");
-        }
-        game.getCurrentWave().setFinished(true);
-        sender.sendMessage(text("Skipping wave: " + game.getName(), YELLOW));
+        game.getStateHandler().skip();
+        sender.sendMessage(text("Skipping: " + game.getName(), YELLOW));
         return true;
     }
 

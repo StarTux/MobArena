@@ -10,6 +10,7 @@ import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 final class WaveCompleteHandler extends GameStateHandler<GameStateTag> {
     protected static final Duration DURATION = Duration.ofSeconds(5);
+    protected boolean skipped;
 
     protected WaveCompleteHandler(final Game game) {
         super(game, GameState.WAVE_COMPLETE, GameStateTag.class, GameStateTag::new);
@@ -18,7 +19,7 @@ final class WaveCompleteHandler extends GameStateHandler<GameStateTag> {
     @Override
     public GameState tick() {
         Duration time = tag.getTime();
-        if (time.toMillis() > DURATION.toMillis()) {
+        if (skipped || time.toMillis() > DURATION.toMillis()) {
             if (game.getCurrentWave().getWaveType() == WaveType.BOSS) {
                 return GameState.REWARD;
             } else {
@@ -26,6 +27,11 @@ final class WaveCompleteHandler extends GameStateHandler<GameStateTag> {
             }
         }
         return null;
+    }
+
+    @Override
+    public void skip() {
+        skipped = true;
     }
 
     @Override
