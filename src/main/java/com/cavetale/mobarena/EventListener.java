@@ -18,12 +18,14 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockExplodeEvent;
+import org.bukkit.event.block.BlockIgniteEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityPlaceEvent;
 import org.bukkit.event.entity.EntityToggleGlideEvent;
+import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
@@ -186,5 +188,15 @@ public final class EventListener implements Listener {
             plugin.applyGame(event.getPlayer().getLocation(), game -> event.setCancelled(true));
         default: break;
         }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    void onBlockIgnite(BlockIgniteEvent event) {
+        plugin.applyGame(event.getBlock().getLocation(), game -> event.setCancelled(true));
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    void onhangingBreak(HangingBreakEvent event) {
+        plugin.applyGame(event.getEntity().getLocation(), game -> event.setCancelled(true));
     }
 }
