@@ -7,6 +7,7 @@ import com.cavetale.enemy.util.ItemBuilder;
 import com.cavetale.mobarena.Game;
 import com.cavetale.mobarena.save.KillWaveTag;
 import com.cavetale.mobarena.state.GameState;
+import com.cavetale.mobarena.util.Time;
 import com.cavetale.mytems.Mytems;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -51,6 +52,7 @@ public final class KillWave extends Wave<KillWaveTag> {
     protected static final Map<EntityType, Integer> ENTITY_MIN_WAVE_MAP = new EnumMap<>(EntityType.class);
     protected Color leatherArmorColor;
     protected long lastWarpHome;
+    protected Duration runningTime = Duration.ofSeconds(0);
 
     protected KillWave(final Game game) {
         super(game, WaveType.KILL, KillWaveTag.class, KillWaveTag::new);
@@ -119,7 +121,7 @@ public final class KillWave extends Wave<KillWaveTag> {
     @Override
     public void tick() {
         int stillAlive = 0;
-        Duration runningTime = Duration.ofMillis(System.currentTimeMillis() - game.getStateHandler().getTag().getStartTime());
+        runningTime = Duration.ofMillis(System.currentTimeMillis() - game.getStateHandler().getTag().getStartTime());
         boolean doWarpHome = (runningTime.toSeconds() % 90L) == 0L && lastWarpHome != runningTime.toSeconds();
         if (doWarpHome) {
             lastWarpHome = runningTime.toSeconds();
@@ -366,5 +368,8 @@ public final class KillWave extends Wave<KillWaveTag> {
         lines.add(join(noSeparators(),
                        text("Mobs ", GRAY),
                        text(tag.getStillAlive(), GREEN)));
+        lines.add(join(noSeparators(),
+                       text("Time ", GRAY),
+                       Time.format(runningTime)));
     }
 }
