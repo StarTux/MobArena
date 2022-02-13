@@ -98,11 +98,11 @@ public final class KillWave extends Wave<KillWaveTag> {
 
     @Override
     public void create() {
-        int mobCount = ((game.getTag().getCurrentWaveIndex() * 2) / 3) + game.countActivePlayers();
+        int mobCount = Math.max(6, ((game.getTag().getCurrentWaveIndex() * 2) / 3) + game.countActivePlayers());
         List<EntityType> entityTypeList = new ArrayList<>(ENTITY_MIN_WAVE_MAP.keySet());
         entityTypeList.removeIf(et -> ENTITY_MIN_WAVE_MAP.get(et) > game.getTag().getCurrentWaveIndex());
         Collections.shuffle(entityTypeList);
-        int mobTypeCount = (mobCount - 1) / 10 + 1;
+        int mobTypeCount = mobCount / 16;
         entityTypeList = List.copyOf(entityTypeList.subList(0, Math.min(entityTypeList.size(), mobTypeCount)));
         for (int i = 0; i < mobCount; i += 1) {
             EntityType entityType = entityTypeList.get(i % entityTypeList.size());
@@ -112,7 +112,6 @@ public final class KillWave extends Wave<KillWaveTag> {
         }
         tag.setTotalMobCount(mobCount);
         tag.setStillAlive(mobCount);
-        displayName = text("Kill All Mobs", BLUE);
     }
 
     @Override

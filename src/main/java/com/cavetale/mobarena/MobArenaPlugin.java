@@ -107,7 +107,13 @@ public final class MobArenaPlugin extends JavaPlugin {
             if (!name.endsWith(".json")) continue;
             name = name.substring(0, name.length() - 5);
             Game game = new Game(this, name);
-            game.load();
+            try {
+                game.load();
+            } catch (Exception e) {
+                getLogger().log(Level.SEVERE, "Loading " + file, e);
+                file.delete();
+                continue;
+            }
             gameList.add(game);
             getLogger().info("Loaded game " + name);
         }

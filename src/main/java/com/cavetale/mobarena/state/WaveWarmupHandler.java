@@ -5,7 +5,6 @@ import com.cavetale.mobarena.save.GameStateTag;
 import java.time.Duration;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.title.Title;
 import org.bukkit.entity.Player;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
@@ -22,9 +21,6 @@ final class WaveWarmupHandler extends GameStateHandler<GameStateTag> {
     @Override
     public void onEnter() {
         game.makeNextWave();
-        for (Player player : game.getPresentPlayers()) {
-            player.showTitle(Title.title(Component.empty(), game.getCurrentWave().getDisplayName()));
-        }
     }
 
     @Override

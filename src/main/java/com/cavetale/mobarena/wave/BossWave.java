@@ -56,8 +56,10 @@ public final class BossWave extends Wave<BossWaveTag> {
         tag.setEnemyType(enemyType);
         Enemy boss = tag.getEnemyType().create(game.getEnemyContext());
         tag.setBossEnemyId(boss.getEnemyId());
-        displayName = boss.getDisplayName();
         game.getEnemies().add(boss);
+        for (Player player : game.getPresentPlayers()) {
+            player.showTitle(Title.title(Component.empty(), boss.getDisplayName()));
+        }
     }
 
     @Override
@@ -87,13 +89,15 @@ public final class BossWave extends Wave<BossWaveTag> {
 
     @Override
     public void end() {
-        game.clearEnemies();
-        game.clearTemporaryEntities();
+        Enemy boss = getBoss();
+        Component bossDisplayName = boss != null ? boss.getDisplayName() : Component.empty();
         for (Player player : game.getPresentPlayers()) {
-            player.showTitle(Title.title(displayName,
+            player.showTitle(Title.title(bossDisplayName,
                                          Component.text("Defeated!", GOLD)));
             player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, SoundCategory.MASTER, 1.0f, 1.5f);
         }
+        game.clearEnemies();
+        game.clearTemporaryEntities();
     }
 
     @Override
@@ -112,7 +116,6 @@ public final class BossWave extends Wave<BossWaveTag> {
         }
         boss.setContext(game.getEnemyContext());
         game.getEnemies().add(boss);
-        displayName = boss.getDisplayName();
     }
 
     public Enemy getBoss() {

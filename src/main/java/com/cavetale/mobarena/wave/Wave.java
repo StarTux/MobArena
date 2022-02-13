@@ -19,7 +19,6 @@ public abstract class Wave<T extends WaveTag> {
     protected final Class<T> tagType;
     protected final Supplier<T> tagCtor;
     protected boolean finished;
-    protected Component displayName = Component.empty();
 
     protected Wave(final Game game, final WaveType waveType, final Class<T> tagType, final Supplier<T> tagCtor) {
         this.game = game;
