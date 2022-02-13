@@ -103,6 +103,7 @@ public final class KillWave extends Wave<KillWaveTag> {
         entityTypeList.removeIf(et -> ENTITY_MIN_WAVE_MAP.get(et) > game.getTag().getCurrentWaveIndex());
         Collections.shuffle(entityTypeList);
         int mobTypeCount = mobCount / 16;
+        if (mobTypeCount == 0) mobTypeCount = 1;
         entityTypeList = List.copyOf(entityTypeList.subList(0, Math.min(entityTypeList.size(), mobTypeCount)));
         for (int i = 0; i < mobCount; i += 1) {
             EntityType entityType = entityTypeList.get(i % entityTypeList.size());

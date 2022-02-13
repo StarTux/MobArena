@@ -77,10 +77,10 @@ public final class Arena {
     public void purge() {
         World world = getWorld();
         if (world == null) return;
-        spawnVectorList.removeIf(vector -> !vector.toBlock(world).isEmpty());
+        spawnVectorList.removeIf(vector -> !vector.toBlock(world).getCollisionShape().getBoundingBoxes().isEmpty());
         mobVectorList.removeIf(vector -> {
-                return !vector.toBlock(world).isEmpty()
-                    || vector.add(0, -1, 0).toBlock(world).isEmpty();
+                return !vector.toBlock(world).getCollisionShape().getBoundingBoxes().isEmpty()
+                    || vector.add(0, -1, 0).toBlock(world).getCollisionShape().getBoundingBoxes().isEmpty();
             });
         flyingMobVectorList.removeIf(vector -> !vector.toBlock(world).isEmpty());
     }
