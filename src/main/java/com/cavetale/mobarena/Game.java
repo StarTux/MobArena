@@ -7,6 +7,7 @@ import com.cavetale.mobarena.state.GameState;
 import com.cavetale.mobarena.state.GameStateHandler;
 import com.cavetale.mobarena.wave.Wave;
 import com.cavetale.mobarena.wave.WaveType;
+import com.cavetale.server.ServerPlugin;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,7 +20,6 @@ import lombok.Data;
 import lombok.NonNull;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Entity;
@@ -29,6 +29,10 @@ import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.scheduler.BukkitTask;
+import static net.kyori.adventure.text.Component.join;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 /**
  * Runtime instance of a game of MobArena.
@@ -163,6 +167,9 @@ public final class Game {
         }
         playerMap.clear();
         clearTemporaryEntities();
+        if (plugin.gameList.indexOf(this) == 0) {
+            ServerPlugin.getInstance().setServerSidebarLines(null);
+        }
     }
 
     /**
@@ -257,6 +264,11 @@ public final class Game {
             }
         }
         currentWave.create();
+        if (plugin.gameList.indexOf(this) == 0) {
+            List<Component> lines = List.of(text("/mobarena", GREEN),
+                                            text("Wave " + waveIndex, GRAY));
+            ServerPlugin.getInstance().setServerSidebarLines(lines);
+        }
     }
 
     public List<Player> getPresentPlayers() {
@@ -299,8 +311,9 @@ public final class Game {
 
     protected void onPlayerSidebar(Player player, List<Component> lines) {
         if (currentWave != null) {
-            lines.add(Component.text("Wave ", NamedTextColor.GRAY)
-                      .append(Component.text(tag.getCurrentWaveIndex(), NamedTextColor.GREEN)));
+            lines.add(join(noSeparators(),
+                           text("Wave ", GRAY),
+                           text(tag.getCurrentWaveIndex(), GREEN)));
         }
         stateHandler.onPlayerSidebar(player, lines);
     }
