@@ -78,7 +78,10 @@ public final class Arena {
         World world = getWorld();
         if (world == null) return;
         spawnVectorList.removeIf(vector -> !vector.toBlock(world).isEmpty());
-        mobVectorList.removeIf(vector -> !vector.toBlock(world).isEmpty());
+        mobVectorList.removeIf(vector -> {
+                return !vector.toBlock(world).isEmpty()
+                    || vector.add(0, -1, 0).toBlock(world).isEmpty();
+            });
         flyingMobVectorList.removeIf(vector -> !vector.toBlock(world).isEmpty());
     }
 
