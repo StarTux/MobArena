@@ -5,6 +5,7 @@ import com.cavetale.core.event.entity.PlayerEntityAbilityQuery;
 import com.cavetale.core.event.player.PluginPlayerEvent;
 import com.cavetale.sidebar.PlayerSidebarEvent;
 import com.cavetale.sidebar.Priority;
+import com.winthier.shutdown.event.ShutdownTriggerEvent;
 import com.winthier.spawn.Spawn;
 import java.util.ArrayList;
 import java.util.List;
@@ -196,7 +197,14 @@ public final class EventListener implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true)
-    void onhangingBreak(HangingBreakEvent event) {
+    void onHangingBreak(HangingBreakEvent event) {
         plugin.applyGame(event.getEntity().getLocation(), game -> event.setCancelled(true));
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    void onShutdownTrigger(ShutdownTriggerEvent event) {
+        if (!plugin.gameList.isEmpty()) {
+            event.cancelBy(plugin);
+        }
     }
 }

@@ -114,5 +114,13 @@
       <scope>provided</scope>
     </dependency>
 
+    <!-- Shutdown -->
+    <dependency>
+      <groupId>com.winthier.shutdown</groupId>
+      <artifactId>shutdown</artifactId>
+      <version>0.1-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+
   </dependencies>
 </project>
