@@ -2,6 +2,8 @@ package com.cavetale.mobarena;
 
 import com.cavetale.area.struct.AreasFile;
 import com.cavetale.core.font.GuiOverlay;
+import com.cavetale.core.util.Json;
+import com.cavetale.mobarena.save.Config;
 import com.cavetale.mytems.Mytems;
 import com.cavetale.mytems.util.Gui;
 import com.cavetale.mytems.util.Items;
@@ -30,13 +32,17 @@ public final class MobArenaPlugin extends JavaPlugin {
     protected final MobArenaCommand mobarenaCommand = new MobArenaCommand(this);
     protected final MobArenaAdminCommand mobarenaAdminCommand = new MobArenaAdminCommand(this);
     protected final EventListener eventListener = new EventListener(this);
+    protected Config config;
     protected final Map<String, Arena> arenaMap = new HashMap<>();
     protected final List<Game> gameList = new ArrayList<>();
     protected final Random random = ThreadLocalRandom.current();
     protected File gamesFolder;
+    protected File configFile;
 
     @Override
     public void onEnable() {
+        configFile = new File(getDataFolder(), "config.json");
+        importConfig();
         gamesFolder = new File(getDataFolder(), "games");
         gamesFolder.mkdirs();
         mobarenaCommand.enable();
@@ -54,6 +60,18 @@ public final class MobArenaPlugin extends JavaPlugin {
         }
         gameList.clear();
         arenaMap.clear();
+    }
+
+    protected void importConfig() {
+        if (!configFile.exists()) {
+            Json.save(configFile, new Config(), true);
+        }
+        config = Json.load(configFile, Config.class, Config::new);
+    }
+
+    protected void exportConfig() {
+        if (config == null) return;
+        Json.save(configFile, config, true);
     }
 
     protected void loadArenas() {
@@ -177,6 +195,7 @@ public final class MobArenaPlugin extends JavaPlugin {
         for (Game game : gameList) {
             options.remove(game.getArena().getName());
         }
+        options.removeAll(config.getDisabledArenas());
         if (options.isEmpty()) return null;
         String arenaName = options.get(random.nextInt(options.size()));
         return arenaMap.get(arenaName);
@@ -205,7 +224,7 @@ public final class MobArenaPlugin extends JavaPlugin {
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "ml add " + player.getName());
             return;
         }
-        if (getConfig().getBoolean("locked")) {
+        if (config.isLocked()) {
             player.sendMessage(text("Please wait for Mob Arena to open its gates", GOLD));
             return;
         }

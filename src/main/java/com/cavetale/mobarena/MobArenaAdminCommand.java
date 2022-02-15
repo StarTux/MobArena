@@ -27,7 +27,7 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
     @Override
     protected void onEnable() {
         rootNode.addChild("reload").denyTabCompletion()
-            .description("Reload config.yml")
+            .description("Reload config.json")
             .senderCaller(this::reload);
         rootNode.addChild("list").denyTabCompletion()
             .description("List Arenas")
@@ -68,9 +68,8 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
 
     protected boolean reload(CommandSender sender, String[] args) {
         if (args.length != 0) return false;
-        plugin.saveDefaultConfig();
-        plugin.reloadConfig();
-        sender.sendMessage(text("config.yml reloaded", YELLOW));
+        plugin.importConfig();
+        sender.sendMessage(text("config.json reloaded", YELLOW));
         return true;
     }
 
@@ -104,10 +103,11 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
 
     protected boolean debug(CommandSender sender, String[] args) {
         if (args.length != 0) return false;
-        if (plugin.gameList.isEmpty()) throw new CommandWarn("No games running");
+        sender.sendMessage("Config: " + Json.prettyPrint(plugin.config));
         for (Game game : plugin.gameList) {
-            sender.sendMessage(text("Game " + game.getName() + ": " + Json.prettyPrint(game.getTag()),
-                                    YELLOW));
+            game.prepareForSaving();
+            String pretty = Json.prettyPrint(game.getTag());
+            sender.sendMessage(text("Game " + game.getName() + ": " + pretty, YELLOW));
         }
         return true;
     }

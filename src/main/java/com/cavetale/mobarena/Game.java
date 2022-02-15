@@ -92,7 +92,9 @@ public final class Game {
     public GamePlayer getGamePlayer(Player player) {
         return playerMap.computeIfAbsent(player.getUniqueId(), u -> {
                 player.showBossBar(bossBar);
-                return new GamePlayer(player);
+                GamePlayer gamePlayer = new GamePlayer(player);
+                tag.getPlayers().add(gamePlayer.getTag());
+                return gamePlayer;
             });
     }
 
@@ -227,7 +229,7 @@ public final class Game {
         enable();
     }
 
-    protected void save() {
+    public void prepareForSaving() {
         stateHandler.onSave();
         tag.setStateTag(Json.serialize(stateHandler.getTag()));
         if (currentWave != null) {
@@ -236,10 +238,10 @@ public final class Game {
         } else {
             tag.setCurrentWaveTag(null);
         }
-        tag.setPlayers(new ArrayList<>());
-        for (GamePlayer gamePlayer : playerMap.values()) {
-            tag.getPlayers().add(gamePlayer.tag);
-        }
+    }
+
+    protected void save() {
+        prepareForSaving();
         Json.save(gameTagFile, tag, true);
     }
 
