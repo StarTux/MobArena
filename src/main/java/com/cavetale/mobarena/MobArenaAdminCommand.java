@@ -4,14 +4,19 @@ import com.cavetale.core.command.AbstractCommand;
 import com.cavetale.core.command.CommandArgCompleter;
 import com.cavetale.core.command.CommandWarn;
 import com.cavetale.core.util.Json;
+import com.cavetale.mobarena.wave.Wave;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import static net.kyori.adventure.text.Component.join;
+import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.JoinConfiguration.separator;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> {
@@ -24,9 +29,15 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
         rootNode.addChild("reload").denyTabCompletion()
             .description("Reload config.yml")
             .senderCaller(this::reload);
+        rootNode.addChild("list").denyTabCompletion()
+            .description("List Arenas")
+            .senderCaller(this::list);
         rootNode.addChild("info").denyTabCompletion()
-            .description("Info Command")
+            .description("Game Info")
             .senderCaller(this::info);
+        rootNode.addChild("debug").denyTabCompletion()
+            .description("Debug Spam")
+            .senderCaller(this::debug);
         rootNode.addChild("start").arguments("[arena] [name]")
             .completers(CommandArgCompleter.supplyList(() -> List.copyOf(plugin.arenaMap.keySet())),
                         CommandArgCompleter.NULL)
@@ -63,13 +74,39 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
         return true;
     }
 
-    protected boolean info(CommandSender sender, String[] args) {
+    protected boolean list(CommandSender sender, String[] args) {
         if (args.length != 0) return false;
+        if (plugin.arenaMap.isEmpty()) throw new CommandWarn("No arenas loaded");
         for (Map.Entry<String, Arena> entry : plugin.arenaMap.entrySet()) {
             sender.sendMessage("Arena " + entry.getKey() + ": " + entry.getValue().getArenaArea());
         }
+        return true;
+    }
+
+    protected boolean info(CommandSender sender, String[] args) {
+        if (args.length != 0) return false;
+        if (plugin.gameList.isEmpty()) throw new CommandWarn("No games running");
         for (Game game : plugin.gameList) {
-            sender.sendMessage(text("Game " + game.getName() + ": " + Json.serialize(game.getTag()),
+            List<Player> active = game.getActivePlayers();
+            Wave<?> wave = game.getCurrentWave();
+            Component msg = join(separator(newline()), new Component[] {
+                    text("Game " + game.getName()),
+                    text(" Wave #" + game.getTag().getCurrentWaveIndex()
+                         + (wave == null ? "" : " " + wave.getWaveType().name().toLowerCase())),
+                    text(" Players (" + active.size() + ") " + active.stream()
+                         .map(Player::getName)
+                         .collect(Collectors.joining(" "))),
+                }).color(YELLOW);
+            sender.sendMessage(msg);
+        }
+        return true;
+    }
+
+    protected boolean debug(CommandSender sender, String[] args) {
+        if (args.length != 0) return false;
+        if (plugin.gameList.isEmpty()) throw new CommandWarn("No games running");
+        for (Game game : plugin.gameList) {
+            sender.sendMessage(text("Game " + game.getName() + ": " + Json.prettyPrint(game.getTag()),
                                     YELLOW));
         }
         return true;

@@ -255,10 +255,10 @@ public final class Game {
             Arena newArena = plugin.randomUnusedArena();
             if (newArena != null) {
                 plugin.getLogger().info(name + " switching to arena " + newArena.getName());
-                List<Player> present = getPresentPlayers();
+                List<Player> activePlayers = getActivePlayers();
                 this.arena = newArena;
                 this.tag.setArenaName(newArena.getName());
-                for (Player player : present) {
+                for (Player player : activePlayers) {
                     bring(player);
                 }
             }
@@ -277,7 +277,12 @@ public final class Game {
 
     public List<Player> getActivePlayers() {
         List<Player> result = getPresentPlayers();
-        result.removeIf(p -> !getGamePlayer(p).getTag().isPlaying());
+        result.removeIf(p -> {
+                switch (p.getGameMode()) {
+                case ADVENTURE: case SURVIVAL: return false;
+                case CREATIVE: case SPECTATOR: default: return true;
+                }
+            });
         return result;
     }
 
