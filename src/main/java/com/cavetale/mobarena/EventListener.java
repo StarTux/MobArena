@@ -21,6 +21,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockIgniteEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
@@ -93,6 +94,11 @@ public final class EventListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     protected void onEntityChangeBlock(EntityChangeBlockEvent event) {
+        plugin.applyGame(event.getBlock().getLocation(), game -> event.setCancelled(true));
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
+    protected void onEntityBlockForm(EntityBlockFormEvent event) {
         plugin.applyGame(event.getBlock().getLocation(), game -> event.setCancelled(true));
     }
 
