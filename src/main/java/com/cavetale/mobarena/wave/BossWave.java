@@ -37,6 +37,7 @@ public final class BossWave extends Wave<BossWaveTag> {
         EnemyType.INFERNAL_PHANTASM,
         EnemyType.GHAST_BOSS,
     };
+    protected Component bossDisplayName = Component.empty();
 
     protected BossWave(final Game game) {
         super(game, WaveType.BOSS, BossWaveTag.class, BossWaveTag::new);
@@ -69,6 +70,7 @@ public final class BossWave extends Wave<BossWaveTag> {
             Location location = game.getArena().randomMobLocation();
             boss.setSpawnLocation(location);
             boss.spawn(location);
+            bossDisplayName = boss.getDisplayName();
         }
     }
 
@@ -89,11 +91,8 @@ public final class BossWave extends Wave<BossWaveTag> {
 
     @Override
     public void end() {
-        Enemy boss = getBoss();
-        Component bossDisplayName = boss != null ? boss.getDisplayName() : Component.empty();
         for (Player player : game.getPresentPlayers()) {
-            player.showTitle(Title.title(bossDisplayName,
-                                         Component.text("Defeated!", GOLD)));
+            player.showTitle(Title.title(bossDisplayName, Component.text("Defeated!", GOLD)));
             player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, SoundCategory.MASTER, 1.0f, 1.5f);
         }
         game.clearEnemies();
