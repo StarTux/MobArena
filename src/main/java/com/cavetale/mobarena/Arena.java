@@ -116,10 +116,21 @@ public final class Arena {
         if (world == null) return List.of();
         List<Player> result = new ArrayList<>();
         for (Player player : world.getPlayers()) {
-            if (isInArena(player.getLocation())) {
+            if (isOnPlane(player.getLocation())) {
                 result.add(player);
             }
         }
         return result;
+    }
+
+    public boolean isOnPlane(Location location) {
+        int x = location.getBlockX();
+        int z = location.getBlockZ();
+        return arenaArea.min.x <= x && x <= arenaArea.max.x
+            && arenaArea.min.z <= z && z <= arenaArea.max.z;
+    }
+
+    public boolean isInWorld(Location location) {
+        return worldName.equals(location.getWorld().getName());
     }
 }

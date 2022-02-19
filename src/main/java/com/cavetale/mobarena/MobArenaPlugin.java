@@ -175,7 +175,7 @@ public final class MobArenaPlugin extends JavaPlugin {
 
     public Game gameAt(Location location) {
         for (Game game : gameList) {
-            if (game.getArena().isInArena(location)) {
+            if (game.getArena().isOnPlane(location) && game.getArena().isInWorld(location)) {
                 return game;
             }
         }
@@ -184,7 +184,7 @@ public final class MobArenaPlugin extends JavaPlugin {
 
     public void applyGame(Location location, Consumer<Game> consumer) {
         for (Game game : gameList) {
-            if (game.getArena().isInArena(location)) {
+            if (game.getArena().isOnPlane(location) && game.getArena().isInWorld(location)) {
                 consumer.accept(game);
             }
         }
@@ -213,6 +213,16 @@ public final class MobArenaPlugin extends JavaPlugin {
         if (arena == null) return null;
         game = startNewGame(arena, UUID.randomUUID().toString());
         return game;
+    }
+
+    public Game getNearbyGame(Location location) {
+        String worldName = location.getWorld().getName();
+        for (Game game : gameList) {
+            if (!worldName.equals(game.arena.getWorldName())) continue;
+            if (!game.arena.isOnPlane(location)) continue;
+            return game;
+        }
+        return null;
     }
 
     public void openJoinDialogue(Player player) {

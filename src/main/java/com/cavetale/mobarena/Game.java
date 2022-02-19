@@ -22,6 +22,7 @@ import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Result;
@@ -105,7 +106,7 @@ public final class Game {
                 gamePlayer.tag.setPlaying(false);
                 continue;
             }
-            if (!arena.isInArena(player.getLocation())) {
+            if (!arena.isOnPlane(player.getLocation())) {
                 gamePlayer.tag.setPlaying(false);
                 continue;
             }
@@ -120,9 +121,10 @@ public final class Game {
         // Remove obsolete players
         for (var iter = playerMap.entrySet().iterator(); iter.hasNext();) {
             Player player = iter.next().getValue().getPlayer();
+            Location playerLocation = player.getLocation();
             if (player == null) {
                 iter.remove();
-            } else if (!arena.isInArena(player.getLocation())) {
+            } else if (!arena.isOnPlane(playerLocation) || !arena.isInWorld(playerLocation)) {
                 player.hideBossBar(bossBar);
                 iter.remove();
             }

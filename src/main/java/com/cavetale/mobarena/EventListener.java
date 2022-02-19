@@ -24,6 +24,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityPlaceEvent;
 import org.bukkit.event.entity.EntityToggleGlideEvent;
@@ -212,5 +213,23 @@ public final class EventListener implements Listener {
         if (!plugin.gameList.isEmpty()) {
             event.cancelBy(plugin);
         }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    protected void onPlayerVoidDamage(EntityDamageEvent event) {
+        if (!(event.getEntity() instanceof Player player)) return;
+        switch (event.getCause()) {
+        case VOID: break;
+        default: return;
+        }
+        Game game = plugin.getNearbyGame(player.getLocation());
+        Bukkit.getScheduler().runTask(plugin, () -> {
+                player.setFallDistance(0.0f);
+                if (game == null) {
+                    player.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
+                } else {
+                    game.bring(player);
+                }
+            });
     }
 }
