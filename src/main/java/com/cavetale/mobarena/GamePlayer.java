@@ -26,4 +26,18 @@ public final class GamePlayer {
     public boolean isOnline() {
         return getPlayer() != null;
     }
+
+    public void changeStat(Stat stat, double value) {
+        tag.getStats().compute(stat, (e, i) -> (i != null ? i + value : value));
+    }
+
+    public double getStat(Stat stat) {
+        return tag.getStats().getOrDefault(stat, 0.0);
+    }
+
+    public int getIntStat(Stat stat) {
+        Double result = tag.getStats().get(stat);
+        if (result == null) return 0;
+        return (int) Math.round(result);
+    }
 }

@@ -182,12 +182,15 @@ public final class MobArenaPlugin extends JavaPlugin {
         return null;
     }
 
-    public void applyGame(Location location, Consumer<Game> consumer) {
+    public boolean applyGame(Location location, Consumer<Game> consumer) {
+        boolean result = false;
         for (Game game : gameList) {
             if (game.getArena().isOnPlane(location) && game.getArena().isInWorld(location)) {
                 consumer.accept(game);
+                result = true;
             }
         }
+        return result;
     }
 
     public Arena randomUnusedArena() {

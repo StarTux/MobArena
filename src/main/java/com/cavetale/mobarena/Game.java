@@ -1,5 +1,6 @@
 package com.cavetale.mobarena;
 
+import com.cavetale.core.font.Unicode;
 import com.cavetale.core.util.Json;
 import com.cavetale.enemy.Enemy;
 import com.cavetale.mobarena.save.GameTag;
@@ -7,6 +8,7 @@ import com.cavetale.mobarena.state.GameState;
 import com.cavetale.mobarena.state.GameStateHandler;
 import com.cavetale.mobarena.wave.Wave;
 import com.cavetale.mobarena.wave.WaveType;
+import com.cavetale.mytems.event.combat.DamageCalculationEvent;
 import com.cavetale.server.ServerPlugin;
 import java.io.File;
 import java.util.ArrayList;
@@ -27,6 +29,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Result;
 import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.scheduler.BukkitTask;
@@ -60,6 +63,8 @@ public final class Game {
     protected final Random random;
     protected final Map<UUID, GamePlayer> playerMap = new HashMap<>();
     protected final BossBar bossBar;
+    protected Stat currentStat = Stat.DAMAGE;
+    protected int currentStatTicks;
 
     public Game(final MobArenaPlugin plugin, final String name) {
         this.plugin = plugin;
@@ -142,6 +147,14 @@ public final class Game {
             changeState(newState);
         }
         stateHandler.updateBossBar(bossBar);
+        currentStatTicks += 1;
+        if (currentStatTicks > 200) {
+            currentStatTicks = 0;
+            Stat[] stats = Stat.values();
+            int statIndex = currentStat.ordinal() + 1;
+            if (statIndex >= stats.length) statIndex = 0;
+            currentStat = stats[statIndex];
+        }
     }
 
     /**
@@ -323,10 +336,20 @@ public final class Game {
     protected void onPlayerSidebar(Player player, List<Component> lines) {
         if (currentWave != null) {
             lines.add(join(noSeparators(),
-                           text("Wave ", GRAY),
+                           text(Unicode.tiny("wave "), GRAY),
                            text(tag.getCurrentWaveIndex(), GREEN)));
         }
         stateHandler.onPlayerSidebar(player, lines);
+        lines.add(text(Unicode.tiny(currentStat.displayName.toLowerCase()), RED));
+        List<Player> players = getActivePlayers();
+        players.sort((b, a) -> Double.compare(getGamePlayer(a).getStat(currentStat),
+                                              getGamePlayer(b).getStat(currentStat)));
+        for (Player it : players) {
+            lines.add(join(noSeparators(),
+                           text("" + getGamePlayer(it).getIntStat(currentStat), RED),
+                           text(" "),
+                           it.displayName()));
+        }
     }
 
     protected void onCreatureSpawn(CreatureSpawnEvent event) {
@@ -350,5 +373,31 @@ public final class Game {
     protected void onPlayerRightClickBlock(PlayerInteractEvent event) {
         event.setUseInteractedBlock(Result.DENY);
         stateHandler.onPlayerRightClickBlock(event);
+    }
+
+    public void onDamageCalculation(DamageCalculationEvent event) {
+        if (event.targetIsPlayer()) {
+            GamePlayer gamePlayer = getGamePlayer(event.getTargetPlayer());
+            double value = event.getCalculation().getTotalDamage();
+            if (value < 0.0) return;
+            gamePlayer.changeStat(Stat.TAKEN, value);
+        } else if (event.attackerIsPlayer()) {
+            GamePlayer gamePlayer = getGamePlayer(event.getAttackerPlayer());
+            double value = event.getCalculation().getTotalDamage();
+            if (value <= 0.0) return;
+            gamePlayer.changeStat(Stat.DAMAGE, value);
+        }
+    }
+
+    public void onEntityDeath(EntityDeathEvent event) {
+        if (event.getEntity() instanceof Player player) {
+            GamePlayer gamePlayer = getGamePlayer(player);
+            gamePlayer.changeStat(Stat.DEATHS, 1.0);
+        } else {
+            Player player = event.getEntity().getKiller();
+            if (player == null) return;
+            GamePlayer gamePlayer = getGamePlayer(player);
+            gamePlayer.changeStat(Stat.KILLS, 1.0);
+        }
     }
 }

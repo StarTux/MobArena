@@ -1,5 +1,6 @@
 package com.cavetale.mobarena.wave;
 
+import com.cavetale.core.font.Unicode;
 import com.cavetale.enemy.Enemy;
 import com.cavetale.enemy.LivingEnemy;
 import com.cavetale.enemy.LivingEnemyWrapper;
@@ -366,10 +367,10 @@ public final class KillWave extends Wave<KillWaveTag> {
     @Override
     public void onPlayerSidebar(Player player, List<Component> lines) {
         lines.add(join(noSeparators(),
-                       text("Mobs ", GRAY),
+                       text(Unicode.tiny("mobs "), GRAY),
                        text(tag.getStillAlive(), GREEN)));
         lines.add(join(noSeparators(),
-                       text("Time ", GRAY),
+                       text(Unicode.tiny("time "), GRAY),
                        Time.format(runningTime)));
     }
 }

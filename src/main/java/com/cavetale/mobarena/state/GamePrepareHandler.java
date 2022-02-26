@@ -1,5 +1,6 @@
 package com.cavetale.mobarena.state;
 
+import com.cavetale.core.font.Unicode;
 import com.cavetale.mobarena.Game;
 import com.cavetale.mobarena.save.GameStateTag;
 import com.cavetale.mobarena.util.Time;
@@ -42,7 +43,7 @@ final class GamePrepareHandler extends GameStateHandler<GameStateTag> {
         Duration duration = game.getName().equals("event") ? EVENT_DURATION : DURATION;
         Duration timeLeft = duration.minus(tag.getTime());
         lines.add(join(noSeparators(),
-                       text("Time ", GRAY),
+                       text(Unicode.tiny("time "), GRAY),
                        Time.format(timeLeft)));
     }
 

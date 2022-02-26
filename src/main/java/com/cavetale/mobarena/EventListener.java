@@ -3,6 +3,7 @@ package com.cavetale.mobarena;
 import com.cavetale.core.event.block.PlayerBlockAbilityQuery;
 import com.cavetale.core.event.entity.PlayerEntityAbilityQuery;
 import com.cavetale.core.event.player.PluginPlayerEvent;
+import com.cavetale.mytems.event.combat.DamageCalculationEvent;
 import com.cavetale.sidebar.PlayerSidebarEvent;
 import com.cavetale.sidebar.Priority;
 import com.winthier.shutdown.event.ShutdownTriggerEvent;
@@ -25,6 +26,7 @@ import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityPlaceEvent;
 import org.bukkit.event.entity.EntityToggleGlideEvent;
@@ -38,6 +40,8 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.spigotmc.event.player.PlayerSpawnLocationEvent;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 @RequiredArgsConstructor
 public final class EventListener implements Listener {
@@ -68,11 +72,18 @@ public final class EventListener implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL)
     void onPlayerSidebar(PlayerSidebarEvent event) {
+        if (plugin.gameList.isEmpty()) return;
         Player player = event.getPlayer();
         List<Component> lines = new ArrayList<>();
-        plugin.applyGame(player.getLocation(), game -> {
+        boolean inGame = plugin.applyGame(player.getLocation(), game -> {
                 game.onPlayerSidebar(player, lines);
             });
+        if (!inGame) {
+            int waveIndex = plugin.gameList.get(0).getTag().getCurrentWaveIndex();
+            if (waveIndex > 0) {
+                lines.add(text("Mob Arena Wave " + waveIndex, GRAY));
+            }
+        }
         if (!lines.isEmpty()) {
             event.add(plugin, Priority.HIGHEST, lines);
         }
@@ -231,5 +242,15 @@ public final class EventListener implements Listener {
                     game.bring(player);
                 }
             });
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    protected void onDamageCalculation(DamageCalculationEvent event) {
+        plugin.applyGame(event.getTarget().getLocation(), game -> game.onDamageCalculation(event));
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    protected void onEntityDeath(EntityDeathEvent event) {
+        plugin.applyGame(event.getEntity().getLocation(), game -> game.onEntityDeath(event));
     }
 }

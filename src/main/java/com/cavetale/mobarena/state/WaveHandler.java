@@ -1,6 +1,7 @@
 package com.cavetale.mobarena.state;
 
 import com.cavetale.mobarena.Game;
+import com.cavetale.mobarena.Stat;
 import com.cavetale.mobarena.save.GameStateTag;
 import java.util.List;
 import net.kyori.adventure.bossbar.BossBar;
@@ -18,6 +19,9 @@ final class WaveHandler extends GameStateHandler<GameStateTag> {
     @Override
     public void onEnter() {
         game.getCurrentWave().start();
+        for (Player player : game.getActivePlayers()) {
+            game.getGamePlayer(player).changeStat(Stat.ROUNDS, 1.0);
+        }
     }
 
     @Override

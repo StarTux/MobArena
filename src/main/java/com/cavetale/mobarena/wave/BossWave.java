@@ -1,5 +1,6 @@
 package com.cavetale.mobarena.wave;
 
+import com.cavetale.core.font.Unicode;
 import com.cavetale.enemy.Enemy;
 import com.cavetale.enemy.EnemyType;
 import com.cavetale.mobarena.Game;
@@ -137,7 +138,7 @@ public final class BossWave extends Wave<BossWaveTag> {
         Enemy boss = getBoss();
         if (boss == null) return;
         lines.add(join(noSeparators(),
-                       text("Boss Health ", GRAY),
+                       text(Unicode.tiny("boss "), GRAY),
                        text((int) Math.round(boss.getHealth()), GREEN)));
     }
 }

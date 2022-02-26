@@ -1,6 +1,7 @@
 package com.cavetale.mobarena.state;
 
 import com.cavetale.core.font.GuiOverlay;
+import com.cavetale.core.font.Unicode;
 import com.cavetale.mobarena.Game;
 import com.cavetale.mobarena.save.RewardTag;
 import com.cavetale.mobarena.util.Time;
@@ -105,7 +106,7 @@ public final class RewardHandler extends GameStateHandler<RewardTag> {
     public void onPlayerSidebar(Player player, List<Component> lines) {
         Duration timeLeft = DURATION.minus(tag.getTime());
         lines.add(join(noSeparators(),
-                       text("Time ", GRAY),
+                       text(Unicode.tiny("time "), GRAY),
                        Time.format(timeLeft)));
     }
 
