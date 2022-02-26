@@ -93,11 +93,11 @@ public final class Game {
     public void addPlayer(Player player) {
         getGamePlayer(player).getTag().setPlaying(true);
         getGamePlayer(player).getTag().setDidPlay(true);
+        player.showBossBar(bossBar);
     }
 
     public GamePlayer getGamePlayer(Player player) {
         return playerMap.computeIfAbsent(player.getUniqueId(), u -> {
-                player.showBossBar(bossBar);
                 GamePlayer gamePlayer = new GamePlayer(player);
                 tag.getPlayers().add(gamePlayer.getTag());
                 return gamePlayer;
@@ -124,16 +124,16 @@ public final class Game {
             getGamePlayer(player);
         }
         // Remove obsolete players
-        for (var iter = playerMap.entrySet().iterator(); iter.hasNext();) {
-            Player player = iter.next().getValue().getPlayer();
+        for (GamePlayer gamePlayer : playerMap.values()) {
+            Player player = gamePlayer.getPlayer();
             if (player == null) {
-                iter.remove();
-            } else {
-                Location playerLocation = player.getLocation();
-                if (!arena.isOnPlane(playerLocation) || !arena.isInWorld(playerLocation)) {
-                    player.hideBossBar(bossBar);
-                    iter.remove();
-                }
+                gamePlayer.getTag().setPlaying(false);
+                continue;
+            }
+            Location playerLocation = player.getLocation();
+            if (!arena.isOnPlane(playerLocation) || !arena.isInWorld(playerLocation)) {
+                gamePlayer.getTag().setPlaying(false);
+                player.hideBossBar(bossBar);
             }
         }
         if (getActivePlayers().isEmpty()) {
@@ -148,7 +148,7 @@ public final class Game {
         }
         stateHandler.updateBossBar(bossBar);
         currentStatTicks += 1;
-        if (currentStatTicks > 200) {
+        if (currentStatTicks > 600) {
             currentStatTicks = 0;
             Stat[] stats = Stat.values();
             int statIndex = currentStat.ordinal() + 1;
@@ -243,6 +243,9 @@ public final class Game {
         }
         stateHandler.onLoad();
         if (currentWave != null) currentWave.onLoad();
+        for (Player player : getPresentPlayers()) {
+            player.showBossBar(bossBar);
+        }
         enable();
     }
 
