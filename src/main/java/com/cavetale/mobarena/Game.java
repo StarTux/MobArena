@@ -93,7 +93,7 @@ public final class Game {
     public void addPlayer(Player player) {
         getGamePlayer(player).getTag().setPlaying(true);
         getGamePlayer(player).getTag().setDidPlay(true);
-        player.showBossBar(bossBar);
+
     }
 
     public GamePlayer getGamePlayer(Player player) {
@@ -121,7 +121,11 @@ public final class Game {
     protected void tick() {
         // Create players
         for (Player player : getPresentPlayers()) {
-            getGamePlayer(player);
+            GamePlayer gamePlayer = getGamePlayer(player);
+            if (!gamePlayer.bossBar) {
+                gamePlayer.bossBar = true;
+                player.showBossBar(bossBar);
+            }
         }
         // Remove obsolete players
         for (GamePlayer gamePlayer : playerMap.values()) {
@@ -133,7 +137,10 @@ public final class Game {
             Location playerLocation = player.getLocation();
             if (!arena.isOnPlane(playerLocation) || !arena.isInWorld(playerLocation)) {
                 gamePlayer.getTag().setPlaying(false);
-                player.hideBossBar(bossBar);
+                if (gamePlayer.bossBar) {
+                    gamePlayer.bossBar = false;
+                    player.hideBossBar(bossBar);
+                }
             }
         }
         if (getActivePlayers().isEmpty()) {
@@ -180,7 +187,8 @@ public final class Game {
         }
         for (GamePlayer gamePlayer : playerMap.values()) {
             Player player = gamePlayer.getPlayer();
-            if (player != null) {
+            if (gamePlayer.bossBar && player != null) {
+                gamePlayer.bossBar = false;
                 player.hideBossBar(bossBar);
             }
         }
@@ -238,14 +246,9 @@ public final class Game {
         for (var gamePlayerTag : tag.getPlayers()) {
             GamePlayer gamePlayer = new GamePlayer(gamePlayerTag);
             playerMap.put(gamePlayerTag.getUuid(), gamePlayer);
-            Player player = gamePlayer.getPlayer();
-            if (player != null) player.showBossBar(bossBar);
         }
         stateHandler.onLoad();
         if (currentWave != null) currentWave.onLoad();
-        for (Player player : getPresentPlayers()) {
-            player.showBossBar(bossBar);
-        }
         enable();
     }
 

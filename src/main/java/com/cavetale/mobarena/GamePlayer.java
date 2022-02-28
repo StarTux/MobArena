@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 @Data
 public final class GamePlayer {
     protected final GamePlayerTag tag;
+    protected boolean bossBar;
 
     public GamePlayer(final Player player) {
         this.tag = new GamePlayerTag();
