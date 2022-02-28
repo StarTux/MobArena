@@ -10,12 +10,14 @@ import com.cavetale.mobarena.save.KillWaveTag;
 import com.cavetale.mobarena.state.GameState;
 import com.cavetale.mobarena.util.Time;
 import com.cavetale.mytems.Mytems;
+import com.cavetale.mytems.util.Skull;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Level;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
@@ -26,15 +28,18 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Evoker;
 import org.bukkit.entity.Flying;
 import org.bukkit.entity.Hoglin;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Piglin;
 import org.bukkit.entity.PiglinAbstract;
+import org.bukkit.entity.Pillager;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Slime;
+import org.bukkit.entity.Vindicator;
 import org.bukkit.entity.WitherSkeleton;
 import org.bukkit.entity.Zombie;
 import org.bukkit.inventory.EntityEquipment;
@@ -51,9 +56,16 @@ import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 public final class KillWave extends Wave<KillWaveTag> {
     protected static final Map<EntityType, Integer> ENTITY_MIN_WAVE_MAP = new EnumMap<>(EntityType.class);
+    protected static final Skull SKELETON_SKULL =
+        new Skull("Skeleton",
+                  UUID.fromString("aa84e219-41f5-4a9f-a4e0-49e003aa29e8"),
+                  "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNjY"
+                  + "wOTMyYjJjMjI0YjdjMjE2M2NiYWMwNWYyODZhMDZlNjkyMjUyN2IwMzY2N2M0ZTk2ZjcyOGU1YzRmZmI2NiJ9fX0=",
+                  null);
     protected Color leatherArmorColor;
     protected long lastWarpHome;
     protected Duration runningTime = Duration.ofSeconds(0);
+    protected int difficultyLevel;
 
     protected KillWave(final Game game) {
         super(game, WaveType.KILL, KillWaveTag.class, KillWaveTag::new);
@@ -127,6 +139,7 @@ public final class KillWave extends Wave<KillWaveTag> {
         if (doWarpHome) {
             lastWarpHome = runningTime.toSeconds();
         }
+        difficultyLevel = game.getTag().getCurrentWaveIndex() / 10;
         for (KillWaveTag.MobSpawn mobSpawn : tag.getMobSpawnList()) {
             if (mobSpawn.isDead()) continue;
             stillAlive += 1;
@@ -171,29 +184,49 @@ public final class KillWave extends Wave<KillWaveTag> {
         Location location = flying
             ? game.getArena().randomFlyingMobLocation()
             : game.getArena().randomMobLocation();
-        Mob mob = location.getWorld().spawn(location, livingEntityClass, false, e -> {
-                e.setPersistent(false);
-                e.setRemoveWhenFarAway(false);
-                if (e instanceof Slime slime) {
-                    slime.setSize(3);
-                }
-            });
-        final int difficultyLevel = game.getTag().getCurrentWaveIndex() / 10;
-        if (mobSpawn.getEntityType() == EntityType.ZOMBIE) {
-            mob.getEquipment().setHelmet(Mytems.KOBOLD_HEAD.createItemStack());
-        }
-        if (mob instanceof Zombie zombie) {
+        return location.getWorld().spawn(location, livingEntityClass, false, this::spawnMobCallback);
+    }
+
+    protected void spawnMobCallback(Mob mob) {
+        mob.setPersistent(false);
+        mob.setRemoveWhenFarAway(false);
+        if (mob instanceof Slime slime) {
+            slime.setSize(3);
+        } else if (mob instanceof Zombie zombie) {
+            zombie.getEquipment().setHelmet(Mytems.KOBOLD_HEAD.createItemStack());
             zombie.setShouldBurnInDay(false);
-            equipHumanoid(mob, difficultyLevel);
-        } else if (mob instanceof Skeleton skeleton) {
-            if (skeleton instanceof WitherSkeleton witherSkeleton) {
-                skeleton.getEquipment().setItemInMainHand(new ItemStack(Material.IRON_SWORD));
+            equipZombieOrSkeleton(zombie);
+        } else if (mob instanceof WitherSkeleton skeleton) {
+            if (game.getRandom().nextInt(2) == 0) {
+                skeleton.getEquipment().setItemInMainHand(mobItem(Material.BOW));
             } else {
-                skeleton.getEquipment().setItemInMainHand(new ItemStack(Material.BOW));
+                skeleton.getEquipment().setItemInMainHand(mobItem(Material.IRON_SWORD));
             }
+            skeleton.getEquipment().setArmorContents(new ItemStack[] {
+                    mobItem(Material.NETHERITE_BOOTS),
+                    mobItem(Material.NETHERITE_LEGGINGS),
+                    mobItem(Material.NETHERITE_CHESTPLATE),
+                    mobItem(Material.NETHERITE_HELMET),
+                });
             skeleton.setShouldBurnInDay(false);
-            equipHumanoid(mob, difficultyLevel);
+        } else if (mob instanceof Skeleton skeleton) {
+            skeleton.getEquipment().setItemInMainHand(mobItem(Material.BOW));
+            skeleton.getEquipment().setHelmet(SKELETON_SKULL.create());
+            skeleton.setShouldBurnInDay(false);
+            equipZombieOrSkeleton(skeleton);
+        } else if (mob instanceof Hoglin hoglin) {
+            hoglin.setImmuneToZombification(true);
+            hoglin.setIsAbleToBeHunted(false);
+        } else if (mob instanceof Pillager pillager) {
+            pillager.getEquipment().setItemInMainHand(mobItem(Material.CROSSBOW));
+        } else if (mob instanceof Vindicator vindicator) {
+            vindicator.getEquipment().setItemInMainHand(mobItem(Material.IRON_AXE));
         } else if (mob instanceof PiglinAbstract piglin) {
+            if (game.getRandom().nextBoolean()) {
+                piglin.getEquipment().setItemInMainHand(mobItem(Material.GOLDEN_AXE));
+            } else {
+                piglin.getEquipment().setItemInMainHand(mobItem(Material.GOLDEN_SWORD));
+            }
             piglin.setImmuneToZombification(true);
             if (piglin instanceof Piglin piglin2) {
                 piglin2.setIsAbleToHunt(false);
@@ -204,15 +237,20 @@ public final class KillWave extends Wave<KillWaveTag> {
                     piglin2.removeMaterialOfInterest(mat);
                 }
             }
-        } else if (mob instanceof Hoglin hoglin) {
-            hoglin.setImmuneToZombification(true);
-            hoglin.setIsAbleToBeHunted(false);
+        } else if (mob instanceof Evoker evoker) {
+            evoker.getEquipment().setItemInMainHand(mobItem(Material.TOTEM_OF_UNDYING));
         }
-        adjustAttributes(mob, difficultyLevel);
-        return mob;
+        adjustAttributes(mob);
     }
 
-    protected void equipHumanoid(Mob mob, int difficultyLevel) {
+    private static ItemStack mobItem(Material mat) {
+        return new ItemBuilder(mat)
+            .removeArmor()
+            .removeDamage()
+            .create();
+    }
+
+    protected void equipZombieOrSkeleton(Mob mob) {
         List<Material> helmets = List.of(Material.LEATHER_HELMET,
                                          Material.GOLDEN_HELMET,
                                          Material.IRON_HELMET,
@@ -272,7 +310,7 @@ public final class KillWave extends Wave<KillWaveTag> {
             if (oldItem != null && oldItem.getType() != Material.AIR) continue;
             Material mat = mats.get(i);
             if (mat == null) continue;
-            ItemStack itemStack = new ItemBuilder(mat).removeArmor().removeDamage().create();
+            ItemStack itemStack = mobItem(mat);
             itemStack.editMeta(m -> {
                     if (m instanceof LeatherArmorMeta meta) {
                         if (leatherArmorColor == null) {
@@ -285,34 +323,34 @@ public final class KillWave extends Wave<KillWaveTag> {
         }
     }
 
-    protected void adjustAttributes(Mob mob, int difficultyLevel) {
+    protected void adjustAttributes(Mob mob) {
         Attribute attribute = null;
         AttributeInstance inst = null;
         double value = 0.0;
-        double multiplier = 0.5 * (double) difficultyLevel;
+        double multiplier = (double) difficultyLevel;
         try {
             attribute = Attribute.GENERIC_ARMOR;
             inst = mob.getAttribute(attribute);
             if (inst != null) {
-                value = inst.getBaseValue() + 7.0 + 2.0 * multiplier;
+                value = inst.getBaseValue() + 7.0 + multiplier;
                 mob.getAttribute(attribute).setBaseValue(value);
             }
             attribute = Attribute.GENERIC_ARMOR_TOUGHNESS;
             inst = mob.getAttribute(attribute);
             if (inst != null) {
-                value = inst.getBaseValue() + 1.0 * multiplier;
+                value = inst.getBaseValue() + 0.5 * multiplier;
                 mob.getAttribute(attribute).setBaseValue(value);
             }
             attribute = Attribute.GENERIC_ATTACK_DAMAGE;
             inst = mob.getAttribute(attribute);
             if (inst != null) {
-                value = inst.getBaseValue() + multiplier;
+                value = inst.getBaseValue() + 0.5 * multiplier;
                 mob.getAttribute(attribute).setBaseValue(value);
             }
             attribute = Attribute.GENERIC_MAX_HEALTH;
             inst = mob.getAttribute(attribute);
             if (inst != null) {
-                value = inst.getBaseValue() + 2.0 * multiplier;
+                value = inst.getBaseValue() + 0.5 * multiplier;
                 mob.getAttribute(attribute).setBaseValue(value);
                 mob.setHealth(value);
             }

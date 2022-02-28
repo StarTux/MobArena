@@ -78,7 +78,7 @@ public final class EventListener implements Listener {
         boolean inGame = plugin.applyGame(player.getLocation(), game -> {
                 game.onPlayerSidebar(player, lines);
             });
-        if (!inGame) {
+        if (!inGame && !"admin".equals(plugin.gameList.get(0).getName())) {
             int waveIndex = plugin.gameList.get(0).getTag().getCurrentWaveIndex();
             if (waveIndex > 0) {
                 lines.add(text("Mob Arena Wave " + waveIndex, GRAY));

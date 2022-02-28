@@ -186,7 +186,7 @@ public final class Game {
         }
         playerMap.clear();
         clearTemporaryEntities();
-        if (plugin.gameList.indexOf(this) == 0) {
+        if (plugin.gameList.indexOf(this) == 0 && !"admin".equals(name)) {
             ServerPlugin.getInstance().setServerSidebarLines(null);
         }
     }
@@ -286,7 +286,7 @@ public final class Game {
             }
         }
         currentWave.create();
-        if (plugin.gameList.indexOf(this) == 0) {
+        if (plugin.gameList.indexOf(this) == 0 && !"admin".equals(name)) {
             List<Component> lines = List.of(text("/raid", GREEN),
                                             text("Mob Arena Wave " + waveIndex, GRAY));
             ServerPlugin.getInstance().setServerSidebarLines(lines);
