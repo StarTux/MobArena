@@ -1,7 +1,7 @@
 main: com.cavetale.mobarena.MobArenaPlugin
 
 version: 0.1
-api-version: 1.17
+api-version: 1.19
 
 name: MobArena
 description: MobArena Plugin
