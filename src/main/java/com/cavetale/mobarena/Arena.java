@@ -1,7 +1,8 @@
 package com.cavetale.mobarena;
 
-import com.cavetale.area.struct.Cuboid;
-import com.cavetale.area.struct.Vec3i;
+import com.cavetale.area.struct.Area;
+import com.cavetale.core.struct.Cuboid;
+import com.cavetale.core.struct.Vec3i;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -33,30 +34,30 @@ public final class Arena {
     protected final List<Vec3i> flyingMobVectorList;
     protected final Vec3i bossChestVector;
 
-    public Arena(final World world, final String name, final List<Cuboid> areaList) {
+    public Arena(final World world, final String name, final List<Area> areaList) {
         this.name = name;
         this.worldName = world.getName();
         if (areaList.isEmpty()) {
             throw new IllegalArgumentException("areaList cannot be empty!");
         }
-        this.arenaArea = areaList.get(0);
+        this.arenaArea = areaList.get(0).toCuboid();
         Set<Vec3i> spawn = new HashSet<>();
         Set<Vec3i> mob = new HashSet<>();
         Set<Vec3i> flyingmob = new HashSet<>();
         Vec3i bosschest = null;
-        for (Cuboid area : areaList) {
+        for (Area area : areaList) {
             if (area.name == null) continue;
             switch (area.name) {
             case "spawn":
-                spawn.addAll(area.enumerate());
+                spawn.addAll(area.toCuboid().enumerate());
                 break;
             case "mob":
             case "mobs":
-                mob.addAll(area.enumerate());
+                mob.addAll(area.toCuboid().enumerate());
                 break;
             case "flyingmob":
             case "flyingmobs":
-                flyingmob.addAll(area.enumerate());
+                flyingmob.addAll(area.toCuboid().enumerate());
                 break;
             case "bosschest":
                 bosschest = area.min;
@@ -126,8 +127,8 @@ public final class Arena {
     public boolean isOnPlane(Location location) {
         int x = location.getBlockX();
         int z = location.getBlockZ();
-        return arenaArea.min.x <= x && x <= arenaArea.max.x
-            && arenaArea.min.z <= z && z <= arenaArea.max.z;
+        return arenaArea.ax <= x && x <= arenaArea.bx
+            && arenaArea.az <= z && z <= arenaArea.bz;
     }
 
     public boolean isInWorld(Location location) {

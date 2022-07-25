@@ -2,9 +2,9 @@ package com.cavetale.mobarena;
 
 import com.cavetale.core.event.block.PlayerBlockAbilityQuery;
 import com.cavetale.core.event.entity.PlayerEntityAbilityQuery;
+import com.cavetale.core.event.hud.PlayerHudEvent;
+import com.cavetale.core.event.hud.PlayerHudPriority;
 import com.cavetale.mytems.event.combat.DamageCalculationEvent;
-import com.cavetale.sidebar.PlayerSidebarEvent;
-import com.cavetale.sidebar.Priority;
 import com.winthier.shutdown.event.ShutdownTriggerEvent;
 import com.winthier.spawn.Spawn;
 import java.util.ArrayList;
@@ -70,7 +70,7 @@ public final class EventListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
-    void onPlayerSidebar(PlayerSidebarEvent event) {
+    void onPlayerHud(PlayerHudEvent event) {
         if (plugin.gameList.isEmpty()) return;
         Player player = event.getPlayer();
         List<Component> lines = new ArrayList<>();
@@ -84,7 +84,7 @@ public final class EventListener implements Listener {
             }
         }
         if (!lines.isEmpty()) {
-            event.add(plugin, Priority.HIGHEST, lines);
+            event.sidebar(PlayerHudPriority.HIGHEST, lines);
         }
     }
 

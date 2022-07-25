@@ -2,6 +2,7 @@ package com.cavetale.mobarena.state;
 
 import com.cavetale.core.font.GuiOverlay;
 import com.cavetale.core.font.Unicode;
+import com.cavetale.core.struct.Vec3i;
 import com.cavetale.mobarena.Game;
 import com.cavetale.mobarena.save.RewardTag;
 import com.cavetale.mobarena.util.Time;
@@ -114,7 +115,7 @@ public final class RewardHandler extends GameStateHandler<RewardTag> {
     public void onPlayerRightClickBlock(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         Block block = event.getClickedBlock();
-        if (!game.getArena().getBossChestVector().isSimilar(block)) return;
+        if (!game.getArena().getBossChestVector().equals(Vec3i.of(block))) return;
         if (getTag().getPlayersOpenedChest().contains(player.getUniqueId())) return;
         getTag().getPlayersOpenedChest().add(player.getUniqueId());
         openRewardChest(player);
