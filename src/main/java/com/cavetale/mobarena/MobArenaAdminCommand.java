@@ -4,6 +4,7 @@ import com.cavetale.core.command.AbstractCommand;
 import com.cavetale.core.command.CommandArgCompleter;
 import com.cavetale.core.command.CommandWarn;
 import com.cavetale.core.util.Json;
+import com.cavetale.mobarena.state.RewardHandler;
 import com.cavetale.mobarena.wave.Wave;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,6 +65,10 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
             .description("Show the join dialogue to a player")
             .senderCaller(this::joinDialogue);
         rootNode.addChild("addall").playerCaller(this::addall);
+        rootNode.addChild("reward").arguments("<level>")
+            .description("Test the reward interface")
+            .completers(CommandArgCompleter.integer(i -> i > 0))
+            .playerCaller(this::reward);
     }
 
     protected boolean reload(CommandSender sender, String[] args) {
@@ -216,6 +221,13 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
             game.addPlayer(other);
             game.bring(other);
         }
+        return true;
+    }
+
+    private boolean reward(Player player, String[] args) {
+        if (args.length != 1) return false;
+        final int level = CommandArgCompleter.requireInt(args[0], i -> i > 0);
+        new RewardHandler(new Game(plugin, "null")).openRewardChest(player, level);
         return true;
     }
 }

@@ -1,21 +1,23 @@
 package com.cavetale.mobarena.state;
 
+import com.cavetale.core.event.item.PlayerReceiveItemsEvent;
 import com.cavetale.core.font.GuiOverlay;
 import com.cavetale.core.font.Unicode;
+import com.cavetale.core.item.ItemKinds;
 import com.cavetale.core.struct.Vec3i;
 import com.cavetale.mobarena.Game;
 import com.cavetale.mobarena.save.RewardTag;
+import com.cavetale.mobarena.upgrade.ItemUpgrade;
+import com.cavetale.mobarena.upgrade.UpgradableItem;
 import com.cavetale.mobarena.util.Time;
 import com.cavetale.mytems.Mytems;
-import com.cavetale.mytems.MytemsCategory;
-import com.cavetale.mytems.MytemsTag;
 import com.cavetale.mytems.util.Blocks;
 import com.cavetale.mytems.util.Gui;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -24,12 +26,15 @@ import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Result;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import static net.kyori.adventure.text.Component.join;
+import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
@@ -116,70 +121,177 @@ public final class RewardHandler extends GameStateHandler<RewardTag> {
         Player player = event.getPlayer();
         Block block = event.getClickedBlock();
         if (!game.getArena().getBossChestVector().equals(Vec3i.of(block))) return;
-        if (getTag().getPlayersOpenedChest().contains(player.getUniqueId())) return;
-        getTag().getPlayersOpenedChest().add(player.getUniqueId());
-        openRewardChest(player);
         event.setUseItemInHand(Result.DENY);
         event.setUseInteractedBlock(Result.DENY);
+        openRewardChest(player);
     }
 
-    private void openRewardChest(Player player) {
+    public void openRewardChest(Player player) {
+        openRewardChest(player, game.getTag().getCurrentWaveIndex() / 10);
+    }
+
+    public void openRewardChest(Player player, final int level) {
+        if (getTag().getPlayersClosedChest().contains(player.getUniqueId())) return;
         int size = 3 * 9;
         Gui gui = new Gui(game.getPlugin())
             .title(GuiOverlay.BLANK.builder(size, color(0xFF69B4))
-                   .title(text("Mob Arena Reward", BLACK))
+                   .title(text("Choose a Reward", BLACK))
+                   .build());
+        int currentSlot = 0;
+        for (ItemStack item : player.getInventory()) {
+            if (currentSlot >= size) break;
+            if (item == null || item.getType().isAir()) continue;
+            if (Mytems.forItem(item) != null) continue;
+            UpgradableItem upgradableItem = new UpgradableItem(item, level);
+            if (upgradableItem.isEmpty()) continue;
+            ItemStack icon = item.clone();
+            icon.editMeta(meta -> {
+                    List<Component> lore = new ArrayList<>(meta.hasLore() ? meta.lore() : List.of());
+                    lore.add(join(noSeparators(), Mytems.MOUSE_LEFT, text(" Upgrade this item", GREEN))
+                             .decoration(ITALIC, false));
+                    meta.lore(lore);
+                });
+            gui.setItem(currentSlot++, icon, click -> {
+                    if (click.isLeftClick()) {
+                        openUpgradableItem(player, upgradableItem, level);
+                    }
+                });
+        }
+        if (currentSlot < size) {
+            ItemStack reward = getReward(player);
+            ItemStack icon = reward.clone();
+            icon.editMeta(meta -> {
+                    List<Component> lore = new ArrayList<>(meta.hasLore() ? meta.lore() : List.of());
+                    lore.add(join(noSeparators(), Mytems.MOUSE_LEFT, text(" Get this new item", GREEN))
+                             .decoration(ITALIC, false));
+                    meta.lore(lore);
+                });
+            gui.setItem(currentSlot++, icon, click -> {
+                    if (click.isLeftClick()) {
+                        openRewardItem(player, reward);
+                    }
+                });
+        }
+        gui.open(player);
+    }
+
+    public void openUpgradableItem(Player player, UpgradableItem upgradableItem, final int level) {
+        if (getTag().getPlayersClosedChest().contains(player.getUniqueId())) return;
+        int size = 3 * 9;
+        Gui gui = new Gui(game.getPlugin())
+            .title(GuiOverlay.BLANK.builder(size, color(0xFF69B4))
+                   .title(join(noSeparators(),
+                               ItemKinds.icon(upgradableItem.getItemStack()),
+                               text(" Choose an Upgrade", BLACK)))
+                   .build());
+        int currentSlot = 0;
+        for (ItemUpgrade itemUpgrade : upgradableItem.getUpgrades()) {
+            if (currentSlot >= size) break;
+            ItemStack icon = upgradableItem.getItemStack().clone();
+            itemUpgrade.apply(icon);
+            final boolean available = level >= itemUpgrade.getRequiredLevel();
+            icon.editMeta(meta -> {
+                    List<Component> lore = meta.hasLore() ? new ArrayList<>(meta.lore()) : new ArrayList<>();
+                    lore.add(join(noSeparators(),
+                                  (available ? Mytems.MOUSE_LEFT : Mytems.COPPER_KEYHOLE),
+                                  space(), itemUpgrade.getDescription())
+                             .decoration(ITALIC, false));
+                    if (!available) {
+                        lore.add(text("Unlocks at wave " + (itemUpgrade.getRequiredLevel() * 10), RED));
+                    }
+                    meta.lore(lore);
+                });
+            gui.setItem(currentSlot++, icon, click -> {
+                    if (!available) {
+                        player.sendMessage(join(noSeparators(),
+                                                Mytems.COPPER_KEYHOLE,
+                                                text(" This upgrade unlocks at wave " + (itemUpgrade.getRequiredLevel() * 10), RED)));
+                        player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, SoundCategory.MASTER, 0.5f, 1.0f);
+                        return;
+                    }
+                    if (!getTag().getPlayersClosedChest().contains(player.getUniqueId())) {
+                        getTag().getPlayersClosedChest().add(player.getUniqueId());
+                        someoneClosed = true;
+                        itemUpgrade.apply(upgradableItem.getItemStack());
+                        player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, SoundCategory.MASTER, 0.5f, 1.0f);
+                        player.sendMessage(join(noSeparators(),
+                                                text("Upgrade received: "),
+                                                ItemKinds.icon(upgradableItem.getItemStack()),
+                                                space(),
+                                                itemUpgrade.getDescription()));
+                    }
+                    player.closeInventory();
+                });
+        }
+        gui.setItem(Gui.OUTSIDE, null, click -> {
+                openRewardChest(player, level);
+            });
+        gui.open(player);
+    }
+
+    public void openRewardItem(Player player, ItemStack rewardItem) {
+        if (getTag().getPlayersClosedChest().contains(player.getUniqueId())) return;
+        int size = 3 * 9;
+        Gui gui = new Gui(game.getPlugin())
+            .title(GuiOverlay.BLANK.builder(size, color(0xFF69B4))
+                   .title(text("Choose an upgrade", BLACK))
                    .build());
         gui.setEditable(true);
-        gui.setItem(13, getReward());
+        gui.setItem(13, rewardItem);
         gui.onClose(evt -> {
-                for (ItemStack itemStack : gui.getInventory()) {
-                    if (itemStack == null || itemStack.getType() == Material.AIR) continue;
-                    for (ItemStack drop : player.getInventory().addItem(itemStack).values()) {
-                        player.getWorld().dropItem(player.getEyeLocation(), drop);
-                    }
-                }
+                PlayerReceiveItemsEvent.receiveInventory(player, gui.getInventory());
                 getTag().getPlayersClosedChest().add(player.getUniqueId());
                 someoneClosed = true;
                 player.playSound(player.getLocation(), Sound.BLOCK_CHEST_CLOSE, SoundCategory.MASTER, 1.0f, 1.0f);
             });
         gui.open(player);
         player.playSound(player.getLocation(), Sound.BLOCK_CHEST_OPEN, SoundCategory.MASTER, 1.0f, 1.0f);
+        player.sendMessage(join(noSeparators(),
+                                text("Item received: "),
+                                ItemKinds.chatDescription(rewardItem)));
     }
 
-    private ItemStack getReward() {
-        List<ItemStack> pool = getRewardPool();
+    private ItemStack getReward(Player player) {
+        List<ItemStack> pool = getRewardPool(player);
         if (pool.isEmpty()) return null;
-        return pool.get(game.getRandom().nextInt(pool.size()));
+        long seed = (long) player.getUniqueId().hashCode() * getTag().getSeed();
+        Random random = new Random(seed);
+        return pool.get(random.nextInt(pool.size()));
     }
 
-    private List<ItemStack> getRewardPool() {
-        int lvl = game.getTag().getCurrentWaveIndex() / 10;
-        if (lvl < 10) {
-            return List.of(new ItemStack(Material.DIAMOND, 4),
-                           new ItemStack(Material.GOLDEN_APPLE, 16),
-                           new ItemStack(Material.NETHERITE_SCRAP, 8),
-                           new ItemStack(Material.GUNPOWDER, 64),
-                           new ItemStack(Material.BLAZE_ROD, 64),
-                           new ItemStack(Material.TNT, 64),
-                           new ItemStack(Material.BONE_BLOCK, 24),
-                           new ItemStack(Material.ENCHANTED_GOLDEN_APPLE),
-                           Mytems.KITTY_COIN.createItemStack());
+    private List<ItemStack> getRewardPool(Player player) {
+        long seed = (long) player.getUniqueId().hashCode() * getTag().getSeed();
+        Random random = new Random(seed);
+        List<ItemStack> pool = new ArrayList<>();
+        pool.addAll(List.of(new ItemStack(Material.DIAMOND, 16),
+                            new ItemStack(Material.EMERALD, 64),
+                            new ItemStack(Material.GOLDEN_APPLE, 16),
+                            new ItemStack(Material.NETHERITE_SCRAP, 8),
+                            new ItemStack(Material.GUNPOWDER, 64),
+                            new ItemStack(Material.GLOWSTONE, 64),
+                            new ItemStack(Material.TNT, 64),
+                            new ItemStack(Material.BLAZE_ROD, 64),
+                            new ItemStack(Material.BONE_BLOCK, 64),
+                            new ItemStack(Material.ENCHANTED_GOLDEN_APPLE),
+                            new ItemStack(Material.NETHER_STAR),
+                            Mytems.KITTY_COIN.createItemStack(),
+                            Mytems.RUBY.createItemStack(16)));
+        List<Enchantment> enchantments = new ArrayList<>();
+        for (Enchantment enchantment : Enchantment.values()) {
+            if (enchantment.isCursed()) continue;
+            enchantments.add(enchantment);
         }
-        if (lvl % 10 == 0) {
-            return MytemsTag.of(MytemsCategory.SCARLET).getMytems().stream()
-                .map(Mytems::createItemStack).collect(Collectors.toList());
-        }
-        return Stream.concat(MytemsTag.of(MytemsCategory.ARMOR_PART).getMytems().stream()
-                             .map(Mytems::createItemStack),
-                             Stream.of(Mytems.KITTY_COIN.createItemStack(),
-                                       Mytems.RUBY.createItemStack(),
-                                       Mytems.HEART.createItemStack(),
-                                       Mytems.LIGHTNING.createItemStack(),
-                                       Mytems.STAR.createItemStack(),
-                                       Mytems.MOON.createItemStack(),
-                                       Mytems.COPPER_COIN.createItemStack(),
-                                       Mytems.SILVER_COIN.createItemStack(),
-                                       Mytems.GOLDEN_COIN.createItemStack()))
-            .collect(Collectors.toList());
+        final Enchantment enchantment = enchantments.get(random.nextInt(enchantments.size()));
+        final int level = enchantment.getMaxLevel() > 1
+            ? 1 + random.nextInt(enchantment.getMaxLevel() - 1)
+            : 1;
+        ItemStack book = new ItemStack(Material.ENCHANTED_BOOK);
+        book.editMeta(m -> {
+                if (m instanceof EnchantmentStorageMeta meta) {
+                    meta.addStoredEnchant(enchantment, level, true);
+                }
+            });
+        pool.add(book);
+        return pool;
     }
 }
