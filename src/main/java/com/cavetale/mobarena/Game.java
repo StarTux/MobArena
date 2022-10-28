@@ -290,7 +290,7 @@ public final class Game {
         }
         currentWave.create();
         if (plugin.gameList.indexOf(this) == 0 && !"admin".equals(name)) {
-            List<Component> lines = List.of(text("/raid", GREEN),
+            List<Component> lines = List.of(text("/mobarena", GREEN),
                                             text("Mob Arena Wave " + waveIndex, GRAY));
             ServerPlugin.getInstance().setServerSidebarLines(lines);
         }
