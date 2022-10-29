@@ -4,6 +4,7 @@ import com.cavetale.core.event.block.PlayerBlockAbilityQuery;
 import com.cavetale.core.event.entity.PlayerEntityAbilityQuery;
 import com.cavetale.core.event.hud.PlayerHudEvent;
 import com.cavetale.core.event.hud.PlayerHudPriority;
+import com.cavetale.core.event.player.PlayerTPAEvent;
 import com.cavetale.mytems.event.combat.DamageCalculationEvent;
 import com.winthier.shutdown.event.ShutdownTriggerEvent;
 import com.winthier.spawn.Spawn;
@@ -242,5 +243,10 @@ public final class EventListener implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     protected void onEntityDeath(EntityDeathEvent event) {
         plugin.applyGame(event.getEntity().getLocation(), game -> game.onEntityDeath(event));
+    }
+
+    @EventHandler
+    private void onPlayerTPA(PlayerTPAEvent event) {
+        plugin.applyGame(event.getTarget().getLocation(), game -> event.setCancelled(true));
     }
 }
