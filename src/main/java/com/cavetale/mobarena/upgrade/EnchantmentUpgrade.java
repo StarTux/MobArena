@@ -2,6 +2,7 @@ package com.cavetale.mobarena.upgrade;
 
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import static com.cavetale.mytems.util.Text.roman;
@@ -34,6 +35,11 @@ public final class EnchantmentUpgrade implements ItemUpgrade {
                     text("Add "),
                     Component.translatable(enchantment),
                     text(" " + roman(level)))
-            .color(GREEN);
+            .color(AQUA);
+    }
+
+    @Override
+    public TextColor getHighlightColor() {
+        return AQUA;
     }
 }

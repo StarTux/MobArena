@@ -5,6 +5,7 @@ import java.util.List;
 import lombok.Getter;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
 
 @Getter
 public final class UpgradableItem {
@@ -31,6 +32,9 @@ public final class UpgradableItem {
             if (oldLevel > 0) {
                 upgrades.add(new EnchantmentRemoval(enchantment, oldLevel));
             }
+        }
+        if (itemStack.getItemMeta() instanceof Damageable damageable && damageable.getDamage() > 1) {
+            upgrades.add(new RepairUpgrade(damageable.getDamage()));
         }
     }
 
