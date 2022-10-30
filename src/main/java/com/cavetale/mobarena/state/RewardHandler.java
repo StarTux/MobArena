@@ -131,6 +131,11 @@ public final class RewardHandler extends GameStateHandler<RewardTag> {
         openRewardChest(player, game.getTag().getCurrentWaveIndex() / 10);
     }
 
+    /**
+     * Open rewards for player.
+     * @param player the player
+     * @param level the boss level, starting at 1
+     */
     public void openRewardChest(Player player, final int level) {
         if (getTag().getPlayersClosedChest().contains(player.getUniqueId())) return;
         int size = 3 * 9;
@@ -161,7 +166,8 @@ public final class RewardHandler extends GameStateHandler<RewardTag> {
         Random random = new Random(getTag().getSeed());
         List<ItemStack> pool = getRewardPool(player);
         Collections.shuffle(pool, random);
-        for (int i = 0; i < 3; i += 1) {
+        final int maxItems = Math.min(3, level);
+        for (int i = 0; i < maxItems; i += 1) {
             if (nextSlot >= size || i >= pool.size()) break;
             ItemStack reward = pool.get(i);
             ItemStack icon = reward.clone();
@@ -193,9 +199,14 @@ public final class RewardHandler extends GameStateHandler<RewardTag> {
         int nextSlot = 0;
         for (ItemUpgrade itemUpgrade : upgradableItem.getUpgrades()) {
             if (nextSlot >= size) break;
-            ItemStack icon = upgradableItem.getItemStack().clone();
-            itemUpgrade.apply(icon);
             final boolean available = level >= itemUpgrade.getRequiredLevel();
+            final ItemStack icon;
+            if (!available) {
+                icon = Mytems.COPPER_KEYHOLE.createIcon(List.of(text("Locked", DARK_RED)));
+            } else {
+                icon = upgradableItem.getItemStack().clone();
+                itemUpgrade.apply(icon);
+            }
             icon.editMeta(meta -> {
                     List<Component> lore = meta.hasLore() ? new ArrayList<>(meta.lore()) : new ArrayList<>();
                     lore.add(join(noSeparators(),
@@ -220,7 +231,9 @@ public final class RewardHandler extends GameStateHandler<RewardTag> {
                     openItemUpgrade(player, upgradableItem, itemUpgrade, level);
                     player.closeInventory();
                 });
-            if (itemUpgrade.getHighlightColor() != null) {
+            if (!available) {
+                builder.highlightSlot(currentSlot, DARK_GRAY);
+            } else if (itemUpgrade.getHighlightColor() != null) {
                 builder.highlightSlot(currentSlot, itemUpgrade.getHighlightColor());
             }
         }
