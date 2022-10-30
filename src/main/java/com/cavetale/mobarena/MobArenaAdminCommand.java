@@ -83,6 +83,9 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
         eventNode.addChild("unlock").denyTabCompletion()
             .description("Unlock regular arenas")
             .senderCaller(this::eventUnlock);
+        eventNode.addChild("start").denyTabCompletion()
+            .description("Start the event game")
+            .playerCaller(this::eventStart);
     }
 
     protected boolean reload(CommandSender sender, String[] args) {
@@ -268,5 +271,26 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
         plugin.config.setLocked(false);
         plugin.exportConfig();
         sender.sendMessage(text("Config unlocked", AQUA));
+    }
+
+    protected void eventStart(Player player) {
+        final String name = "event";
+        if (plugin.findGame(name) != null) {
+            throw new CommandWarn("Event already playing!");
+        }
+        final Arena arena;
+        List<String> options = new ArrayList<>(plugin.arenaMap.keySet());
+        for (Game game : plugin.gameList) {
+            options.remove(game.getArena().getName());
+        }
+        if (options.isEmpty()) {
+            throw new CommandWarn("No empty arena found!");
+        }
+        String arenaName = options.get(plugin.random.nextInt(options.size()));
+        arena = plugin.arenaMap.get(arenaName);
+        Game game = plugin.startNewGame(arena, name);
+        game.addPlayer(player);
+        game.bring(player);
+        player.sendMessage(text("Event game started", AQUA));
     }
 }
