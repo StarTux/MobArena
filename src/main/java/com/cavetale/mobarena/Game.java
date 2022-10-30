@@ -155,7 +155,7 @@ public final class Game {
         }
         stateHandler.updateBossBar(bossBar);
         currentStatTicks += 1;
-        if (currentStatTicks > 600) {
+        if (currentStatTicks > 1200) {
             currentStatTicks = 0;
             Stat[] stats = Stat.values();
             int statIndex = currentStat.ordinal() + 1;
@@ -405,5 +405,13 @@ public final class Game {
             GamePlayer gamePlayer = getGamePlayer(player);
             gamePlayer.changeStat(Stat.KILLS, 1.0);
         }
+    }
+
+    public Map<UUID, Integer> getStatMap(Stat stat) {
+        Map<UUID, Integer> result = new HashMap<>();
+        for (GamePlayer gamePlayer : playerMap.values()) {
+            result.put(gamePlayer.getUuid(), gamePlayer.getIntStat(stat));
+        }
+        return result;
     }
 }

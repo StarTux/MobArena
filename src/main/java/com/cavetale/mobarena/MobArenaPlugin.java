@@ -17,6 +17,7 @@ import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 import java.util.logging.Level;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.GameRule;
@@ -25,7 +26,9 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import static net.kyori.adventure.text.Component.join;
 import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 public final class MobArenaPlugin extends JavaPlugin {
@@ -38,6 +41,7 @@ public final class MobArenaPlugin extends JavaPlugin {
     protected final Random random = ThreadLocalRandom.current();
     protected File gamesFolder;
     protected File configFile;
+    public static final Component TITLE = join(noSeparators(), text("Mob", DARK_RED), text("ARENA", DARK_AQUA));
 
     @Override
     public void onEnable() {
@@ -228,13 +232,18 @@ public final class MobArenaPlugin extends JavaPlugin {
         return null;
     }
 
-    public void openJoinDialogue(Player player) {
+    public boolean tryToJoinEvent(Player player) {
         Game eventGame = findGame("event");
-        if (eventGame != null) {
-            eventGame.addPlayer(player);
-            eventGame.bring(player);
-            player.sendMessage(text("Joined the event!", GREEN));
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "ml add " + player.getName());
+        if (eventGame == null) return false;
+        eventGame.addPlayer(player);
+        eventGame.bring(player);
+        player.sendMessage(text("Joined the event!", GREEN));
+        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "ml add " + player.getName());
+        return true;
+    }
+
+    public void openJoinDialogue(Player player) {
+        if (tryToJoinEvent(player)) {
             return;
         }
         if (config.isLocked()) {
@@ -243,8 +252,8 @@ public final class MobArenaPlugin extends JavaPlugin {
         }
         int size = 3 * 9;
         Gui gui = new Gui(this)
-            .title(GuiOverlay.BLANK.builder(size, GOLD)
-                   .title(text("Join Mob Arena?", BLACK))
+            .title(GuiOverlay.BLANK.builder(size, BLUE)
+                   .title(text("Join Mob Arena?", GOLD))
                    .build());
         gui.setItem(13, Items.text(Mytems.HALLOWEEN_TOKEN.createIcon(),
                                    List.of(text("Join Mob Arena for", GOLD),

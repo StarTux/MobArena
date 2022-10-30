@@ -2,10 +2,13 @@ package com.cavetale.mobarena;
 
 import com.cavetale.core.command.AbstractCommand;
 import com.cavetale.core.command.CommandArgCompleter;
+import com.cavetale.core.command.CommandNode;
 import com.cavetale.core.command.CommandWarn;
 import com.cavetale.core.util.Json;
+import com.cavetale.fam.trophy.Highscore;
 import com.cavetale.mobarena.state.RewardHandler;
 import com.cavetale.mobarena.wave.Wave;
+import com.cavetale.mytems.item.trophy.TrophyCategory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -65,10 +68,21 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
             .description("Show the join dialogue to a player")
             .senderCaller(this::joinDialogue);
         rootNode.addChild("addall").playerCaller(this::addall);
-        rootNode.addChild("reward").arguments("<level>")
+        rootNode.addChild("testreward").arguments("<level>")
             .description("Test the reward interface")
             .completers(CommandArgCompleter.integer(i -> i > 0))
-            .playerCaller(this::reward);
+            .playerCaller(this::testReward);
+        CommandNode eventNode = rootNode.addChild("event")
+            .description("Event subcommands");
+        eventNode.addChild("reward").denyTabCompletion()
+            .description("Give event rewards")
+            .senderCaller(this::eventReward);
+        eventNode.addChild("lock").denyTabCompletion()
+            .description("Lock regular arenas")
+            .senderCaller(this::eventLock);
+        eventNode.addChild("unlock").denyTabCompletion()
+            .description("Unlock regular arenas")
+            .senderCaller(this::eventUnlock);
     }
 
     protected boolean reload(CommandSender sender, String[] args) {
@@ -224,10 +238,35 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
         return true;
     }
 
-    private boolean reward(Player player, String[] args) {
+    private boolean testReward(Player player, String[] args) {
         if (args.length != 1) return false;
         final int level = CommandArgCompleter.requireInt(args[0], i -> i > 0);
         new RewardHandler(new Game(plugin, "null")).openRewardChest(player, level);
         return true;
+    }
+
+    private void eventReward(CommandSender sender) {
+        Game eventGame = plugin.findGame("event");
+        if (eventGame == null) throw new CommandWarn("No event game!");
+        int count = Highscore.reward(eventGame.getStatMap(Stat.DAMAGE),
+                                     "mob_arena",
+                                     TrophyCategory.AXE,
+                                     MobArenaPlugin.TITLE,
+                                     hi -> "You dealt " + hi.getScore() + " damage!");
+        sender.sendMessage(text("Rewarded " + count + " players with trophies", YELLOW));
+    }
+
+    private void eventLock(CommandSender sender) {
+        if (plugin.config.isLocked()) throw new CommandWarn("Already locked");
+        plugin.config.setLocked(true);
+        plugin.exportConfig();
+        sender.sendMessage(text("Config locked", AQUA));
+    }
+
+    private void eventUnlock(CommandSender sender) {
+        if (!plugin.config.isLocked()) throw new CommandWarn("Not locked");
+        plugin.config.setLocked(false);
+        plugin.exportConfig();
+        sender.sendMessage(text("Config unlocked", AQUA));
     }
 }

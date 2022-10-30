@@ -9,7 +9,7 @@ description: MobArena Plugin
 author: StarTux
 website: https://github.com/StarTux/MobArena
 
-depend: [Core, Mytems, Area, Enemy, Spawn, Shutdown, Server]
+depend: [Core, Mytems, Area, Enemy, Spawn, Shutdown, Server, Fam]
 softdepend: []
 
 commands:

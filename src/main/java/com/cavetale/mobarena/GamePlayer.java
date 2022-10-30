@@ -1,6 +1,7 @@
 package com.cavetale.mobarena;
 
 import com.cavetale.mobarena.save.GamePlayerTag;
+import java.util.UUID;
 import lombok.Data;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -18,6 +19,10 @@ public final class GamePlayer {
 
     public GamePlayer(final GamePlayerTag tag) {
         this.tag = tag;
+    }
+
+    public UUID getUuid() {
+        return tag.getUuid();
     }
 
     public Player getPlayer() {
