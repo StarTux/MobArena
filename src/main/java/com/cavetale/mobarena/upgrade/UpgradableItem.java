@@ -20,10 +20,12 @@ public final class UpgradableItem {
             if (!enchantment.canEnchantItem(itemStack)) continue;
             final int oldLevel = itemStack.getEnchantmentLevel(enchantment);
             boolean conflicts = false;
-            for (Enchantment oldEnchant : Enchantment.values()) {
-                if (enchantment == oldEnchant) continue;
-                if (itemStack.getEnchantmentLevel(oldEnchant) > 0 && enchantment.conflictsWith(oldEnchant)) {
-                    conflicts = true;
+            if (itemStack.getEnchantmentLevel(enchantment) == 0) {
+                for (Enchantment oldEnchant : Enchantment.values()) {
+                    if (enchantment == oldEnchant) continue;
+                    if (itemStack.getEnchantmentLevel(oldEnchant) > 0 && enchantment.conflictsWith(oldEnchant)) {
+                        conflicts = true;
+                    }
                 }
             }
             if (!conflicts && !enchantment.isCursed() && oldLevel < enchantment.getMaxLevel()) {
