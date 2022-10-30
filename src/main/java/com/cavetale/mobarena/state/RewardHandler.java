@@ -229,7 +229,6 @@ public final class RewardHandler extends GameStateHandler<RewardTag> {
                         return;
                     }
                     openItemUpgrade(player, upgradableItem, itemUpgrade, level);
-                    player.closeInventory();
                 });
             if (!available) {
                 builder.highlightSlot(currentSlot, DARK_GRAY);
@@ -259,8 +258,7 @@ public final class RewardHandler extends GameStateHandler<RewardTag> {
         itemUpgrade.apply(icon);
         icon.editMeta(meta -> {
                 List<Component> lore = meta.hasLore() ? new ArrayList<>(meta.lore()) : new ArrayList<>();
-                lore.add(join(noSeparators(), Mytems.MOUSE_LEFT, space(), itemUpgrade.getDescription())
-                         .decoration(ITALIC, false));
+                lore.add(join(noSeparators(), Mytems.MOUSE_LEFT, text(" Confirm: ", GRAY), itemUpgrade.getDescription()));
                 meta.lore(lore);
             });
         gui.setItem(11, icon, click -> {
@@ -276,8 +274,12 @@ public final class RewardHandler extends GameStateHandler<RewardTag> {
                                         ItemKinds.icon(upgradableItem.getItemStack()),
                                         space(),
                                         itemUpgrade.getDescription()));
+                player.closeInventory();
             });
-        gui.setItem(15, Mytems.TURN_LEFT.createIcon(List.of(text("Go Back", GRAY))));
+        gui.setItem(15, Mytems.TURN_LEFT.createIcon(List.of(text("Go Back", GRAY))), click -> {
+                if (!click.isLeftClick()) return;
+                openUpgradableItem(player, upgradableItem, level);
+            });
         gui.setItem(Gui.OUTSIDE, null, click -> openUpgradableItem(player, upgradableItem, level));
         gui.title(builder.build());
         gui.open(player);
