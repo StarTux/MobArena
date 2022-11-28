@@ -255,12 +255,12 @@ public final class MobArenaPlugin extends JavaPlugin {
             .title(GuiOverlay.BLANK.builder(size, BLUE)
                    .title(text("Join Mob Arena?", GOLD))
                    .build());
-        gui.setItem(13, Items.text(Mytems.HALLOWEEN_TOKEN.createIcon(),
+        gui.setItem(13, Items.text(Mytems.RUBY.createIcon(),
                                    List.of(text("Join Mob Arena for", GOLD),
-                                           text("1 Halloween Token?", GOLD))),
+                                           text("1 Ruby?", GOLD))),
                     evt -> {
                         for (ItemStack itemStack : player.getInventory()) {
-                            if (!Mytems.HALLOWEEN_TOKEN.isItem(itemStack)) continue;
+                            if (!Mytems.RUBY.isItem(itemStack)) continue;
                             Game game = findOrCreateGame();
                             if (game == null) {
                                 player.sendMessage(text("Something went wrong!", RED));

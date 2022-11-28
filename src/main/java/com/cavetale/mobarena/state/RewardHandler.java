@@ -330,8 +330,7 @@ public final class RewardHandler extends GameStateHandler<RewardTag> {
                             Mytems.RUBY.createItemStack(1 + random.nextInt(16)),
                             Mytems.SILVER_COIN.createItemStack(1 + random.nextInt(10)),
                             Mytems.GOLDEN_COIN.createItemStack(1 + random.nextInt(3)),
-                            Mytems.DIAMOND_COIN.createItemStack(1 + random.nextInt(3)),
-                            Mytems.HALLOWEEN_TOKEN.createItemStack(1 + random.nextInt(10))));
+                            Mytems.DIAMOND_COIN.createItemStack(1 + random.nextInt(3))));
         List<Enchantment> enchantments = new ArrayList<>();
         for (Enchantment enchantment : Enchantment.values()) {
             if (enchantment.isCursed()) continue;
