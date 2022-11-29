@@ -272,7 +272,7 @@ public final class MobArenaPlugin extends JavaPlugin {
                             game.bring(player);
                             return;
                         }
-                        player.sendMessage(text("You don't have a Halloween Token!", RED));
+                        player.sendMessage(text("You don't have a Ruby!", RED));
                     });
         gui.open(player);
     }
