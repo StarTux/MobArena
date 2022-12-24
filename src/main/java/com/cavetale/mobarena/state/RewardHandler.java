@@ -59,7 +59,7 @@ public final class RewardHandler extends GameStateHandler<RewardTag> {
                                              BlockFace.SOUTH,
                                              BlockFace.WEST);
         BlockFace face = blockFaces.get(game.getRandom().nextInt(blockFaces.size()));
-        ArmorStand armorStand = Blocks.place(Mytems.BOSS_CHEST, block, face);
+        ArmorStand armorStand = Blocks.place(Mytems.BOSS_CHEST, block, face, true);
         armorStand.setGlowing(true);
         getTag().setArmorStandUuid(armorStand.getUniqueId());
         block.setType(Material.BARRIER);
