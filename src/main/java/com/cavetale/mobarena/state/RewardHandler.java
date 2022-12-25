@@ -12,6 +12,7 @@ import com.cavetale.mobarena.upgrade.UpgradableItem;
 import com.cavetale.mobarena.util.Time;
 import com.cavetale.mytems.Mytems;
 import com.cavetale.mytems.util.Blocks;
+import com.cavetale.mytems.util.Entities;
 import com.cavetale.mytems.util.Gui;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -60,6 +61,8 @@ public final class RewardHandler extends GameStateHandler<RewardTag> {
                                              BlockFace.WEST);
         BlockFace face = blockFaces.get(game.getRandom().nextInt(blockFaces.size()));
         ArmorStand armorStand = Blocks.place(Mytems.BOSS_CHEST, block, face, true);
+        armorStand.setPersistent(false);
+        Entities.setTransient(armorStand);
         armorStand.setGlowing(true);
         getTag().setArmorStandUuid(armorStand.getUniqueId());
         block.setType(Material.BARRIER);
