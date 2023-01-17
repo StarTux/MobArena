@@ -414,4 +414,8 @@ public final class Game {
         }
         return result;
     }
+
+    public boolean isEvent() {
+        return "event".equals(name);
+    }
 }

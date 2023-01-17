@@ -1,5 +1,7 @@
 package com.cavetale.mobarena.state;
 
+import com.cavetale.core.event.minigame.MinigameFlag;
+import com.cavetale.core.event.mobarena.MobArenaWaveCompleteEvent;
 import com.cavetale.mobarena.Game;
 import com.cavetale.mobarena.save.GameStateTag;
 import com.cavetale.mobarena.wave.WaveType;
@@ -27,6 +29,14 @@ final class WaveCompleteHandler extends GameStateHandler<GameStateTag> {
             }
         }
         return null;
+    }
+
+    @Override
+    public void onEnter() {
+        MobArenaWaveCompleteEvent event = new MobArenaWaveCompleteEvent(game.getTag().getCurrentWaveIndex());
+        if (game.isEvent()) event.addFlags(MinigameFlag.EVENT);
+        event.addPlayerUuids(game.getPlayerMap().keySet());
+        event.callEvent();
     }
 
     @Override
