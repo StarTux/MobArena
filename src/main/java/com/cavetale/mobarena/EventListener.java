@@ -116,7 +116,12 @@ public final class EventListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     protected void onPlayerBlockAbility(PlayerBlockAbilityQuery event) {
-        plugin.applyGame(event.getBlock().getLocation(), game -> event.setCancelled(true));
+        plugin.applyGame(event.getBlock().getLocation(), game -> {
+                switch (event.getAction()) {
+                case SPAWN_MOB: return;
+                default: event.setCancelled(true);
+                }
+            });
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
