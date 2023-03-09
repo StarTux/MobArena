@@ -33,9 +33,10 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.scheduler.BukkitTask;
-import static net.kyori.adventure.text.Component.join;
+import static com.cavetale.core.font.Unicode.tiny;
+import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
-import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
+import static net.kyori.adventure.text.Component.textOfChildren;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 /**
@@ -291,7 +292,9 @@ public final class Game {
         currentWave.create();
         if (plugin.gameList.indexOf(this) == 0 && !"admin".equals(name)) {
             List<Component> lines = List.of(text("/mobarena", GREEN),
-                                            text("Mob Arena Wave " + waveIndex, GRAY));
+                                            textOfChildren(text(tiny("players "), GRAY), text(countActivePlayers(), WHITE),
+                                                           space(),
+                                                           text(tiny("wave "), GRAY), text(waveIndex, WHITE)));
             ServerPlugin.getInstance().setServerSidebarLines(lines);
         }
     }
@@ -341,9 +344,8 @@ public final class Game {
 
     protected void onPlayerSidebar(Player player, List<Component> lines) {
         if (currentWave != null) {
-            lines.add(join(noSeparators(),
-                           text(Unicode.tiny("wave "), GRAY),
-                           text(tag.getCurrentWaveIndex(), GREEN)));
+            lines.add(textOfChildren(text(Unicode.tiny("wave "), GRAY),
+                                     text(tag.getCurrentWaveIndex(), GREEN)));
         }
         stateHandler.onPlayerSidebar(player, lines);
         lines.add(text(Unicode.tiny(currentStat.displayName.toLowerCase()), RED));
@@ -351,10 +353,9 @@ public final class Game {
         players.sort((b, a) -> Double.compare(getGamePlayer(a).getStat(currentStat),
                                               getGamePlayer(b).getStat(currentStat)));
         for (Player it : players) {
-            lines.add(join(noSeparators(),
-                           text("" + getGamePlayer(it).getIntStat(currentStat), RED),
-                           text(" "),
-                           it.displayName()));
+            lines.add(textOfChildren(text("" + getGamePlayer(it).getIntStat(currentStat), RED),
+                                     text(" "),
+                                     it.displayName()));
         }
     }
 
