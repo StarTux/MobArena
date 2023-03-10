@@ -92,16 +92,16 @@ public final class Arena {
     }
 
     public Location randomSpawnLocation() {
-        return randomVector(spawnVectorList).toLocation(getWorld());
+        return randomVector(spawnVectorList).toCenterFloorLocation(getWorld());
     }
 
     public Location randomMobLocation() {
-        return randomVector(mobVectorList).toLocation(getWorld());
+        return randomVector(mobVectorList).toCenterFloorLocation(getWorld());
     }
 
     public Location randomFlyingMobLocation() {
         if (flyingMobVectorList.isEmpty()) return randomMobLocation();
-        return randomVector(flyingMobVectorList).toLocation(getWorld());
+        return randomVector(flyingMobVectorList).toCenterFloorLocation(getWorld());
     }
 
     public Block bossChestBlock() {
