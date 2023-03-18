@@ -37,6 +37,7 @@ public final class BossWave extends Wave<BossWaveTag> {
         EnemyType.WICKED_CRONE,
         EnemyType.INFERNAL_PHANTASM,
         EnemyType.GHAST_BOSS,
+        EnemyType.PIGLIN_BRUTE_BOSS,
     };
     protected Component bossDisplayName = Component.empty();
 
