@@ -47,7 +47,7 @@ public final class BossWave extends Wave<BossWaveTag> {
     @Override
     public void create() {
         EnemyType enemyType;
-        if ((game.getTag().getCurrentWaveIndex() % 100) == 99) {
+        if (game.getTag().getCurrentWaveIndex() == 100) {
             enemyType = EnemyType.WARDEN_BOSS;
         } else {
             List<EnemyType> options = new ArrayList<>(List.of(BOSS_TYPES));
