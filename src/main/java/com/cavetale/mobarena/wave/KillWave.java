@@ -26,6 +26,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Evoker;
@@ -239,6 +240,9 @@ public final class KillWave extends Wave<KillWaveTag> {
             }
         } else if (mob instanceof Evoker evoker) {
             evoker.getEquipment().setItemInMainHand(mobItem(Material.TOTEM_OF_UNDYING));
+        } else if (mob instanceof Creeper creeper) {
+            int wave = game.getTag().getCurrentWaveIndex() + 1;
+            creeper.setMaxFuseTicks(Math.max(1, creeper.getMaxFuseTicks() - wave / 2));
         }
         adjustAttributes(mob);
     }
