@@ -47,13 +47,17 @@ public final class BossWave extends Wave<BossWaveTag> {
     @Override
     public void create() {
         EnemyType enemyType;
-        List<EnemyType> options = new ArrayList<>(List.of(BOSS_TYPES));
-        options.removeAll(game.getTag().getDoneBosses());
-        if (options.isEmpty()) {
-            enemyType = BOSS_TYPES[game.getRandom().nextInt(BOSS_TYPES.length)];
+        if ((game.getTag().getCurrentWaveIndex() % 100) == 99) {
+            enemyType = EnemyType.WARDEN_BOSS;
         } else {
-            enemyType = options.get(game.getRandom().nextInt(options.size()));
-            game.getTag().getDoneBosses().add(enemyType);
+            List<EnemyType> options = new ArrayList<>(List.of(BOSS_TYPES));
+            options.removeAll(game.getTag().getDoneBosses());
+            if (options.isEmpty()) {
+                enemyType = BOSS_TYPES[game.getRandom().nextInt(BOSS_TYPES.length)];
+            } else {
+                enemyType = options.get(game.getRandom().nextInt(options.size()));
+                game.getTag().getDoneBosses().add(enemyType);
+            }
         }
         tag.setEnemyType(enemyType);
         Enemy boss = tag.getEnemyType().create(game.getEnemyContext());
@@ -68,7 +72,10 @@ public final class BossWave extends Wave<BossWaveTag> {
     public void start() {
         Enemy boss = getBoss();
         if (boss != null) {
-            Location location = game.getArena().randomMobLocation();
+            Location location = switch (tag.getEnemyType()) {
+            case QUEEN_BEE, SPECTER, GHAST_BOSS -> game.getArena().randomFlyingMobLocation();
+            default -> game.getArena().randomMobLocation();
+            };
             boss.setSpawnLocation(location);
             boss.spawn(location);
             bossDisplayName = boss.getDisplayName();
