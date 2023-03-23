@@ -6,6 +6,7 @@ import com.cavetale.core.event.hud.PlayerHudEvent;
 import com.cavetale.core.event.hud.PlayerHudPriority;
 import com.cavetale.core.event.player.PlayerTPAEvent;
 import com.cavetale.mytems.event.combat.DamageCalculationEvent;
+import com.destroystokyo.paper.event.entity.EndermanEscapeEvent;
 import com.winthier.shutdown.event.ShutdownTriggerEvent;
 import com.winthier.spawn.Spawn;
 import java.util.ArrayList;
@@ -253,5 +254,10 @@ public final class EventListener implements Listener {
     @EventHandler
     private void onPlayerTPA(PlayerTPAEvent event) {
         plugin.applyGame(event.getTarget().getLocation(), game -> event.setCancelled(true));
+    }
+
+    @EventHandler
+    private void onEndermanEscape(EndermanEscapeEvent event) {
+        plugin.applyGame(event.getEntity().getLocation(), game -> event.setCancelled(true));
     }
 }
