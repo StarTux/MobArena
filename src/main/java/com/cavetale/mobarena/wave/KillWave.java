@@ -88,6 +88,7 @@ public final class KillWave extends Wave<KillWaveTag> {
         ENTITY_MIN_WAVE_MAP.put(EntityType.BLAZE, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.MAGMA_CUBE, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.PIGLIN, idx);
+        ENTITY_MIN_WAVE_MAP.put(EntityType.ENDERMAN, idx);
         idx = 30;
         ENTITY_MIN_WAVE_MAP.put(EntityType.HOGLIN, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.WITHER_SKELETON, idx);
