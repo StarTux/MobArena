@@ -79,6 +79,7 @@ public final class KillWave extends Wave<KillWaveTag> {
         ENTITY_MIN_WAVE_MAP.put(EntityType.CREEPER, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.ZOMBIE, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.SKELETON, idx);
+        ENTITY_MIN_WAVE_MAP.put(EntityType.SPIDER, idx);
         idx = 10;
         ENTITY_MIN_WAVE_MAP.put(EntityType.DROWNED, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.HUSK, idx);
@@ -90,6 +91,7 @@ public final class KillWave extends Wave<KillWaveTag> {
         idx = 30;
         ENTITY_MIN_WAVE_MAP.put(EntityType.HOGLIN, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.WITHER_SKELETON, idx);
+        ENTITY_MIN_WAVE_MAP.put(EntityType.CAVE_SPIDER, idx);
         idx = 40;
         ENTITY_MIN_WAVE_MAP.put(EntityType.PHANTOM, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.WITCH, idx);
@@ -103,6 +105,7 @@ public final class KillWave extends Wave<KillWaveTag> {
         idx = 60;
         ENTITY_MIN_WAVE_MAP.put(EntityType.EVOKER, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.RAVAGER, idx);
+        ENTITY_MIN_WAVE_MAP.put(EntityType.ILLUSIONER, idx);
     }
 
     @Override
