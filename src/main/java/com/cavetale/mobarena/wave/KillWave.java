@@ -18,6 +18,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.logging.Level;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
@@ -66,7 +67,6 @@ public final class KillWave extends Wave<KillWaveTag> {
     protected Color leatherArmorColor;
     protected long lastWarpHome;
     protected Duration runningTime = Duration.ofSeconds(0);
-    protected int difficultyLevel;
 
     protected KillWave(final Game game) {
         super(game, WaveType.KILL, KillWaveTag.class, KillWaveTag::new);
@@ -144,7 +144,6 @@ public final class KillWave extends Wave<KillWaveTag> {
         if (doWarpHome) {
             lastWarpHome = runningTime.toSeconds();
         }
-        difficultyLevel = game.getTag().getCurrentWaveIndex() / 10;
         for (KillWaveTag.MobSpawn mobSpawn : tag.getMobSpawnList()) {
             if (mobSpawn.isDead()) continue;
             stillAlive += 1;
@@ -296,14 +295,15 @@ public final class KillWave extends Wave<KillWaveTag> {
                                       Material.DIAMOND_AXE,
                                       Material.NETHERITE_AXE);
         List<Material> mats = new ArrayList<>();
-        mats.add(helmets.get(Math.min(difficultyLevel, helmets.size() - 1)));
-        mats.add(chestplates.get(Math.min(difficultyLevel, chestplates.size() - 1)));
-        mats.add(leggings.get(Math.min(difficultyLevel, leggings.size() - 1)));
-        mats.add(boots.get(Math.min(difficultyLevel, boots.size() - 1)));
+        final int materialIndex = game.getTag().getCurrentWaveIndex() / 20;
+        mats.add(helmets.get(Math.min(materialIndex, helmets.size() - 1)));
+        mats.add(chestplates.get(Math.min(materialIndex, chestplates.size() - 1)));
+        mats.add(leggings.get(Math.min(materialIndex, leggings.size() - 1)));
+        mats.add(boots.get(Math.min(materialIndex, boots.size() - 1)));
         mats.add(game.getRandom().nextBoolean()
-                 ? swords.get(Math.min(difficultyLevel, swords.size() - 1))
-                 : axes.get(Math.min(difficultyLevel, axes.size() - 1)));
-        mats.add(difficultyLevel < 3 ? null : Material.SHIELD);
+                 ? swords.get(Math.min(materialIndex, swords.size() - 1))
+                 : axes.get(Math.min(materialIndex, axes.size() - 1)));
+        mats.add(materialIndex < 3 ? null : Material.SHIELD);
         List<EquipmentSlot> slots = List.of(EquipmentSlot.HEAD,
                                             EquipmentSlot.CHEST,
                                             EquipmentSlot.LEGS,
@@ -331,40 +331,36 @@ public final class KillWave extends Wave<KillWaveTag> {
         }
     }
 
-    protected void adjustAttributes(Mob mob) {
-        Attribute attribute = null;
-        AttributeInstance inst = null;
+    /**
+     * Modify the base value of a mob attribute.
+     * @return success status
+     */
+    private boolean adjustAttribute(Mob mob, Attribute attribute, Function<Double, Double> func) {
+        double base = 0.0;
         double value = 0.0;
-        double multiplier = (double) difficultyLevel;
         try {
-            attribute = Attribute.GENERIC_ARMOR;
-            inst = mob.getAttribute(attribute);
-            if (inst != null) {
-                value = inst.getBaseValue() + 7.0 + multiplier;
-                mob.getAttribute(attribute).setBaseValue(value);
-            }
-            attribute = Attribute.GENERIC_ARMOR_TOUGHNESS;
-            inst = mob.getAttribute(attribute);
-            if (inst != null) {
-                value = inst.getBaseValue() + 0.5 * multiplier;
-                mob.getAttribute(attribute).setBaseValue(value);
-            }
-            attribute = Attribute.GENERIC_ATTACK_DAMAGE;
-            inst = mob.getAttribute(attribute);
-            if (inst != null) {
-                value = inst.getBaseValue() + 0.5 * multiplier;
-                mob.getAttribute(attribute).setBaseValue(value);
-            }
-            attribute = Attribute.GENERIC_MAX_HEALTH;
-            inst = mob.getAttribute(attribute);
-            if (inst != null) {
-                value = inst.getBaseValue() + 0.5 * multiplier;
-                mob.getAttribute(attribute).setBaseValue(value);
+            final AttributeInstance inst = mob.getAttribute(attribute);
+            if (inst == null) return false;
+            base = inst.getBaseValue();
+            value = func.apply(base);
+            inst.setBaseValue(value);
+            if (attribute == Attribute.GENERIC_MAX_HEALTH) {
                 mob.setHealth(value);
             }
+            return true;
         } catch (Exception e) {
-            game.getPlugin().getLogger().log(Level.WARNING, mob.getType() + " " + attribute + " " + value, e);
+            game.getPlugin().getLogger().log(Level.WARNING, mob.getType() + " " + attribute + " " + base + " => " + value, e);
+            return false;
         }
+    }
+
+    protected void adjustAttributes(Mob mob) {
+        double wave = (double) game.getTag().getCurrentWaveIndex();
+        double players = (double) game.countActivePlayers();
+        adjustAttribute(mob, Attribute.GENERIC_ARMOR, base -> base + 7.0 + 0.1 * wave);
+        adjustAttribute(mob, Attribute.GENERIC_ARMOR_TOUGHNESS, base -> base + 0.05 * wave);
+        adjustAttribute(mob, Attribute.GENERIC_ATTACK_DAMAGE, base -> base + 0.05 * wave);
+        adjustAttribute(mob, Attribute.GENERIC_MAX_HEALTH, base -> base + 0.05 * wave + players);
     }
 
     @Override
