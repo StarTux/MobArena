@@ -3,6 +3,7 @@ package com.cavetale.mobarena.wave;
 import com.cavetale.core.font.Unicode;
 import com.cavetale.enemy.Enemy;
 import com.cavetale.enemy.EnemyType;
+import com.cavetale.enemy.boss.LivingBoss;
 import com.cavetale.mobarena.Game;
 import com.cavetale.mobarena.save.BossWaveTag;
 import java.util.ArrayList;
@@ -15,9 +16,8 @@ import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.entity.Player;
-import static net.kyori.adventure.text.Component.join;
 import static net.kyori.adventure.text.Component.text;
-import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
+import static net.kyori.adventure.text.Component.textOfChildren;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 public final class BossWave extends Wave<BossWaveTag> {
@@ -71,16 +71,7 @@ public final class BossWave extends Wave<BossWaveTag> {
 
     @Override
     public void start() {
-        Enemy boss = getBoss();
-        if (boss != null) {
-            Location location = switch (tag.getEnemyType()) {
-            case QUEEN_BEE, SPECTER, GHAST_BOSS -> game.getArena().randomFlyingMobLocation();
-            default -> game.getArena().randomMobLocation();
-            };
-            boss.setSpawnLocation(location);
-            boss.spawn(location);
-            bossDisplayName = boss.getDisplayName();
-        }
+        spawnBoss();
     }
 
     @Override
@@ -92,10 +83,28 @@ public final class BossWave extends Wave<BossWaveTag> {
                                               + game.getPresentPlayers().stream().map(Player::getName)
                                               .collect(Collectors.joining(", ")));
         } else if (!boss.isValid()) { // isSpawned
-            Location location = game.getArena().randomMobLocation();
-            boss.setSpawnLocation(location);
-            boss.spawn(location);
+            spawnBoss();
         }
+    }
+
+    private void spawnBoss() {
+        Enemy boss = getBoss();
+        if (boss == null) {
+            game.getPlugin().getLogger().info("[" + game.getName() + "] " + game.getTag().getCurrentWaveIndex() + ": Boss is null: " + tag);
+            return;
+        }
+        final Location location = switch (tag.getEnemyType()) {
+        case QUEEN_BEE, SPECTER, GHAST_BOSS -> game.getArena().randomFlyingMobLocation();
+        default -> game.getArena().randomMobLocation();
+        };
+        boss.setSpawnLocation(location);
+        if (boss instanceof LivingBoss livingBoss) {
+            double wave = (double) game.getTag().getCurrentWaveIndex();
+            double players = (double) game.countActivePlayers();
+            // +50 per boss level, +10 per player
+            boss.setHealth(200 + 5.0 * wave + 10.0 * players);
+        }
+        boss.spawn(location);
     }
 
     @Override
@@ -117,7 +126,7 @@ public final class BossWave extends Wave<BossWaveTag> {
 
     @Override
     public void onLoad() {
-        Enemy boss = Enemy.ofEnemyId(tag.getBossEnemyId());
+        Enemy boss = getBoss();
         if (boss == null) {
             create();
             return;
@@ -126,6 +135,10 @@ public final class BossWave extends Wave<BossWaveTag> {
         game.getEnemies().add(boss);
     }
 
+    /**
+     * Get the boss entity previously which was created during
+     * create().  It may or may not be spawned already.
+     */
     public Enemy getBoss() {
         return Enemy.ofEnemyId(tag.getBossEnemyId());
     }
@@ -145,8 +158,6 @@ public final class BossWave extends Wave<BossWaveTag> {
     public void onPlayerSidebar(Player player, List<Component> lines) {
         Enemy boss = getBoss();
         if (boss == null) return;
-        lines.add(join(noSeparators(),
-                       text(Unicode.tiny("boss "), GRAY),
-                       text((int) Math.round(boss.getHealth()), GREEN)));
+        lines.add(textOfChildren(text(Unicode.tiny("boss "), GRAY), text((int) Math.round(boss.getHealth()), GREEN)));
     }
 }
