@@ -53,15 +53,15 @@ public final class EventListener implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
-    void onPlayerJoin(PlayerJoinEvent event) {
+    private void onPlayerJoin(PlayerJoinEvent event) {
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
-    void onPlayerQuit(PlayerQuitEvent event) {
+    private void onPlayerQuit(PlayerQuitEvent event) {
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
-    void onPlayerSpawnLocation(PlayerSpawnLocationEvent event) {
+    private void onPlayerSpawnLocation(PlayerSpawnLocationEvent event) {
         Location at = event.getSpawnLocation();
         for (Arena arena : plugin.arenaMap.values()) {
             if (arena.isInArena(at)) {
@@ -72,7 +72,7 @@ public final class EventListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
-    void onPlayerHud(PlayerHudEvent event) {
+    private void onPlayerHud(PlayerHudEvent event) {
         if (plugin.gameList.isEmpty()) return;
         Player player = event.getPlayer();
         List<Component> lines = new ArrayList<>();
@@ -91,32 +91,32 @@ public final class EventListener implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
-    protected void onEntityExplode(EntityExplodeEvent event) {
+    private void onEntityExplode(EntityExplodeEvent event) {
         plugin.applyGame(event.getEntity().getLocation(), game -> event.blockList().clear());
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
-    protected void onBlockExplode(BlockExplodeEvent event) {
+    private void onBlockExplode(BlockExplodeEvent event) {
         plugin.applyGame(event.getBlock().getLocation(), game -> event.blockList().clear());
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
-    protected void onCreatureSpawn(CreatureSpawnEvent event) {
+    private void onCreatureSpawn(CreatureSpawnEvent event) {
         plugin.applyGame(event.getEntity().getLocation(), game -> game.onCreatureSpawn(event));
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
-    protected void onEntityChangeBlock(EntityChangeBlockEvent event) {
+    private void onEntityChangeBlock(EntityChangeBlockEvent event) {
         plugin.applyGame(event.getBlock().getLocation(), game -> event.setCancelled(true));
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
-    protected void onEntityBlockForm(EntityBlockFormEvent event) {
+    private void onEntityBlockForm(EntityBlockFormEvent event) {
         plugin.applyGame(event.getBlock().getLocation(), game -> event.setCancelled(true));
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
-    protected void onPlayerBlockAbility(PlayerBlockAbilityQuery event) {
+    private void onPlayerBlockAbility(PlayerBlockAbilityQuery event) {
         plugin.applyGame(event.getBlock().getLocation(), game -> {
                 switch (event.getAction()) {
                 case SPAWN_MOB: return;
@@ -126,32 +126,32 @@ public final class EventListener implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
-    protected void onEntityPlace(EntityPlaceEvent event) {
+    private void onEntityPlace(EntityPlaceEvent event) {
         plugin.applyGame(event.getEntity().getLocation(), game -> event.setCancelled(true));
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
-    protected void onBlockPlace(BlockPlaceEvent event) {
+    private void onBlockPlace(BlockPlaceEvent event) {
         plugin.applyGame(event.getBlock().getLocation(), game -> event.setCancelled(true));
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
-    protected void onBlockBreak(BlockBreakEvent event) {
+    private void onBlockBreak(BlockBreakEvent event) {
         plugin.applyGame(event.getBlock().getLocation(), game -> event.setCancelled(true));
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
-    protected void onPlayerBucketEmpty(PlayerBucketEmptyEvent event) {
+    private void onPlayerBucketEmpty(PlayerBucketEmptyEvent event) {
         plugin.applyGame(event.getBlock().getLocation(), game -> event.setCancelled(true));
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
-    protected void onPlayerBucketFill(PlayerBucketFillEvent event) {
+    private void onPlayerBucketFill(PlayerBucketFillEvent event) {
         plugin.applyGame(event.getBlock().getLocation(), game -> event.setCancelled(true));
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
-    protected void onPlayerEntityAbility(PlayerEntityAbilityQuery event) {
+    private void onPlayerEntityAbility(PlayerEntityAbilityQuery event) {
         plugin.applyGame(event.getEntity().getLocation(), game -> {
                 switch (event.getAction()) {
                 case DAMAGE:
@@ -166,7 +166,7 @@ public final class EventListener implements Listener {
     }
 
     @EventHandler(ignoreCancelled = false, priority = EventPriority.LOWEST)
-    protected void onPlayerInteract(PlayerInteractEvent event) {
+    private void onPlayerInteract(PlayerInteractEvent event) {
         if (!event.hasBlock()) return;
         switch (event.getAction()) {
         case RIGHT_CLICK_BLOCK:
@@ -179,12 +179,12 @@ public final class EventListener implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true)
-    void onPlayerItemDamage(PlayerItemDamageEvent event) {
+    private void onPlayerItemDamage(PlayerItemDamageEvent event) {
         plugin.applyGame(event.getPlayer().getLocation(), game -> event.setCancelled(true));
     }
 
     @EventHandler(ignoreCancelled = true)
-    void onPlayerTeleport(PlayerTeleportEvent event) {
+    private void onPlayerTeleport(PlayerTeleportEvent event) {
         switch (event.getCause()) {
         case ENDER_PEARL:
         case CHORUS_FRUIT:
@@ -194,7 +194,7 @@ public final class EventListener implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true)
-    void onPlayerToggleGlide(EntityToggleGlideEvent event) {
+    private void onPlayerToggleGlide(EntityToggleGlideEvent event) {
         if (!(event.getEntity() instanceof Player player)) return;
         if (event.isGliding()) {
             plugin.applyGame(player.getLocation(), game -> event.setCancelled(true));
@@ -202,29 +202,29 @@ public final class EventListener implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true)
-    void onPlayerDropItem(PlayerDropItemEvent event) {
+    private void onPlayerDropItem(PlayerDropItemEvent event) {
         plugin.applyGame(event.getPlayer().getLocation(), game -> event.setCancelled(true));
     }
 
     @EventHandler(ignoreCancelled = true)
-    void onBlockIgnite(BlockIgniteEvent event) {
+    private void onBlockIgnite(BlockIgniteEvent event) {
         plugin.applyGame(event.getBlock().getLocation(), game -> event.setCancelled(true));
     }
 
     @EventHandler(ignoreCancelled = true)
-    void onHangingBreak(HangingBreakEvent event) {
+    private void onHangingBreak(HangingBreakEvent event) {
         plugin.applyGame(event.getEntity().getLocation(), game -> event.setCancelled(true));
     }
 
     @EventHandler(ignoreCancelled = true)
-    void onShutdownTrigger(ShutdownTriggerEvent event) {
+    private void onShutdownTrigger(ShutdownTriggerEvent event) {
         if (!plugin.gameList.isEmpty()) {
             event.cancelBy(plugin);
         }
     }
 
     @EventHandler(ignoreCancelled = true)
-    protected void onPlayerVoidDamage(EntityDamageEvent event) {
+    private void onPlayerVoidDamage(EntityDamageEvent event) {
         if (!(event.getEntity() instanceof Player player)) return;
         switch (event.getCause()) {
         case VOID: break;
@@ -242,12 +242,12 @@ public final class EventListener implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
-    protected void onDamageCalculation(DamageCalculationEvent event) {
+    private void onDamageCalculation(DamageCalculationEvent event) {
         plugin.applyGame(event.getTarget().getLocation(), game -> game.onDamageCalculation(event));
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
-    protected void onEntityDeath(EntityDeathEvent event) {
+    private void onEntityDeath(EntityDeathEvent event) {
         plugin.applyGame(event.getEntity().getLocation(), game -> game.onEntityDeath(event));
     }
 
