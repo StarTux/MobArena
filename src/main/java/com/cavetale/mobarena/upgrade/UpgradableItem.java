@@ -28,8 +28,11 @@ public final class UpgradableItem {
                     }
                 }
             }
-            if (!conflicts && !enchantment.isCursed() && oldLevel < enchantment.getMaxLevel()) {
-                upgrades.add(new EnchantmentUpgrade(enchantment, oldLevel + 1, oldLevel + 1));
+            if (!enchantment.isCursed() && oldLevel < enchantment.getMaxLevel()) {
+                final int requiredLevel = conflicts
+                    ? oldLevel + 1 + 10
+                    : oldLevel + 1;
+                upgrades.add(new EnchantmentUpgrade(enchantment, oldLevel + 1, requiredLevel));
             }
             if (oldLevel > 0) {
                 upgrades.add(new EnchantmentRemoval(enchantment, oldLevel));

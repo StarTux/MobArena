@@ -167,7 +167,7 @@ public final class RewardHandler extends GameStateHandler<RewardTag> {
                 });
         }
         Random random = new Random(getTag().getSeed());
-        List<ItemStack> pool = getRewardPool(player);
+        List<ItemStack> pool = getRewardPool(player, level);
         Collections.shuffle(pool, random);
         final int maxItems = Math.min(3, level);
         for (int i = 0; i < maxItems; i += 1) {
@@ -313,40 +313,47 @@ public final class RewardHandler extends GameStateHandler<RewardTag> {
                                 ItemKinds.chatDescription(rewardItem)));
     }
 
-    private List<ItemStack> getRewardPool(Player player) {
+    private List<ItemStack> getRewardPool(Player player, int level) {
         Random random = new Random(getTag().getSeed());
         List<ItemStack> pool = new ArrayList<>();
-        pool.addAll(List.of(new ItemStack(Material.DIAMOND, 1 + random.nextInt(64)),
-                            new ItemStack(Material.EMERALD, 64),
-                            new ItemStack(Material.IRON_INGOT, 64),
-                            new ItemStack(Material.GOLD_INGOT, 64),
-                            new ItemStack(Material.GOLDEN_APPLE, 1 + random.nextInt(32)),
-                            new ItemStack(Material.NETHERITE_SCRAP, 1 + random.nextInt(10)),
-                            new ItemStack(Material.GUNPOWDER, 64),
-                            new ItemStack(Material.GLOWSTONE, 64),
-                            new ItemStack(Material.TNT, 64),
-                            new ItemStack(Material.BLAZE_ROD, 64),
-                            new ItemStack(Material.BONE_BLOCK, 64),
-                            new ItemStack(Material.ENCHANTED_GOLDEN_APPLE),
-                            new ItemStack(Material.NETHER_STAR),
-                            Mytems.KITTY_COIN.createItemStack(),
+        pool.addAll(List.of(Mytems.KITTY_COIN.createItemStack(),
                             Mytems.RUBY.createItemStack(1 + random.nextInt(16)),
                             Mytems.SILVER_COIN.createItemStack(1 + random.nextInt(10)),
-                            Mytems.GOLDEN_COIN.createItemStack(1 + random.nextInt(3)),
-                            Mytems.DIAMOND_COIN.createItemStack(1 + random.nextInt(3))));
+                            Mytems.GOLDEN_COIN.createItemStack(1 + random.nextInt(10)),
+                            new ItemStack(Material.GOLDEN_APPLE, 1 + random.nextInt(32)),
+                            new ItemStack(Material.ENCHANTED_GOLDEN_APPLE),
+                            new ItemStack(Material.NETHER_STAR)));
+        if (level < 10) {
+            pool.addAll(List.of(new ItemStack(Material.DIAMOND, 1 + random.nextInt(64)),
+                                new ItemStack(Material.EMERALD, 1 + random.nextInt(64)),
+                                new ItemStack(Material.IRON_INGOT, 1 + random.nextInt(64)),
+                                new ItemStack(Material.GOLD_INGOT, 1 + random.nextInt(64)),
+                                new ItemStack(Material.GLOWSTONE, 1 + random.nextInt(64)),
+                                new ItemStack(Material.BONE_BLOCK, 1 + random.nextInt(64)),
+                                new ItemStack(Material.TNT, 1 + random.nextInt(64)),
+                                new ItemStack(Material.BLAZE_ROD, 1 + random.nextInt(64)),
+                                new ItemStack(Material.EXPERIENCE_BOTTLE, 1 + random.nextInt(64)),
+                                new ItemStack(Material.GUNPOWDER, 64),
+                                new ItemStack(Material.BONE_MEAL, 64),
+                                new ItemStack(Material.GLOWSTONE_DUST, 64),
+                                new ItemStack(Material.BLAZE_POWDER, 64)));
+        }
+        if (level >= 5) {
+            pool.addAll(List.of(Mytems.DIAMOND_COIN.createItemStack(1 + random.nextInt(3)),
+                                new ItemStack(Material.NETHERITE_SCRAP, 1 + random.nextInt(10))));
+        }
         List<Enchantment> enchantments = new ArrayList<>();
         for (Enchantment enchantment : Enchantment.values()) {
             if (enchantment.isCursed()) continue;
+            if (enchantment.isTreasure() && level < 5) continue;
             enchantments.add(enchantment);
         }
         final Enchantment enchantment = enchantments.get(random.nextInt(enchantments.size()));
-        final int level = enchantment.getMaxLevel() > 1
-            ? 1 + random.nextInt(enchantment.getMaxLevel() - 1)
-            : 1;
+        final int enchLevel = Math.max(1, Math.min(level, enchantment.getMaxLevel()));
         ItemStack book = new ItemStack(Material.ENCHANTED_BOOK);
         book.editMeta(m -> {
                 if (m instanceof EnchantmentStorageMeta meta) {
-                    meta.addStoredEnchant(enchantment, level, true);
+                    meta.addStoredEnchant(enchantment, enchLevel, true);
                 }
             });
         pool.add(book);
