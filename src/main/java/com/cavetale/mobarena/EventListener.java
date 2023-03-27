@@ -6,7 +6,6 @@ import com.cavetale.core.event.hud.PlayerHudEvent;
 import com.cavetale.core.event.hud.PlayerHudPriority;
 import com.cavetale.core.event.player.PlayerTPAEvent;
 import com.cavetale.mytems.event.combat.DamageCalculationEvent;
-import com.destroystokyo.paper.event.entity.EndermanEscapeEvent;
 import com.winthier.shutdown.event.ShutdownTriggerEvent;
 import com.winthier.spawn.Spawn;
 import java.util.ArrayList;
@@ -15,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -30,6 +30,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityPlaceEvent;
+import org.bukkit.event.entity.EntityTeleportEvent;
 import org.bukkit.event.entity.EntityToggleGlideEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
@@ -257,7 +258,10 @@ public final class EventListener implements Listener {
     }
 
     @EventHandler
-    private void onEndermanEscape(EndermanEscapeEvent event) {
-        plugin.applyGame(event.getEntity().getLocation(), game -> event.setCancelled(true));
+    private void onEntityTeleport(EntityTeleportEvent event) {
+        if (event.getEntity().getType() != EntityType.ENDERMAN) return;
+        plugin.applyGame(event.getEntity().getLocation(), game -> {
+                event.setTo(game.getArena().randomSpawnLocation());
+            });
     }
 }
