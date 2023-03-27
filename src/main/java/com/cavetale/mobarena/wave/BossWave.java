@@ -102,7 +102,7 @@ public final class BossWave extends Wave<BossWaveTag> {
             double wave = (double) game.getTag().getCurrentWaveIndex();
             double players = (double) game.countActivePlayers();
             // +50 per boss level, +10 per player
-            boss.setHealth(200 + 5.0 * wave + 10.0 * players);
+            livingBoss.setMaxHealth(200 + 5.0 * wave + 10.0 * players);
         }
         boss.spawn(location);
     }
