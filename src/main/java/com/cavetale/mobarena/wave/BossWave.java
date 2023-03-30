@@ -21,24 +21,37 @@ import static net.kyori.adventure.text.Component.textOfChildren;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 public final class BossWave extends Wave<BossWaveTag> {
-    protected  static final EnemyType[] BOSS_TYPES = {
-        EnemyType.DECAYED,
-        EnemyType.FORGOTTEN,
-        EnemyType.VENGEFUL,
-        EnemyType.SKELLINGTON,
-        EnemyType.LAVA_LORD,
-        EnemyType.FROSTWRECKER,
-        EnemyType.ICE_GOLEM,
-        EnemyType.ICEKELLY,
-        EnemyType.SNOBEAR,
-        EnemyType.QUEEN_BEE,
-        EnemyType.HEINOUS_HEN,
-        EnemyType.SPECTER,
-        EnemyType.WICKED_CRONE,
-        EnemyType.INFERNAL_PHANTASM,
-        EnemyType.GHAST_BOSS,
-        EnemyType.PIGLIN_BRUTE_BOSS,
-    };
+    public ArrayList<EnemyType> getBossTypes() {
+        final int wave = game.getTag().getCurrentWaveIndex();
+        ArrayList<EnemyType> result = new ArrayList<>();
+        if (wave < 50) {
+            result.add(EnemyType.QUEEN_BEE);
+            result.add(EnemyType.HEINOUS_HEN);
+            result.add(EnemyType.SNOBEAR);
+            result.add(EnemyType.ICE_GOLEM);
+        }
+        if (wave >= 30) {
+            result.add(EnemyType.DECAYED); // Wither Skeleton
+            result.add(EnemyType.SKELLINGTON);
+            result.add(EnemyType.ICEKELLY); // Stray
+            result.add(EnemyType.FORGOTTEN); // Evoker
+            result.add(EnemyType.LAVA_LORD); // Magma Cube
+            result.add(EnemyType.FROSTWRECKER); // Drowned
+            result.add(EnemyType.SPECTER); // Phantom
+            result.add(EnemyType.INFERNAL_PHANTASM); // Blaze
+            result.add(EnemyType.GHAST_BOSS);
+            result.add(EnemyType.PIGLIN_BRUTE_BOSS);
+        }
+        if (wave >= 50) {
+            result.add(EnemyType.VENGEFUL); // Wither
+            result.add(EnemyType.WICKED_CRONE);
+        }
+        if (wave >= 100) {
+            result.add(EnemyType.WARDEN_BOSS);
+        }
+        return result;
+    }
+
     protected Component bossDisplayName = Component.empty();
 
     protected BossWave(final Game game) {
@@ -51,15 +64,15 @@ public final class BossWave extends Wave<BossWaveTag> {
         if (game.getTag().getCurrentWaveIndex() == 100) {
             enemyType = EnemyType.WARDEN_BOSS;
         } else {
-            List<EnemyType> options = new ArrayList<>(List.of(BOSS_TYPES));
+            List<EnemyType> options = getBossTypes();
             options.removeAll(game.getTag().getDoneBosses());
             if (options.isEmpty()) {
-                enemyType = BOSS_TYPES[game.getRandom().nextInt(BOSS_TYPES.length)];
-            } else {
-                enemyType = options.get(game.getRandom().nextInt(options.size()));
-                game.getTag().getDoneBosses().add(enemyType);
+                game.getTag().getDoneBosses().clear();
+                options = getBossTypes();
             }
+            enemyType = options.get(game.getRandom().nextInt(options.size()));
         }
+        game.getTag().getDoneBosses().add(enemyType);
         tag.setEnemyType(enemyType);
         Enemy boss = tag.getEnemyType().create(game.getEnemyContext());
         tag.setBossEnemyId(boss.getEnemyId());
