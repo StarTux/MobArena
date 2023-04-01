@@ -35,6 +35,7 @@ public final class GamePlayer {
 
     public void changeStat(Stat stat, double value) {
         tag.getStats().compute(stat, (e, i) -> (i != null ? i + value : value));
+        tag.getWaveStats().compute(stat, (e, i) -> (i != null ? i + value : value));
     }
 
     public double getStat(Stat stat) {
@@ -42,8 +43,16 @@ public final class GamePlayer {
     }
 
     public int getIntStat(Stat stat) {
-        Double result = tag.getStats().get(stat);
-        if (result == null) return 0;
+        double result = tag.getStats().getOrDefault(stat, 0.0);
         return (int) Math.round(result);
+    }
+
+    public int getIntWaveStat(Stat stat) {
+        double result = tag.getWaveStats().getOrDefault(stat, 0.0);
+        return (int) Math.round(result);
+    }
+
+    public void clearWaveStats() {
+        tag.getWaveStats().clear();
     }
 }

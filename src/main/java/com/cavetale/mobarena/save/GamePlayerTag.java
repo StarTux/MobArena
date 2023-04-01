@@ -13,4 +13,5 @@ public final class GamePlayerTag {
     protected boolean playing;
     protected boolean didPlay;
     protected Map<Stat, Double> stats = new EnumMap<>(Stat.class);
+    protected Map<Stat, Double> waveStats = new EnumMap<>(Stat.class);
 }

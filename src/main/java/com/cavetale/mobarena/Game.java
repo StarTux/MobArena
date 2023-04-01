@@ -95,7 +95,6 @@ public final class Game {
     public void addPlayer(Player player) {
         getGamePlayer(player).getTag().setPlaying(true);
         getGamePlayer(player).getTag().setDidPlay(true);
-
     }
 
     public GamePlayer getGamePlayer(Player player) {
@@ -291,6 +290,9 @@ public final class Game {
             }
         }
         currentWave.create();
+        for (GamePlayer gamePlayer : playerMap.values()) {
+            gamePlayer.clearWaveStats();
+        }
         if (plugin.gameList.indexOf(this) == 0 && !"admin".equals(name)) {
             List<Component> lines = List.of(text("/mobarena", GREEN),
                                             textOfChildren(text(tiny("players "), GRAY), text(countActivePlayers(), WHITE),
@@ -349,7 +351,12 @@ public final class Game {
                                      text(tag.getCurrentWaveIndex(), GREEN)));
         }
         stateHandler.onPlayerSidebar(player, lines);
-        lines.add(text(Unicode.tiny(currentStat.displayName.toLowerCase()), RED));
+        GamePlayer gamePlayer = getGamePlayer(player);
+        if (gamePlayer != null && gamePlayer.getTag().isPlaying()) {
+            lines.add(textOfChildren(text(Unicode.tiny("kills "), GRAY), text(gamePlayer.getIntWaveStat(Stat.KILLS), RED)));
+            lines.add(textOfChildren(text(Unicode.tiny("dmg "), GRAY), text(gamePlayer.getIntWaveStat(Stat.DAMAGE), RED)));
+        }
+        lines.add(text(Unicode.tiny("total " + currentStat.displayName.toLowerCase()), RED));
         List<Player> players = getActivePlayers();
         players.sort((b, a) -> Double.compare(getGamePlayer(a).getStat(currentStat),
                                               getGamePlayer(b).getStat(currentStat)));
@@ -397,7 +404,9 @@ public final class Game {
                     gamePlayer.changeStat(Stat.DAMAGE, value);
                 }
             });
-        currentWave.onDamageCalculation(event);
+        if (currentWave != null) {
+            currentWave.onDamageCalculation(event);
+        }
     }
 
     public void onEntityDeath(EntityDeathEvent event) {
@@ -425,6 +434,7 @@ public final class Game {
     }
 
     protected void onProjectileLaunch(Projectile projectile) {
+        if (currentWave == null) return;
         currentWave.onProjectileLaunch(projectile);
     }
 }
