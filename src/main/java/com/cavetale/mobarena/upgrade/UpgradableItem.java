@@ -19,23 +19,22 @@ public final class UpgradableItem {
         for (Enchantment enchantment : Enchantment.values()) {
             if (!enchantment.canEnchantItem(itemStack)) continue;
             final int oldLevel = itemStack.getEnchantmentLevel(enchantment);
+            int conflictingLevel = 0;
             boolean conflicts = false;
             if (itemStack.getEnchantmentLevel(enchantment) == 0) {
                 for (Enchantment oldEnchant : Enchantment.values()) {
                     if (enchantment == oldEnchant) continue;
-                    if (itemStack.getEnchantmentLevel(oldEnchant) > 0 && enchantment.conflictsWith(oldEnchant)) {
+                    conflictingLevel = itemStack.getEnchantmentLevel(oldEnchant);
+                    if (conflictingLevel > 0 && enchantment.conflictsWith(oldEnchant)) {
                         conflicts = true;
                     }
                 }
             }
             if (!enchantment.isCursed() && oldLevel < enchantment.getMaxLevel()) {
                 final int requiredLevel = conflicts
-                    ? oldLevel + 1 + 10
+                    ? oldLevel + conflictingLevel + 9
                     : oldLevel + 1;
                 upgrades.add(new EnchantmentUpgrade(enchantment, oldLevel + 1, requiredLevel));
-            }
-            if (oldLevel > 0) {
-                upgrades.add(new EnchantmentRemoval(enchantment, oldLevel));
             }
         }
         if (itemStack.getItemMeta() instanceof Damageable damageable && damageable.getDamage() > 1) {
