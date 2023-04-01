@@ -15,9 +15,10 @@ import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 final class GamePrepareHandler extends GameStateHandler<GameStateTag> {
-    protected static final Duration DURATION = Duration.ofSeconds(30);
+    protected static final Duration DURATION = Duration.ofSeconds(60);
     protected static final Duration EVENT_DURATION = Duration.ofMinutes(5);
     protected boolean skipped;
+    protected float progress;
 
     protected GamePrepareHandler(final Game game) {
         super(game, GameState.PREPARE, GameStateTag.class, GameStateTag::new);
@@ -27,6 +28,7 @@ final class GamePrepareHandler extends GameStateHandler<GameStateTag> {
     public GameState tick() {
         Duration time = tag.getTime();
         Duration duration = game.getName().equals("event") ? EVENT_DURATION : DURATION;
+        progress = (float) time.toMillis() / (float) duration.toMillis();
         if (skipped || time.toMillis() > duration.toMillis()) {
             return GameState.WAVE_WARMUP;
         }
@@ -51,7 +53,7 @@ final class GamePrepareHandler extends GameStateHandler<GameStateTag> {
     public void updateBossBar(BossBar bossBar) {
         bossBar.color(BossBar.Color.WHITE);
         bossBar.overlay(BossBar.Overlay.PROGRESS);
-        bossBar.progress(0.0f);
+        bossBar.progress(progress);
         bossBar.name(text("Preparing Arena", DARK_GRAY));
     }
 }
