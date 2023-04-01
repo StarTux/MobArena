@@ -10,6 +10,7 @@ import com.cavetale.mobarena.save.KillWaveTag;
 import com.cavetale.mobarena.state.GameState;
 import com.cavetale.mobarena.util.Time;
 import com.cavetale.mytems.Mytems;
+import com.cavetale.mytems.util.Entities;
 import com.cavetale.mytems.util.Skull;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -27,23 +28,29 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.entity.AbstractSkeleton;
 import org.bukkit.entity.Creeper;
+import org.bukkit.entity.Drowned;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Evoker;
 import org.bukkit.entity.Flying;
 import org.bukkit.entity.Hoglin;
+import org.bukkit.entity.Husk;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
+import org.bukkit.entity.PigZombie;
 import org.bukkit.entity.Piglin;
 import org.bukkit.entity.PiglinAbstract;
 import org.bukkit.entity.Pillager;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Slime;
+import org.bukkit.entity.Stray;
 import org.bukkit.entity.Vindicator;
 import org.bukkit.entity.WitherSkeleton;
 import org.bukkit.entity.Zombie;
+import org.bukkit.entity.ZombieVillager;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -83,6 +90,7 @@ public final class KillWave extends Wave<KillWaveTag> {
         idx = 10;
         ENTITY_MIN_WAVE_MAP.put(EntityType.DROWNED, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.HUSK, idx);
+        ENTITY_MIN_WAVE_MAP.put(EntityType.STRAY, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.SLIME, idx);
         idx = 20;
         ENTITY_MIN_WAVE_MAP.put(EntityType.BLAZE, idx);
@@ -194,30 +202,53 @@ public final class KillWave extends Wave<KillWaveTag> {
     protected void spawnMobCallback(Mob mob) {
         mob.setPersistent(false);
         mob.setRemoveWhenFarAway(false);
+        Entities.setTransient(mob);
         if (mob instanceof Slime slime) {
             slime.setSize(3);
         } else if (mob instanceof Zombie zombie) {
-            zombie.getEquipment().setHelmet(Mytems.KOBOLD_HEAD.createItemStack());
             zombie.setShouldBurnInDay(false);
-            equipZombieOrSkeleton(zombie);
-        } else if (mob instanceof WitherSkeleton skeleton) {
-            if (game.getRandom().nextInt(2) == 0) {
-                skeleton.getEquipment().setItemInMainHand(mobItem(Material.BOW));
-            } else {
-                skeleton.getEquipment().setItemInMainHand(mobItem(Material.IRON_SWORD));
+            zombie.setCanBreakDoors(false);
+            final double babyChance;
+            if (zombie instanceof Drowned) {
+                babyChance = 0.1;
+            } else if (zombie instanceof Husk) {
+                babyChance = 0.1;
+            } else if (zombie instanceof PigZombie pigZombie) {
+                pigZombie.setAngry(true);
+                babyChance = 0.1;
+            } else if (zombie instanceof ZombieVillager) {
+                babyChance = 0.1;
+            } else { // regular zombie
+                equipZombieOrSkeleton(zombie);
+                zombie.getEquipment().setHelmet(Mytems.KOBOLD_HEAD.createItemStack());
+                babyChance = 0.2;
             }
-            skeleton.getEquipment().setArmorContents(new ItemStack[] {
-                    mobItem(Material.NETHERITE_BOOTS),
-                    mobItem(Material.NETHERITE_LEGGINGS),
-                    mobItem(Material.NETHERITE_CHESTPLATE),
-                    mobItem(Material.NETHERITE_HELMET),
-                });
+            if (game.getRandom().nextDouble() < babyChance) {
+                zombie.setBaby();
+            } else {
+                zombie.setAdult();
+            }
+        } else if (mob instanceof AbstractSkeleton skeleton) {
             skeleton.setShouldBurnInDay(false);
-        } else if (mob instanceof Skeleton skeleton) {
-            skeleton.getEquipment().setItemInMainHand(mobItem(Material.BOW));
-            skeleton.getEquipment().setHelmet(SKELETON_SKULL.create());
-            skeleton.setShouldBurnInDay(false);
-            equipZombieOrSkeleton(skeleton);
+            if (skeleton instanceof Skeleton) {
+                skeleton.getEquipment().setItemInMainHand(mobItem(Material.BOW));
+                skeleton.getEquipment().setHelmet(SKELETON_SKULL.create());
+                equipZombieOrSkeleton(skeleton);
+            } else if (skeleton instanceof Stray) {
+                equipZombieOrSkeleton(skeleton);
+            } else if (skeleton instanceof WitherSkeleton) {
+                if (game.getRandom().nextInt(2) == 0) {
+                    skeleton.getEquipment().setItemInMainHand(mobItem(Material.BOW));
+                } else {
+                    skeleton.getEquipment().setItemInMainHand(mobItem(Material.IRON_SWORD));
+                }
+                skeleton.getEquipment().setArmorContents(new ItemStack[] {
+                        mobItem(Material.NETHERITE_BOOTS),
+                        mobItem(Material.NETHERITE_LEGGINGS),
+                        mobItem(Material.NETHERITE_CHESTPLATE),
+                        mobItem(Material.NETHERITE_HELMET),
+                    });
+            }
         } else if (mob instanceof Hoglin hoglin) {
             hoglin.setImmuneToZombification(true);
             hoglin.setIsAbleToBeHunted(false);
