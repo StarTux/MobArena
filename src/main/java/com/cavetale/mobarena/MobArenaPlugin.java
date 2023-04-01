@@ -42,6 +42,7 @@ public final class MobArenaPlugin extends JavaPlugin {
     protected File gamesFolder;
     protected File configFile;
     public static final Component TITLE = join(noSeparators(), text("Mob", DARK_RED), text("ARENA", DARK_AQUA));
+    protected List<String> worldNames = new ArrayList<>();
 
     @Override
     public void onEnable() {
@@ -79,7 +80,13 @@ public final class MobArenaPlugin extends JavaPlugin {
     }
 
     protected void loadArenas() {
-        World world = Bukkit.getWorld("halloween_arenas");
+        final String worldName = "halloween_arenas";
+        World world = Bukkit.getWorld(worldName);
+        if (world == null) {
+            getLogger().severe("Arena world not found: " + worldName);
+            return;
+        }
+        worldNames.add(world.getName());
         world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, true);
         world.setGameRule(GameRule.COMMAND_BLOCK_OUTPUT, true);
         world.setGameRule(GameRule.DISABLE_ELYTRA_MOVEMENT_CHECK, true);
@@ -275,5 +282,9 @@ public final class MobArenaPlugin extends JavaPlugin {
                         player.sendMessage(text("You don't have a Ruby!", RED));
                     });
         gui.open(player);
+    }
+
+    public boolean isArenaWorld(World world) {
+        return worldNames.contains(world.getName());
     }
 }

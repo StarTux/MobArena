@@ -13,6 +13,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -33,6 +34,7 @@ import org.bukkit.event.entity.EntityPlaceEvent;
 import org.bukkit.event.entity.EntityTeleportEvent;
 import org.bukkit.event.entity.EntityToggleGlideEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
+import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
@@ -94,12 +96,14 @@ public final class EventListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     private void onEntityExplode(EntityExplodeEvent event) {
-        plugin.applyGame(event.getEntity().getLocation(), game -> event.blockList().clear());
+        if (!plugin.isArenaWorld(event.getEntity().getWorld())) return;
+        event.blockList().clear();
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     private void onBlockExplode(BlockExplodeEvent event) {
-        plugin.applyGame(event.getBlock().getLocation(), game -> event.blockList().clear());
+        if (!plugin.isArenaWorld(event.getBlock().getWorld())) return;
+        event.blockList().clear();
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
@@ -109,47 +113,53 @@ public final class EventListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     private void onEntityChangeBlock(EntityChangeBlockEvent event) {
-        plugin.applyGame(event.getBlock().getLocation(), game -> event.setCancelled(true));
+        if (!plugin.isArenaWorld(event.getBlock().getWorld())) return;
+        event.setCancelled(true);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     private void onEntityBlockForm(EntityBlockFormEvent event) {
-        plugin.applyGame(event.getBlock().getLocation(), game -> event.setCancelled(true));
+        if (!plugin.isArenaWorld(event.getBlock().getWorld())) return;
+        event.setCancelled(true);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     private void onPlayerBlockAbility(PlayerBlockAbilityQuery event) {
-        plugin.applyGame(event.getBlock().getLocation(), game -> {
-                switch (event.getAction()) {
-                case SPAWN_MOB: return;
-                default: event.setCancelled(true);
-                }
-            });
+        if (event.getPlayer().getGameMode() == GameMode.CREATIVE || !plugin.isArenaWorld(event.getBlock().getWorld())) return;
+        switch (event.getAction()) {
+        case SPAWN_MOB: return;
+        default: event.setCancelled(true);
+        }
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     private void onEntityPlace(EntityPlaceEvent event) {
-        plugin.applyGame(event.getEntity().getLocation(), game -> event.setCancelled(true));
+        if (!plugin.isArenaWorld(event.getBlock().getWorld())) return;
+        event.setCancelled(true);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     private void onBlockPlace(BlockPlaceEvent event) {
-        plugin.applyGame(event.getBlock().getLocation(), game -> event.setCancelled(true));
+        if (event.getPlayer().getGameMode() == GameMode.CREATIVE || !plugin.isArenaWorld(event.getBlock().getWorld())) return;
+        event.setCancelled(true);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     private void onBlockBreak(BlockBreakEvent event) {
-        plugin.applyGame(event.getBlock().getLocation(), game -> event.setCancelled(true));
+        if (event.getPlayer().getGameMode() == GameMode.CREATIVE || !plugin.isArenaWorld(event.getBlock().getWorld())) return;
+        event.setCancelled(true);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     private void onPlayerBucketEmpty(PlayerBucketEmptyEvent event) {
-        plugin.applyGame(event.getBlock().getLocation(), game -> event.setCancelled(true));
+        if (event.getPlayer().getGameMode() == GameMode.CREATIVE || !plugin.isArenaWorld(event.getBlock().getWorld())) return;
+        event.setCancelled(true);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     private void onPlayerBucketFill(PlayerBucketFillEvent event) {
-        plugin.applyGame(event.getBlock().getLocation(), game -> event.setCancelled(true));
+        if (event.getPlayer().getGameMode() == GameMode.CREATIVE || !plugin.isArenaWorld(event.getBlock().getWorld())) return;
+        event.setCancelled(true);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)
@@ -210,12 +220,19 @@ public final class EventListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     private void onBlockIgnite(BlockIgniteEvent event) {
-        plugin.applyGame(event.getBlock().getLocation(), game -> event.setCancelled(true));
+        if (!plugin.isArenaWorld(event.getBlock().getWorld())) return;
+        event.setCancelled(true);
     }
 
     @EventHandler(ignoreCancelled = true)
     private void onHangingBreak(HangingBreakEvent event) {
-        plugin.applyGame(event.getEntity().getLocation(), game -> event.setCancelled(true));
+        if (!plugin.isArenaWorld(event.getEntity().getWorld())) return;
+        if (event instanceof HangingBreakByEntityEvent event2
+            && event2.getRemover() instanceof Player player
+            && player.getGameMode() == GameMode.CREATIVE) {
+            return;
+        }
+        event.setCancelled(true);
     }
 
     @EventHandler(ignoreCancelled = true)
