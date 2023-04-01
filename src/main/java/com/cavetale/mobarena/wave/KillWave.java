@@ -239,6 +239,7 @@ public final class KillWave extends Wave<KillWaveTag> {
                 skeleton.getEquipment().setHelmet(SKELETON_SKULL.create());
                 equipZombieOrSkeleton(skeleton);
             } else if (skeleton instanceof Stray) {
+                skeleton.getEquipment().setItemInMainHand(mobItem(Material.BOW));
                 equipZombieOrSkeleton(skeleton);
             } else if (skeleton instanceof WitherSkeleton) {
                 if (game.getRandom().nextInt(2) == 0) {
