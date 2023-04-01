@@ -4,12 +4,14 @@ import com.cavetale.core.util.Json;
 import com.cavetale.enemy.Enemy;
 import com.cavetale.mobarena.Game;
 import com.cavetale.mobarena.save.WaveTag;
+import com.cavetale.mytems.event.combat.DamageCalculationEvent;
 import java.util.List;
 import java.util.function.Supplier;
 import lombok.Data;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 
 @Data
 public abstract class Wave<T extends WaveTag> {
@@ -66,6 +68,10 @@ public abstract class Wave<T extends WaveTag> {
     }
 
     public abstract void onDeath(Enemy enemy);
+
+    public void onProjectileLaunch(Projectile proj) { }
+
+    public void onDamageCalculation(DamageCalculationEvent event) { }
 
     public void updateBossBar(BossBar bossBar) { }
 

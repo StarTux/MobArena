@@ -10,6 +10,7 @@ import com.cavetale.mobarena.save.KillWaveTag;
 import com.cavetale.mobarena.state.GameState;
 import com.cavetale.mobarena.util.Time;
 import com.cavetale.mytems.Mytems;
+import com.cavetale.mytems.event.combat.DamageCalculationEvent;
 import com.cavetale.mytems.util.Entities;
 import com.cavetale.mytems.util.Skull;
 import java.time.Duration;
@@ -28,12 +29,14 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.AbstractSkeleton;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Drowned;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Evoker;
+import org.bukkit.entity.Fireball;
 import org.bukkit.entity.Flying;
 import org.bukkit.entity.Hoglin;
 import org.bukkit.entity.Husk;
@@ -44,6 +47,7 @@ import org.bukkit.entity.Piglin;
 import org.bukkit.entity.PiglinAbstract;
 import org.bukkit.entity.Pillager;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Slime;
 import org.bukkit.entity.Stray;
@@ -426,6 +430,38 @@ public final class KillWave extends Wave<KillWaveTag> {
                 }
             }
         }
+    }
+
+    /**
+     * Scale arrow damage in a similar fashion to attack damage, see above.
+     */
+    @Override
+    public void onProjectileLaunch(Projectile proj) {
+        if (!(proj instanceof AbstractArrow arrow)) return;
+        if (!(proj.getShooter() instanceof LivingEntity living)) return;
+        Enemy enemy = Enemy.of(living);
+        if (enemy == null || !game.getEnemies().contains(enemy)) return;
+        double base = arrow.getDamage();
+        double wave = (double) game.getTag().getCurrentWaveIndex();
+        arrow.setDamage(base + 0.05 * wave);
+        game.getPlugin().getLogger().info("[Projectile] Did set damage of " + arrow.getType()
+                                          + " from " + base + " to " + arrow.getDamage());
+    }
+
+    /**
+     * Fireballs do not set a damage value, so we manipulate the base
+     * damage in the DamageCalculation.
+     */
+    @Override
+    public void onDamageCalculation(DamageCalculationEvent event) {
+        if (!event.targetIsPlayer() || !(event.getCalculation().getProjectile() instanceof Fireball fireball)) return;
+        Enemy enemy = Enemy.of(event.getAttacker());
+        if (enemy == null || !game.getEnemies().contains(enemy)) return;
+        double base = event.getCalculation().getBaseDamage();
+        double wave = (double) game.getTag().getCurrentWaveIndex();
+        event.getCalculation().setBaseDamage(base + 0.05 * wave);
+        game.getPlugin().getLogger().info("[DamageCalculation] Did set base damage of " + fireball.getType()
+                                          + " from " + base + " to " + event.getCalculation().getBaseDamage());
     }
 
     @Override

@@ -27,6 +27,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.Event.Result;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
@@ -383,17 +384,20 @@ public final class Game {
     }
 
     public void onDamageCalculation(DamageCalculationEvent event) {
-        if (event.targetIsPlayer()) {
-            GamePlayer gamePlayer = getGamePlayer(event.getTargetPlayer());
-            double value = event.getCalculation().getTotalDamage();
-            if (value < 0.0) return;
-            gamePlayer.changeStat(Stat.TAKEN, value);
-        } else if (event.attackerIsPlayer()) {
-            GamePlayer gamePlayer = getGamePlayer(event.getAttackerPlayer());
-            double value = event.getCalculation().getTotalDamage();
-            if (value <= 0.0) return;
-            gamePlayer.changeStat(Stat.DAMAGE, value);
-        }
+        event.addPostDamageAction(true, () -> {
+                if (event.targetIsPlayer()) {
+                    GamePlayer gamePlayer = getGamePlayer(event.getTargetPlayer());
+                    double value = event.getCalculation().getTotalDamage();
+                    if (value < 0.0) return;
+                    gamePlayer.changeStat(Stat.TAKEN, value);
+                } else if (event.attackerIsPlayer()) {
+                    GamePlayer gamePlayer = getGamePlayer(event.getAttackerPlayer());
+                    double value = event.getCalculation().getTotalDamage();
+                    if (value <= 0.0) return;
+                    gamePlayer.changeStat(Stat.DAMAGE, value);
+                }
+            });
+        currentWave.onDamageCalculation(event);
     }
 
     public void onEntityDeath(EntityDeathEvent event) {
@@ -418,5 +422,9 @@ public final class Game {
 
     public boolean isEvent() {
         return "event".equals(name);
+    }
+
+    protected void onProjectileLaunch(Projectile projectile) {
+        currentWave.onProjectileLaunch(projectile);
     }
 }

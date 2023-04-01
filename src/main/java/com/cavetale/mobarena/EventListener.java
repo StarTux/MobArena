@@ -32,6 +32,7 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityPlaceEvent;
 import org.bukkit.event.entity.EntityTeleportEvent;
 import org.bukkit.event.entity.EntityToggleGlideEvent;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
@@ -242,7 +243,7 @@ public final class EventListener implements Listener {
             });
     }
 
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     private void onDamageCalculation(DamageCalculationEvent event) {
         plugin.applyGame(event.getTarget().getLocation(), game -> game.onDamageCalculation(event));
     }
@@ -262,6 +263,13 @@ public final class EventListener implements Listener {
         if (event.getEntity().getType() != EntityType.ENDERMAN) return;
         plugin.applyGame(event.getEntity().getLocation(), game -> {
                 event.setTo(game.getArena().randomSpawnLocation());
+            });
+    }
+
+    @EventHandler
+    private void onProjectileLaunch(ProjectileLaunchEvent event) {
+        plugin.applyGame(event.getEntity().getLocation(), game -> {
+                game.onProjectileLaunch(event.getEntity());
             });
     }
 }
