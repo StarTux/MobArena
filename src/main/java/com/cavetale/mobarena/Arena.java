@@ -79,16 +79,16 @@ public final class Arena {
         this.flyingMobVectorList = new ArrayList<>(flyingmob);
         this.bossChestVector = bosschest;
         if (spawnVectorList.isEmpty()) {
-            MobArenaPlugin.instance.getLogger().warning("Arena " + name + ": No spawns!");
+            MobArenaPlugin.instance.getLogger().severe("Arena " + name + ": No spawns!");
         }
         if (mobVectorList.isEmpty()) {
-            MobArenaPlugin.instance.getLogger().warning("Arena " + name + ": No mobs!");
+            MobArenaPlugin.instance.getLogger().severe("Arena " + name + ": No mobs!");
         }
         if (flyingMobVectorList.isEmpty()) {
             MobArenaPlugin.instance.getLogger().warning("Arena " + name + ": No flying mobs!");
         }
         if (bossChestVector == null) {
-            MobArenaPlugin.instance.getLogger().warning("Arena " + name + ": No flying mobs!");
+            MobArenaPlugin.instance.getLogger().severe("Arena " + name + ": No boss chest!");
         }
     }
 
