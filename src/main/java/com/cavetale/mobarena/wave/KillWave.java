@@ -69,6 +69,7 @@ import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 public final class KillWave extends Wave<KillWaveTag> {
     protected static final Map<EntityType, Integer> ENTITY_MIN_WAVE_MAP = new EnumMap<>(EntityType.class);
+    protected static final Map<EntityType, Integer> ENTITY_WEIGHT_MAP = new EnumMap<>(EntityType.class);
     protected static final Skull SKELETON_SKULL =
         new Skull("Skeleton",
                   UUID.fromString("aa84e219-41f5-4a9f-a4e0-49e003aa29e8"),
@@ -119,6 +120,11 @@ public final class KillWave extends Wave<KillWaveTag> {
         ENTITY_MIN_WAVE_MAP.put(EntityType.EVOKER, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.RAVAGER, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.ILLUSIONER, idx);
+        // Weights
+        for (EntityType entityType : ENTITY_MIN_WAVE_MAP.keySet()) {
+            ENTITY_WEIGHT_MAP.put(entityType, 3);
+        }
+        ENTITY_WEIGHT_MAP.put(EntityType.ENDERMAN, 1);
     }
 
     @Override
@@ -128,15 +134,22 @@ public final class KillWave extends Wave<KillWaveTag> {
 
     @Override
     public void create() {
-        int mobCount = Math.max(6, ((game.getTag().getCurrentWaveIndex() * 2) / 3) + game.countActivePlayers());
-        List<EntityType> entityTypeList = new ArrayList<>(ENTITY_MIN_WAVE_MAP.keySet());
-        entityTypeList.removeIf(et -> ENTITY_MIN_WAVE_MAP.get(et) > game.getTag().getCurrentWaveIndex());
+        final int mobCount = Math.max(8, game.getTag().getCurrentWaveIndex() / 2 + game.countActivePlayers());
+        List<EntityType> entityTypeList = new ArrayList<>();
+        for (EntityType entityType : ENTITY_MIN_WAVE_MAP.keySet()) {
+            int min = ENTITY_MIN_WAVE_MAP.get(entityType);
+            if (min < game.getTag().getCurrentWaveIndex()) {
+                int weight = ENTITY_WEIGHT_MAP.get(entityType);
+                for (int i = 0; i < weight; i += 1) {
+                    entityTypeList.add(entityType);
+                }
+            }
+        }
+        assert !entityTypeList.isEmpty();
+        final int mobTypeCount = Math.min(entityTypeList.size(), ((mobCount - 1) / 16) + 1);
         Collections.shuffle(entityTypeList);
-        int mobTypeCount = mobCount / 16;
-        if (mobTypeCount == 0) mobTypeCount = 1;
-        entityTypeList = List.copyOf(entityTypeList.subList(0, Math.min(entityTypeList.size(), mobTypeCount)));
         for (int i = 0; i < mobCount; i += 1) {
-            EntityType entityType = entityTypeList.get(i % entityTypeList.size());
+            EntityType entityType = entityTypeList.get(i % mobTypeCount);
             KillWaveTag.MobSpawn mobSpawn = new KillWaveTag.MobSpawn();
             mobSpawn.setEntityType(entityType);
             tag.getMobSpawnList().add(mobSpawn);
