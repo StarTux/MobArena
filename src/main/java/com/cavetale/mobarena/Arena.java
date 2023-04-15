@@ -33,6 +33,8 @@ public final class Arena {
     protected final List<Vec3i> mobVectorList;
     protected final List<Vec3i> flyingMobVectorList;
     protected final Vec3i bossChestVector;
+    protected final List<Cuboid> forbiddenList = new ArrayList<>();
+    protected final List<Cuboid> bossEscapeList = new ArrayList<>();
 
     public Arena(final World world, final String name, final List<Area> areaList) {
         this.name = name;
@@ -62,13 +64,32 @@ public final class Arena {
             case "bosschest":
                 bosschest = area.min;
                 break;
-            default: break;
+            case "forbidden":
+                forbiddenList.add(area.toCuboid());
+                break;
+            case "bossescape":
+                bossEscapeList.add(area.toCuboid());
+                break;
+            default:
+                MobArenaPlugin.instance.getLogger().warning("Arena " + name + ": Unknown area: " + area);
             }
         }
         this.spawnVectorList = new ArrayList<>(spawn);
         this.mobVectorList = new ArrayList<>(mob);
         this.flyingMobVectorList = new ArrayList<>(flyingmob);
         this.bossChestVector = bosschest;
+        if (spawnVectorList.isEmpty()) {
+            MobArenaPlugin.instance.getLogger().warning("Arena " + name + ": No spawns!");
+        }
+        if (mobVectorList.isEmpty()) {
+            MobArenaPlugin.instance.getLogger().warning("Arena " + name + ": No mobs!");
+        }
+        if (flyingMobVectorList.isEmpty()) {
+            MobArenaPlugin.instance.getLogger().warning("Arena " + name + ": No flying mobs!");
+        }
+        if (bossChestVector == null) {
+            MobArenaPlugin.instance.getLogger().warning("Arena " + name + ": No flying mobs!");
+        }
     }
 
     public World getWorld() {
@@ -133,5 +154,19 @@ public final class Arena {
 
     public boolean isInWorld(Location location) {
         return worldName.equals(location.getWorld().getName());
+    }
+
+    public boolean isForbidden(Location location) {
+        for (Cuboid forbidden : forbiddenList) {
+            if (forbidden.contains(location)) return true;
+        }
+        return false;
+    }
+
+    public boolean isBossEscape(Location location) {
+        for (Cuboid bossEscape : bossEscapeList) {
+            if (bossEscape.contains(location)) return true;
+        }
+        return false;
     }
 }

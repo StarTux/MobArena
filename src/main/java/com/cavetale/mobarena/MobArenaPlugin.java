@@ -32,6 +32,7 @@ import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 public final class MobArenaPlugin extends JavaPlugin {
+    protected static MobArenaPlugin instance;
     protected final MobArenaCommand mobarenaCommand = new MobArenaCommand(this);
     protected final MobArenaAdminCommand mobarenaAdminCommand = new MobArenaAdminCommand(this);
     protected final EventListener eventListener = new EventListener(this);
@@ -46,6 +47,7 @@ public final class MobArenaPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        instance = this;
         configFile = new File(getDataFolder(), "config.json");
         importConfig();
         gamesFolder = new File(getDataFolder(), "games");

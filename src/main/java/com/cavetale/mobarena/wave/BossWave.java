@@ -97,7 +97,19 @@ public final class BossWave extends Wave<BossWaveTag> {
                                               .collect(Collectors.joining(", ")));
         } else if (!boss.isValid()) { // isSpawned
             spawnBoss();
+        } else {
+            Location location = boss.getLocation();
+            if (!game.getArena().isInArena(location) || game.getArena().isForbidden(location) || game.getArena().isBossEscape(location)) {
+                boss.teleport(getRandomSpawnLocation());
+            }
         }
+    }
+
+    private Location getRandomSpawnLocation() {
+        return switch (tag.getEnemyType()) {
+        case QUEEN_BEE, SPECTER, GHAST_BOSS -> game.getArena().randomFlyingMobLocation();
+        default -> game.getArena().randomMobLocation();
+        };
     }
 
     private void spawnBoss() {
@@ -106,10 +118,7 @@ public final class BossWave extends Wave<BossWaveTag> {
             game.getPlugin().getLogger().info("[" + game.getName() + "] " + game.getTag().getCurrentWaveIndex() + ": Boss is null: " + tag);
             return;
         }
-        final Location location = switch (tag.getEnemyType()) {
-        case QUEEN_BEE, SPECTER, GHAST_BOSS -> game.getArena().randomFlyingMobLocation();
-        default -> game.getArena().randomMobLocation();
-        };
+        final Location location = getRandomSpawnLocation();
         boss.setSpawnLocation(location);
         if (boss instanceof LivingBoss livingBoss) {
             double wave = (double) game.getTag().getCurrentWaveIndex();

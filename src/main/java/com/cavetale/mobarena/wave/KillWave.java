@@ -166,6 +166,9 @@ public final class KillWave extends Wave<KillWaveTag> {
                 game.getEnemies().add(enemy);
                 mobSpawn.setEnemyId(enemy.getEnemyId());
             } else {
+                if (game.getArena().isForbidden(enemy.getLocation())) {
+                    doWarpHome = true;
+                }
                 if (doWarpHome) {
                     LivingEntity livingEntity = enemy instanceof LivingEnemy livingEnemy
                         ? livingEnemy.getLivingEntity()
