@@ -30,15 +30,15 @@ public final class BossWave extends Wave<BossWaveTag> {
             result.add(EnemyType.SNOBEAR);
             result.add(EnemyType.ICE_GOLEM);
         }
+        result.add(EnemyType.INFERNAL_PHANTASM); // Blaze
+        result.add(EnemyType.LAVA_LORD); // Magma Cube
+        result.add(EnemyType.SPECTER); // Phantom
         if (wave >= 30) {
             result.add(EnemyType.DECAYED); // Wither Skeleton
             result.add(EnemyType.SKELLINGTON);
             result.add(EnemyType.ICEKELLY); // Stray
             result.add(EnemyType.FORGOTTEN); // Evoker
-            result.add(EnemyType.LAVA_LORD); // Magma Cube
             result.add(EnemyType.FROSTWRECKER); // Drowned
-            result.add(EnemyType.SPECTER); // Phantom
-            result.add(EnemyType.INFERNAL_PHANTASM); // Blaze
             result.add(EnemyType.GHAST_BOSS);
             result.add(EnemyType.PIGLIN_BRUTE_BOSS);
         }
