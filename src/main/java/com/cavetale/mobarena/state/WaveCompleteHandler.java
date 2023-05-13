@@ -11,7 +11,7 @@ import net.kyori.adventure.text.Component;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 final class WaveCompleteHandler extends GameStateHandler<GameStateTag> {
-    protected static final Duration DURATION = Duration.ofSeconds(3);
+    protected static final Duration DURATION = Duration.ofSeconds(2);
     protected boolean skipped;
 
     protected WaveCompleteHandler(final Game game) {

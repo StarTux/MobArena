@@ -9,7 +9,7 @@ import org.bukkit.entity.Player;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 final class WaveWarmupHandler extends GameStateHandler<GameStateTag> {
-    protected static final Duration DURATION = Duration.ofSeconds(5);
+    protected static final Duration DURATION = Duration.ofSeconds(3);
     protected static final Duration LONG_DURATION = Duration.ofSeconds(15);
     protected long secondsLeft = -1;
     protected boolean skipped;
