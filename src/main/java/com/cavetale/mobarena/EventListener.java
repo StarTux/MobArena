@@ -45,6 +45,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.spigotmc.event.player.PlayerSpawnLocationEvent;
+import static com.cavetale.mobarena.util.Items.sendBrokenElytra;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
@@ -208,9 +209,10 @@ public final class EventListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     private void onPlayerToggleGlide(EntityToggleGlideEvent event) {
         if (!(event.getEntity() instanceof Player player)) return;
-        if (event.isGliding()) {
-            plugin.applyGame(player.getLocation(), game -> event.setCancelled(true));
-        }
+        if (!event.isGliding()) return;
+        if (!plugin.isArenaWorld(player.getLocation().getWorld())) return;
+        event.setCancelled(true);
+        sendBrokenElytra(player);
     }
 
     @EventHandler(ignoreCancelled = true)

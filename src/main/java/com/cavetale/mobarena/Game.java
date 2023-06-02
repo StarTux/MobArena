@@ -35,6 +35,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.scheduler.BukkitTask;
 import static com.cavetale.core.font.Unicode.tiny;
+import static com.cavetale.mobarena.util.Items.sendBrokenElytra;
 import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.textOfChildren;
@@ -126,6 +127,10 @@ public final class Game {
             if (!gamePlayer.bossBar) {
                 gamePlayer.bossBar = true;
                 player.showBossBar(bossBar);
+            }
+            if (player.isGliding()) {
+                player.setGliding(false);
+                sendBrokenElytra(player);
             }
         }
         // Remove obsolete players
