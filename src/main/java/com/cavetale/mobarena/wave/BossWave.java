@@ -121,10 +121,14 @@ public final class BossWave extends Wave<BossWaveTag> {
         final Location location = getRandomSpawnLocation();
         boss.setSpawnLocation(location);
         if (boss instanceof LivingBoss livingBoss) {
-            double wave = (double) game.getTag().getCurrentWaveIndex();
-            double players = (double) game.countActivePlayers();
-            // +10 per boss level, +50 per player
-            livingBoss.setMaxHealth(200 + 1.0 * wave + 50.0 * players);
+            final double wave = (double) game.getTag().getCurrentWaveIndex();
+            final double players = (double) game.countActivePlayers();
+            // +10 per boss level, +10 per player
+            final double health = 100.0 + 1.0 * wave + 10.0 * players;
+            // Maximum health according to the Wiki:
+            // https://minecraft.fandom.com/wiki/Attribute#Attributes
+            final double max = 1024.0;
+            livingBoss.setMaxHealth(Math.min(max, health));
         }
         boss.spawn(location);
     }
