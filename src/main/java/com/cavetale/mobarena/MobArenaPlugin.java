@@ -10,9 +10,11 @@ import com.cavetale.mytems.util.Items;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
@@ -47,6 +49,7 @@ public final class MobArenaPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        saveDefaultConfig();
         instance = this;
         configFile = new File(getDataFolder(), "config.json");
         importConfig();
@@ -82,7 +85,16 @@ public final class MobArenaPlugin extends JavaPlugin {
     }
 
     protected void loadArenas() {
-        final String worldName = "halloween_arenas";
+        Set<String> loadWorldNames = new HashSet<>();
+        loadWorldNames.add("halloween_arenas");
+        loadWorldNames.addAll(getConfig().getStringList("Worlds"));
+        getLogger().info("Worlds: " + loadWorldNames);
+        for (String worldName : loadWorldNames) {
+            loadArenas(worldName);
+        }
+    }
+
+    protected void loadArenas(String worldName) {
         World world = Bukkit.getWorld(worldName);
         if (world == null) {
             getLogger().severe("Arena world not found: " + worldName);
@@ -125,10 +137,13 @@ public final class MobArenaPlugin extends JavaPlugin {
         world.setGameRule(GameRule.SPECTATORS_GENERATE_CHUNKS, false);
         world.setGameRule(GameRule.UNIVERSAL_ANGER, true);
         world.setDifficulty(Difficulty.HARD);
+        int count = 0;
         for (Arena arena : loadArenas(world)) {
             arenaMap.put(arena.name, arena);
             arena.purge();
+            count += 1;
         }
+        getLogger().info(worldName + ": " + count + " arenas loaded");
     }
 
     protected void loadGames() {
