@@ -62,9 +62,8 @@ import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import static java.awt.Color.HSBtoRGB;
-import static net.kyori.adventure.text.Component.join;
 import static net.kyori.adventure.text.Component.text;
-import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
+import static net.kyori.adventure.text.Component.textOfChildren;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 public final class KillWave extends Wave<KillWaveTag> {
@@ -494,11 +493,9 @@ public final class KillWave extends Wave<KillWaveTag> {
 
     @Override
     public void onPlayerSidebar(Player player, List<Component> lines) {
-        lines.add(join(noSeparators(),
-                       text(Unicode.tiny("mobs "), GRAY),
-                       text(tag.getStillAlive(), GREEN)));
-        lines.add(join(noSeparators(),
-                       text(Unicode.tiny("time "), GRAY),
-                       Time.format(runningTime)));
+        lines.add(textOfChildren(text(Unicode.tiny("mobs "), GRAY),
+                                 text(tag.getStillAlive(), GREEN)));
+        lines.add(textOfChildren(text(Unicode.tiny("time "), GRAY),
+                                 Time.format(runningTime)));
     }
 }
