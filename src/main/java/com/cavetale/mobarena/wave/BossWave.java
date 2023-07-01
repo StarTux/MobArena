@@ -24,7 +24,7 @@ public final class BossWave extends Wave<BossWaveTag> {
     public ArrayList<EnemyType> getBossTypes() {
         final int wave = game.getTag().getCurrentWaveIndex();
         ArrayList<EnemyType> result = new ArrayList<>();
-        if (wave < 50) {
+        if (wave < 100) {
             result.add(EnemyType.QUEEN_BEE);
             result.add(EnemyType.HEINOUS_HEN);
             result.add(EnemyType.SNOBEAR);
@@ -33,13 +33,13 @@ public final class BossWave extends Wave<BossWaveTag> {
         result.add(EnemyType.INFERNAL_PHANTASM); // Blaze
         result.add(EnemyType.LAVA_LORD); // Magma Cube
         result.add(EnemyType.SPECTER); // Phantom
+        result.add(EnemyType.GHAST_BOSS);
         if (wave >= 30) {
             result.add(EnemyType.DECAYED); // Wither Skeleton
             result.add(EnemyType.SKELLINGTON);
             result.add(EnemyType.ICEKELLY); // Stray
             result.add(EnemyType.FORGOTTEN); // Evoker
             result.add(EnemyType.FROSTWRECKER); // Drowned
-            result.add(EnemyType.GHAST_BOSS);
             result.add(EnemyType.PIGLIN_BRUTE_BOSS);
         }
         if (wave >= 50) {
