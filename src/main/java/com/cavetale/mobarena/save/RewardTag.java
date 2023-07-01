@@ -8,7 +8,7 @@ import lombok.EqualsAndHashCode;
 
 @Data @EqualsAndHashCode(callSuper = true)
 public class RewardTag extends GameStateTag {
-    protected UUID armorStandUuid;
+    protected UUID itemDisplayUuid;
     protected Set<UUID> playersClosedChest = new HashSet<>();
     protected long seed = System.currentTimeMillis();
 }

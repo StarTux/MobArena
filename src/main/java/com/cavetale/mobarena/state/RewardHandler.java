@@ -23,13 +23,14 @@ import java.util.UUID;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Result;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -60,22 +61,25 @@ public final class RewardHandler extends GameStateHandler<RewardTag> {
                                              BlockFace.SOUTH,
                                              BlockFace.WEST);
         BlockFace face = blockFaces.get(game.getRandom().nextInt(blockFaces.size()));
-        ArmorStand armorStand = Blocks.place(Mytems.BOSS_CHEST, block, face, true);
-        armorStand.setPersistent(false);
-        Entities.setTransient(armorStand);
-        armorStand.setGlowing(true);
-        getTag().setArmorStandUuid(armorStand.getUniqueId());
+        ItemDisplay itemDisplay = Blocks.place(Mytems.BOSS_CHEST, block, e -> {
+                e.setPersistent(false);
+                Entities.setTransient(e);
+                e.setGlowing(true);
+                e.setGlowColorOverride(Color.ORANGE);
+                e.setBrightness(new ItemDisplay.Brightness(15, 15));
+            });
+        getTag().setItemDisplayUuid(itemDisplay.getUniqueId());
         block.setType(Material.BARRIER);
     };
 
     @Override
     public void onExit() {
-        UUID uuid = getTag().getArmorStandUuid();
+        UUID uuid = getTag().getItemDisplayUuid();
         if (uuid != null) {
-            if (Bukkit.getEntity(uuid) instanceof ArmorStand as) {
-                as.remove();
-                getTag().setArmorStandUuid(null);
+            if (Bukkit.getEntity(uuid) instanceof ItemDisplay itemDisplay) {
+                itemDisplay.remove();
             }
+            getTag().setItemDisplayUuid(null);
         }
         Block block = game.getArena().bossChestBlock();
         block.setType(Material.AIR);

@@ -200,6 +200,9 @@ public final class Game {
         }
         playerMap.clear();
         clearTemporaryEntities();
+        if (stateHandler != null) {
+            stateHandler.onExit();
+        }
         if (plugin.gameList.indexOf(this) == 0 && !"admin".equals(name)) {
             ServerPlugin.getInstance().setServerSidebarLines(null);
         }
