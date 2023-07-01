@@ -9,7 +9,7 @@ import org.bukkit.entity.Player;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 final class WaveWarmupHandler extends GameStateHandler<GameStateTag> {
-    protected static final Duration DURATION = Duration.ofSeconds(3);
+    protected static final Duration DURATION = Duration.ofSeconds(0);
     protected static final Duration LONG_DURATION = Duration.ofSeconds(15);
     protected long secondsLeft = -1;
     protected boolean skipped;
@@ -32,7 +32,7 @@ final class WaveWarmupHandler extends GameStateHandler<GameStateTag> {
         Duration duration = game.getTag().getCurrentWaveIndex() % 10 == 1
             ? LONG_DURATION
             : DURATION;
-        if (skipped || time.toMillis() > duration.toMillis()) {
+        if (skipped || time.toMillis() >= duration.toMillis()) {
             for (Player player : game.getPresentPlayers()) {
                 player.sendActionBar(Component.empty());
             }
