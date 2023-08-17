@@ -349,6 +349,7 @@ public final class Game {
     }
 
     public void bring(Player player) {
+        player.eject();
         player.teleport(arena.randomSpawnLocation(), TeleportCause.PLUGIN);
         player.setGameMode(GameMode.ADVENTURE);
     }
