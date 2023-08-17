@@ -460,8 +460,6 @@ public final class KillWave extends Wave<KillWaveTag> {
         double base = arrow.getDamage();
         double wave = (double) game.getTag().getCurrentWaveIndex();
         arrow.setDamage(base + 0.05 * wave);
-        game.getPlugin().getLogger().info("[Projectile] Did set damage of " + arrow.getType()
-                                          + " from " + base + " to " + arrow.getDamage());
     }
 
     /**
@@ -476,8 +474,6 @@ public final class KillWave extends Wave<KillWaveTag> {
         double base = event.getCalculation().getBaseDamage();
         double wave = (double) game.getTag().getCurrentWaveIndex();
         event.getCalculation().setBaseDamage(base + 0.05 * wave);
-        game.getPlugin().getLogger().info("[DamageCalculation] Did set base damage of " + fireball.getType()
-                                          + " from " + base + " to " + event.getCalculation().getBaseDamage());
     }
 
     @Override
