@@ -137,6 +137,7 @@ public final class MobArenaPlugin extends JavaPlugin {
         world.setGameRule(GameRule.SPECTATORS_GENERATE_CHUNKS, false);
         world.setGameRule(GameRule.UNIVERSAL_ANGER, true);
         world.setDifficulty(Difficulty.HARD);
+        world.setTime(18000L);
         int count = 0;
         for (Arena arena : loadArenas(world)) {
             arenaMap.put(arena.name, arena);
