@@ -402,13 +402,15 @@ public final class Game {
     public void onDamageCalculation(DamageCalculationEvent event) {
         event.addPostDamageAction(true, () -> {
                 if (event.targetIsPlayer()) {
-                    GamePlayer gamePlayer = getGamePlayer(event.getTargetPlayer());
-                    double value = event.getCalculation().getTotalDamage();
+                    final GamePlayer gamePlayer = getGamePlayer(event.getTargetPlayer());
+                    final double value = Math.min(event.getTarget().getHealth(),
+                                                  event.getCalculation().getTotalDamage());
                     if (value < 0.0) return;
                     gamePlayer.changeStat(Stat.TAKEN, value);
                 } else if (event.attackerIsPlayer()) {
-                    GamePlayer gamePlayer = getGamePlayer(event.getAttackerPlayer());
-                    double value = event.getCalculation().getTotalDamage();
+                    final GamePlayer gamePlayer = getGamePlayer(event.getAttackerPlayer());
+                    final double value = Math.min(event.getTarget().getHealth(),
+                                                  event.getCalculation().getTotalDamage());
                     if (value <= 0.0) return;
                     gamePlayer.changeStat(Stat.DAMAGE, value);
                 }
