@@ -133,11 +133,12 @@ public final class KillWave extends Wave<KillWaveTag> {
 
     @Override
     public void create() {
-        final int mobCount = Math.max(8, game.getTag().getCurrentWaveIndex() / 2 + game.countActivePlayers());
+        final int wave = getEffectiveWave();
+        final int mobCount = Math.max(8, (wave / 5) + (2 * game.countActivePlayers()));
         List<EntityType> entityTypeList = new ArrayList<>();
         for (EntityType entityType : ENTITY_MIN_WAVE_MAP.keySet()) {
             int min = ENTITY_MIN_WAVE_MAP.get(entityType);
-            if (min < game.getTag().getCurrentWaveIndex()) {
+            if (min < wave) {
                 int weight = ENTITY_WEIGHT_MAP.get(entityType);
                 for (int i = 0; i < weight; i += 1) {
                     entityTypeList.add(entityType);
@@ -295,8 +296,7 @@ public final class KillWave extends Wave<KillWaveTag> {
         } else if (mob instanceof Evoker evoker) {
             evoker.getEquipment().setItemInMainHand(mobItem(Material.TOTEM_OF_UNDYING));
         } else if (mob instanceof Creeper creeper) {
-            int wave = game.getTag().getCurrentWaveIndex() + 1;
-            creeper.setMaxFuseTicks(Math.max(1, creeper.getMaxFuseTicks() - wave / 2));
+            creeper.setMaxFuseTicks(Math.max(1, creeper.getMaxFuseTicks() - getEffectiveWave() / 2));
         }
         adjustAttributes(mob);
     }
@@ -346,7 +346,7 @@ public final class KillWave extends Wave<KillWaveTag> {
                                       Material.DIAMOND_AXE,
                                       Material.NETHERITE_AXE);
         List<Material> mats = new ArrayList<>();
-        final int materialIndex = game.getTag().getCurrentWaveIndex() / 20;
+        final int materialIndex = getEffectiveWave() / 20;
         mats.add(helmets.get(Math.min(materialIndex, helmets.size() - 1)));
         mats.add(chestplates.get(Math.min(materialIndex, chestplates.size() - 1)));
         mats.add(leggings.get(Math.min(materialIndex, leggings.size() - 1)));
@@ -406,14 +406,13 @@ public final class KillWave extends Wave<KillWaveTag> {
     }
 
     protected void adjustAttributes(Mob mob) {
-        double wave = (double) game.getTag().getCurrentWaveIndex();
-        adjustAttribute(mob, Attribute.GENERIC_ARMOR, base -> base + 0.05 * wave);
-        adjustAttribute(mob, Attribute.GENERIC_ARMOR_TOUGHNESS, base -> base + 0.05 * wave);
+        final double wave = (double) getEffectiveWave();
+        adjustAttribute(mob, Attribute.GENERIC_ARMOR, base -> base + 0.1 * wave);
+        adjustAttribute(mob, Attribute.GENERIC_ARMOR_TOUGHNESS, base -> base + 0.1 * wave);
         if (mob.getType() != EntityType.ENDERMAN) {
-            adjustAttribute(mob, Attribute.GENERIC_ATTACK_DAMAGE, base -> base + 0.03 * wave);
+            adjustAttribute(mob, Attribute.GENERIC_ATTACK_DAMAGE, base -> base + 0.05 * wave);
         }
-        double players = (double) (game.countActivePlayers() - 1);
-        adjustAttribute(mob, Attribute.GENERIC_MAX_HEALTH, base -> base + 0.05 * wave + players);
+        adjustAttribute(mob, Attribute.GENERIC_MAX_HEALTH, base -> base + 0.2 * wave);
     }
 
     @Override
@@ -493,5 +492,9 @@ public final class KillWave extends Wave<KillWaveTag> {
                                  text(tag.getStillAlive(), GREEN)));
         lines.add(textOfChildren(text(Unicode.tiny("time "), GRAY),
                                  Time.format(runningTime)));
+    }
+
+    protected int getEffectiveWave() {
+        return (game.getTag().getCurrentWaveIndex() / 10) * 10;
     }
 }
