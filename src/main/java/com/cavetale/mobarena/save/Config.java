@@ -10,5 +10,6 @@ import lombok.Data;
 @Data
 public final class Config {
     protected boolean locked;
+    protected boolean allowFlight;
     protected Set<String> disabledArenas = new HashSet<>();
 }

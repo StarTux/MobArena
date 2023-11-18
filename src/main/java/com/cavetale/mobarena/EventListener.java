@@ -129,6 +129,8 @@ public final class EventListener implements Listener {
         if (event.getPlayer().getGameMode() == GameMode.CREATIVE || !plugin.isArenaWorld(event.getBlock().getWorld())) return;
         switch (event.getAction()) {
         case SPAWN_MOB: return;
+        case FLY:
+            if (plugin.config.isAllowFlight()) return;
         default: event.setCancelled(true);
         }
     }
@@ -208,6 +210,7 @@ public final class EventListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     private void onPlayerToggleGlide(EntityToggleGlideEvent event) {
+        if (plugin.config.isAllowFlight()) return;
         if (!(event.getEntity() instanceof Player player)) return;
         if (!event.isGliding()) return;
         if (!plugin.isArenaWorld(player.getLocation().getWorld())) return;
