@@ -68,6 +68,8 @@ public final class Game {
     protected final BossBar bossBar;
     protected Stat currentStat = Stat.DAMAGE;
     protected int currentStatTicks;
+    protected List<String> usedArenaNames = new ArrayList<>();
+    protected List<String> forcedArenaNames = new ArrayList<>();
 
     public Game(final MobArenaPlugin plugin, final String name) {
         this.plugin = plugin;
@@ -178,6 +180,14 @@ public final class Game {
             throw new IllegalStateException("Task already exists");
         }
         task = Bukkit.getScheduler().runTaskTimer(plugin, this::tick, 1L, 1L);
+        plugin.reloadConfig();
+        forcedArenaNames.addAll(plugin.getConfig().getStringList("ForcedArenas"));
+        for (String it : List.copyOf(forcedArenaNames)) {
+            if (!plugin.arenaMap.containsKey(it)) {
+                plugin.getLogger().severe("Forced Arena not found: " + it);
+                forcedArenaNames.remove(it);
+            }
+        }
     }
 
     /**
@@ -236,6 +246,15 @@ public final class Game {
         enable();
     }
 
+    protected void start() {
+        enable();
+        this.arena = randomUnusedArena();
+        plugin.getLogger().info(name + " using arena " + arena.getName());
+        this.tag = new GameTag();
+        tag.setArenaName(arena.getName());
+        changeState(GameState.PREPARE);
+    }
+
     /**
      * Load from disk.
      * This is an alternative to start().
@@ -286,7 +305,7 @@ public final class Game {
         currentWave = waveType.waveCtor.apply(this);
         tag.setCurrentWaveType(currentWave.getWaveType());
         if (waveIndex > 1 && waveIndex % 10 == 1) {
-            Arena newArena = plugin.randomUnusedArena();
+            Arena newArena = randomUnusedArena();
             if (newArena != null) {
                 plugin.getLogger().info(name + " switching to arena " + newArena.getName());
                 List<Player> activePlayers = getActivePlayers();
@@ -308,6 +327,31 @@ public final class Game {
                                                            text(tiny("wave "), GRAY), text(waveIndex, WHITE)));
             ServerPlugin.getInstance().setServerSidebarLines(lines);
         }
+    }
+
+    private Arena randomUnusedArena() {
+        if (!forcedArenaNames.isEmpty()) {
+            String forcedArenaName = forcedArenaNames.remove(random.nextInt(forcedArenaNames.size()));
+            Arena forcedArena = plugin.arenaMap.get(forcedArenaName);
+            if (forcedArena != null && !plugin.isArenaInUse(forcedArena)) {
+                usedArenaNames.add(forcedArenaName);
+                return forcedArena;
+            }
+        }
+        List<String> options = new ArrayList<>(plugin.arenaMap.keySet());
+        for (Game game : plugin.gameList) {
+            options.remove(game.getArena().getName());
+        }
+        options.removeAll(plugin.config.getDisabledArenas());
+        if (usedArenaNames.size() >= options.size()) {
+            usedArenaNames.clear();
+        } else {
+            options.removeAll(usedArenaNames);
+        }
+        if (options.isEmpty()) return null;
+        final String arenaName = options.get(random.nextInt(options.size()));
+        usedArenaNames.add(arenaName);
+        return plugin.arenaMap.get(arenaName);
     }
 
     public List<Player> getPresentPlayers() {

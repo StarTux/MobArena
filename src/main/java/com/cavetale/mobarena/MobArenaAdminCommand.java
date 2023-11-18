@@ -143,8 +143,9 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
         if (plugin.findGame(name) != null) {
             throw new CommandWarn("Game " + name + " already playing!");
         }
-        final Arena arena;
+        final Game game;
         if (args.length >= 1) {
+            final Arena arena;
             String arenaName = args[0];
             arena = plugin.arenaMap.get(arenaName);
             if (arena == null) {
@@ -153,18 +154,10 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
             if (plugin.findGameInArena(arena) != null) {
                 throw new CommandWarn("Arena already playing: " + arenaName);
             }
+            game = plugin.startNewGame(arena, name);
         } else {
-            List<String> options = new ArrayList<>(plugin.arenaMap.keySet());
-            for (Game game : plugin.gameList) {
-                options.remove(game.getArena().getName());
-            }
-            if (options.isEmpty()) {
-                throw new CommandWarn("No empty arena found!");
-            }
-            String arenaName = options.get(plugin.random.nextInt(options.size()));
-            arena = plugin.arenaMap.get(arenaName);
+            game = plugin.startNewGame(name);
         }
-        Game game = plugin.startNewGame(arena, name);
         game.addPlayer(player);
         game.bring(player);
         player.sendMessage(text("Game started: " + game.getName(), YELLOW));

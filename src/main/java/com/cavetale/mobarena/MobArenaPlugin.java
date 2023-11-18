@@ -73,6 +73,7 @@ public final class MobArenaPlugin extends JavaPlugin {
     }
 
     protected void importConfig() {
+        reloadConfig();
         if (!configFile.exists()) {
             Json.save(configFile, new Config(), true);
         }
@@ -188,6 +189,13 @@ public final class MobArenaPlugin extends JavaPlugin {
         return game;
     }
 
+    public Game startNewGame(String name) {
+        Game game = new Game(this, name);
+        game.start();
+        gameList.add(game);
+        return game;
+    }
+
     public Game findGame(String name) {
         for (Game game : gameList) {
             if (name.equals(game.name)) return game;
@@ -231,6 +239,13 @@ public final class MobArenaPlugin extends JavaPlugin {
         if (options.isEmpty()) return null;
         String arenaName = options.get(random.nextInt(options.size()));
         return arenaMap.get(arenaName);
+    }
+
+    public boolean isArenaInUse(Arena arena) {
+        for (Game game : gameList) {
+            if (game.getArena().getName().equals(arena.getName())) return true;
+        }
+        return false;
     }
 
     public Game findOrCreateGame() {
