@@ -138,7 +138,7 @@ public final class KillWave extends Wave<KillWaveTag> {
         List<EntityType> entityTypeList = new ArrayList<>();
         for (EntityType entityType : ENTITY_MIN_WAVE_MAP.keySet()) {
             int min = ENTITY_MIN_WAVE_MAP.get(entityType);
-            if (min < wave) {
+            if (min <= wave) {
                 int weight = ENTITY_WEIGHT_MAP.get(entityType);
                 for (int i = 0; i < weight; i += 1) {
                     entityTypeList.add(entityType);
