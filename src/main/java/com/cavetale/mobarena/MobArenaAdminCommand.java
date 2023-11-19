@@ -279,9 +279,7 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
         if (options.isEmpty()) {
             throw new CommandWarn("No empty arena found!");
         }
-        String arenaName = options.get(plugin.random.nextInt(options.size()));
-        arena = plugin.arenaMap.get(arenaName);
-        Game game = plugin.startNewGame(arena, name);
+        Game game = plugin.startNewGame(name);
         game.addPlayer(player);
         game.bring(player);
         player.sendMessage(text("Event game started", AQUA));

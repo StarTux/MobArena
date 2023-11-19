@@ -129,8 +129,6 @@ public final class EventListener implements Listener {
         if (event.getPlayer().getGameMode() == GameMode.CREATIVE || !plugin.isArenaWorld(event.getBlock().getWorld())) return;
         switch (event.getAction()) {
         case SPAWN_MOB: return;
-        case FLY:
-            if (plugin.config.isAllowFlight()) return;
         default: event.setCancelled(true);
         }
     }

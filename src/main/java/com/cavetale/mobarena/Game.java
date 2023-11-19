@@ -130,7 +130,7 @@ public final class Game {
                 gamePlayer.bossBar = true;
                 player.showBossBar(bossBar);
             }
-            if (player.isGliding()) {
+            if (player.isGliding() && !plugin.config.isAllowFlight()) {
                 player.setGliding(false);
                 sendBrokenElytra(player);
             }
