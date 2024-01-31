@@ -5,6 +5,7 @@ import com.cavetale.core.event.entity.PlayerEntityAbilityQuery;
 import com.cavetale.core.event.hud.PlayerHudEvent;
 import com.cavetale.core.event.hud.PlayerHudPriority;
 import com.cavetale.core.event.player.PlayerTPAEvent;
+import com.cavetale.core.event.skills.SkillsMobKillRewardEvent;
 import com.cavetale.mytems.event.combat.DamageCalculationEvent;
 import com.winthier.shutdown.event.ShutdownTriggerEvent;
 import com.winthier.spawn.Spawn;
@@ -296,6 +297,13 @@ public final class EventListener implements Listener {
     private void onProjectileLaunch(ProjectileLaunchEvent event) {
         plugin.applyGame(event.getEntity().getLocation(), game -> {
                 game.onProjectileLaunch(event.getEntity());
+            });
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    private void onSkillsMobKillReward(SkillsMobKillRewardEvent event) {
+        plugin.applyGame(event.getPlayer().getLocation(), game -> {
+                event.multiplyFactor(game.getTag().getCurrentWaveIndex() / 100.0);
             });
     }
 }
