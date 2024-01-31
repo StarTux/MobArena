@@ -33,6 +33,7 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityPlaceEvent;
 import org.bukkit.event.entity.EntityTeleportEvent;
 import org.bukkit.event.entity.EntityToggleGlideEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
@@ -271,6 +272,11 @@ public final class EventListener implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     private void onEntityDeath(EntityDeathEvent event) {
         plugin.applyGame(event.getEntity().getLocation(), game -> game.onEntityDeath(event));
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
+    private void onPlayerDeath(PlayerDeathEvent event) {
+        plugin.applyGame(event.getPlayer().getLocation(), game -> game.onPlayerDeath(event));
     }
 
     @EventHandler

@@ -31,6 +31,7 @@ import org.bukkit.entity.Projectile;
 import org.bukkit.event.Event.Result;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.scheduler.BukkitTask;
@@ -474,6 +475,16 @@ public final class Game {
             GamePlayer gamePlayer = getGamePlayer(player);
             gamePlayer.changeStat(Stat.KILLS, 1.0);
         }
+    }
+
+    public void onPlayerDeath(PlayerDeathEvent event) {
+        // Exp and level
+        event.setKeepLevel(true);
+        event.setDroppedExp(0);
+        event.setShouldDropExperience(false);
+        // Inventory
+        event.setKeepInventory(true);
+        event.getDrops().clear();
     }
 
     public Map<UUID, Integer> getStatMap(Stat stat) {
