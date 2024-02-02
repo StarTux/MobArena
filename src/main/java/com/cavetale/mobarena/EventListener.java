@@ -303,7 +303,7 @@ public final class EventListener implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     private void onSkillsMobKillReward(SkillsMobKillRewardEvent event) {
         plugin.applyGame(event.getPlayer().getLocation(), game -> {
-                event.multiplyFactor(game.getTag().getCurrentWaveIndex() / 100.0);
+                event.multiplyFactor(0.5 + (game.getTag().getCurrentWaveIndex() * 0.01 * 0.5));
             });
     }
 }
