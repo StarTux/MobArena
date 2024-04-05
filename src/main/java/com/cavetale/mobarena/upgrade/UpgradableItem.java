@@ -30,7 +30,10 @@ public final class UpgradableItem {
                 incompatible = false;
             }
             final int oldLevel = itemStack.getEnchantmentLevel(enchantment);
-            if (oldLevel >= enchantment.getMaxLevel()) {
+            final int maxLevel = enchantment == Enchantment.MULTISHOT
+                ? 3
+                : enchantment.getMaxLevel();
+            if (oldLevel >= maxLevel) {
                 continue;
             }
             int totalConflictingLevel = 0;
@@ -48,6 +51,9 @@ public final class UpgradableItem {
                 requiredLevel += 9 + totalConflictingLevel;
             } else if (incompatible) {
                 requiredLevel += 10;
+            }
+            if (maxLevel > enchantment.getMaxLevel()) {
+                requiredLevel += maxLevel - enchantment.getMaxLevel();
             }
             upgrades.add(new EnchantmentUpgrade(enchantment, oldLevel + 1, requiredLevel));
         }
