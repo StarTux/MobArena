@@ -20,9 +20,9 @@ public final class UpgradableItem {
             final boolean incompatible;
             if (enchantment.isCursed()) {
                 continue;
-            } else if (itemStack.getType() == Material.CROSSBOW && enchantment.equals(Enchantment.ARROW_INFINITE)) {
+            } else if (itemStack.getType() == Material.CROSSBOW && enchantment.equals(Enchantment.INFINITY)) {
                 incompatible = true;
-            } else if (itemStack.getType() == Material.CROSSBOW && enchantment.equals(Enchantment.ARROW_FIRE)) {
+            } else if (itemStack.getType() == Material.CROSSBOW && enchantment.equals(Enchantment.FLAME)) {
                 incompatible = true;
             } else if (!enchantment.canEnchantItem(itemStack)) {
                 continue;

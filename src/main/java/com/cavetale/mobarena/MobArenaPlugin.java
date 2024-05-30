@@ -6,7 +6,6 @@ import com.cavetale.core.util.Json;
 import com.cavetale.mobarena.save.Config;
 import com.cavetale.mytems.Mytems;
 import com.cavetale.mytems.util.Gui;
-import com.cavetale.mytems.util.Items;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,6 +27,7 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import static com.cavetale.mytems.util.Items.tooltip;
 import static net.kyori.adventure.text.Component.join;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
@@ -295,9 +295,9 @@ public final class MobArenaPlugin extends JavaPlugin {
             .title(GuiOverlay.BLANK.builder(size, BLUE)
                    .title(text("Join Mob Arena?", GOLD))
                    .build());
-        gui.setItem(13, Items.text(Mytems.RUBY.createIcon(),
-                                   List.of(text("Join Mob Arena for", GOLD),
-                                           text("1 Ruby?", GOLD))),
+        gui.setItem(13, tooltip(Mytems.RUBY.createIcon(),
+                                List.of(text("Join Mob Arena for", GOLD),
+                                        text("1 Ruby?", GOLD))),
                     evt -> {
                         for (ItemStack itemStack : player.getInventory()) {
                             if (!Mytems.RUBY.isItem(itemStack)) continue;
