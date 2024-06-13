@@ -1,8 +1,11 @@
 package com.cavetale.mobarena;
 
 import com.cavetale.area.struct.Area;
+import com.cavetale.area.struct.AreasFile;
 import com.cavetale.core.struct.Cuboid;
 import com.cavetale.core.struct.Vec3i;
+import com.winthier.creative.BuildWorld;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -20,25 +23,36 @@ import org.bukkit.entity.Player;
  * Runtime instance of an arena configuration.
  */
 @Data
-public final class Arena {
-    protected final String name;
-    protected final String worldName;
-    protected final Cuboid arenaArea;
+public final class Arena implements Serializable {
+    private String buildWorldPath;
+    private String buildWorldName;
+    private String worldName;
+    private Cuboid arenaArea;
     /**
      * This list and 3 others will be created from a set in the
      * conctructor.  They will be purged based on actual blocks later,
      * when we know that the chunks are loaded.
      */
-    protected final List<Vec3i> spawnVectorList;
-    protected final List<Vec3i> mobVectorList;
-    protected final List<Vec3i> flyingMobVectorList;
-    protected final Vec3i bossChestVector;
-    protected final List<Cuboid> forbiddenList = new ArrayList<>();
-    protected final List<Cuboid> bossEscapeList = new ArrayList<>();
+    private List<Vec3i> spawnVectorList;
+    private List<Vec3i> mobVectorList;
+    private List<Vec3i> flyingMobVectorList;
+    private Vec3i bossChestVector;
+    private List<Cuboid> forbiddenList = new ArrayList<>();
+    private List<Cuboid> bossEscapeList = new ArrayList<>();
 
-    public Arena(final World world, final String name, final List<Area> areaList) {
-        this.name = name;
+    public Arena() { }
+
+    public Arena(final World world, final BuildWorld buildWorld) {
+        this.buildWorldPath = buildWorld.getPath();
+        this.buildWorldName = buildWorld.getName();
         this.worldName = world.getName();
+        // Here we load the areas file, which is still in
+        // the old format which assumes multiple arenas
+        // per world.  So we just pick the first area list
+        // from the map and feed that into the Arena, for
+        // now.
+        final AreasFile areasFile = AreasFile.load(world, "MobArena");
+        final List<Area> areaList = areasFile.getAreas().values().iterator().next();
         if (areaList.isEmpty()) {
             throw new IllegalArgumentException("areaList cannot be empty!");
         }
@@ -71,7 +85,7 @@ public final class Arena {
                 bossEscapeList.add(area.toCuboid());
                 break;
             default:
-                MobArenaPlugin.instance.getLogger().warning("Arena " + name + ": Unknown area: " + area);
+                MobArenaPlugin.instance.getLogger().warning("Arena " + buildWorldPath + ": Unknown area: " + area);
             }
         }
         this.spawnVectorList = new ArrayList<>(spawn);
@@ -79,16 +93,16 @@ public final class Arena {
         this.flyingMobVectorList = new ArrayList<>(flyingmob);
         this.bossChestVector = bosschest;
         if (spawnVectorList.isEmpty()) {
-            MobArenaPlugin.instance.getLogger().severe("Arena " + name + ": No spawns!");
+            MobArenaPlugin.instance.getLogger().severe("Arena " + buildWorldPath + ": No spawns!");
         }
         if (mobVectorList.isEmpty()) {
-            MobArenaPlugin.instance.getLogger().severe("Arena " + name + ": No mobs!");
+            MobArenaPlugin.instance.getLogger().severe("Arena " + buildWorldPath + ": No mobs!");
         }
         if (flyingMobVectorList.isEmpty()) {
-            MobArenaPlugin.instance.getLogger().warning("Arena " + name + ": No flying mobs!");
+            MobArenaPlugin.instance.getLogger().warning("Arena " + buildWorldPath + ": No flying mobs!");
         }
         if (bossChestVector == null) {
-            MobArenaPlugin.instance.getLogger().severe("Arena " + name + ": No boss chest!");
+            MobArenaPlugin.instance.getLogger().severe("Arena " + buildWorldPath + ": No boss chest!");
         }
     }
 
@@ -138,9 +152,7 @@ public final class Arena {
         if (world == null) return List.of();
         List<Player> result = new ArrayList<>();
         for (Player player : world.getPlayers()) {
-            if (isOnPlane(player.getLocation())) {
-                result.add(player);
-            }
+            result.add(player);
         }
         return result;
     }
@@ -154,6 +166,10 @@ public final class Arena {
 
     public boolean isInWorld(Location location) {
         return worldName.equals(location.getWorld().getName());
+    }
+
+    public boolean isInWorld(World world) {
+        return worldName.equals(world.getName());
     }
 
     public boolean isForbidden(Location location) {

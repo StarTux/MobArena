@@ -9,9 +9,10 @@ import com.cavetale.fam.trophy.Highscore;
 import com.cavetale.mobarena.state.RewardHandler;
 import com.cavetale.mobarena.wave.Wave;
 import com.cavetale.mytems.item.trophy.TrophyCategory;
+import com.winthier.creative.BuildWorld;
+import com.winthier.creative.BuildWorldPurpose;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -20,6 +21,7 @@ import org.bukkit.entity.Player;
 import static net.kyori.adventure.text.Component.join;
 import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.Component.textOfChildren;
 import static net.kyori.adventure.text.JoinConfiguration.separator;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
@@ -33,18 +35,18 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
         rootNode.addChild("reload").denyTabCompletion()
             .description("Reload config.json")
             .senderCaller(this::reload);
-        rootNode.addChild("list").denyTabCompletion()
-            .description("List Arenas")
-            .senderCaller(this::list);
+        rootNode.addChild("listgames").denyTabCompletion()
+            .description("List Games")
+            .senderCaller(this::listGames);
         rootNode.addChild("info").denyTabCompletion()
             .description("Game Info")
             .senderCaller(this::info);
         rootNode.addChild("debug").denyTabCompletion()
             .description("Debug Spam")
             .senderCaller(this::debug);
-        rootNode.addChild("start").arguments("[arena] [name]")
-            .completers(CommandArgCompleter.supplyList(() -> List.copyOf(plugin.arenaMap.keySet())),
-                        CommandArgCompleter.NULL)
+        rootNode.addChild("start").arguments("<name> [arena]")
+            .completers(CommandArgCompleter.EMPTY,
+                        CommandArgCompleter.supplyList(MobArenaAdminCommand::listArenaNames))
             .description("Start a game")
             .playerCaller(this::start);
         rootNode.addChild("stop").arguments("[game]")
@@ -88,24 +90,31 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
             .playerCaller(this::eventStart);
     }
 
-    protected boolean reload(CommandSender sender, String[] args) {
-        if (args.length != 0) return false;
+    private static List<String> listArenaNames() {
+        final List<String> result = new ArrayList<>();
+        for (BuildWorld buildWorld : BuildWorld.findPurposeWorlds(BuildWorldPurpose.MOB_ARENA, false)) {
+            result.add(buildWorld.getPath());
+        }
+        return result;
+    }
+
+    private void reload(CommandSender sender) {
         plugin.importConfig();
         sender.sendMessage(text("config.json reloaded", YELLOW));
-        return true;
     }
 
-    protected boolean list(CommandSender sender, String[] args) {
-        if (args.length != 0) return false;
-        if (plugin.arenaMap.isEmpty()) throw new CommandWarn("No arenas loaded");
-        for (Map.Entry<String, Arena> entry : plugin.arenaMap.entrySet()) {
-            sender.sendMessage("Arena " + entry.getKey() + ": " + entry.getValue().getArenaArea());
+    private void listGames(CommandSender sender) {
+        if (plugin.getGameList().isEmpty()) {
+            throw new CommandWarn("No games running");
         }
-        return true;
+        for (Game game : plugin.getGameList()) {
+            sender.sendMessage(textOfChildren(text("Game " + game.getName(), YELLOW),
+                                              text(" arena:", GRAY), text(game.getArena().getBuildWorldPath(), WHITE),
+                                              text(" players:", GRAY), text(game.countActivePlayers(), WHITE)));
+        }
     }
 
-    protected boolean info(CommandSender sender, String[] args) {
-        if (args.length != 0) return false;
+    private void info(CommandSender sender) {
         if (plugin.gameList.isEmpty()) throw new CommandWarn("No games running");
         for (Game game : plugin.gameList) {
             List<Player> active = game.getActivePlayers();
@@ -120,44 +129,44 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
                 }).color(YELLOW);
             sender.sendMessage(msg);
         }
-        return true;
     }
 
-    protected boolean debug(CommandSender sender, String[] args) {
-        if (args.length != 0) return false;
-        sender.sendMessage("Config: " + Json.prettyPrint(plugin.config));
+    protected void debug(CommandSender sender) {
+        sender.sendMessage("Config: " + Json.prettyPrint(plugin.getMobArenaConfig()));
         for (Game game : plugin.gameList) {
             game.prepareForSaving();
             String pretty = Json.prettyPrint(game.getTag());
             sender.sendMessage(text("Game " + game.getName() + ": " + pretty, YELLOW));
         }
-        return true;
     }
 
     protected boolean start(Player player, String[] args) {
-        if (args.length > 2) return false;
-        String name = "admin";
-        if (args.length >= 2) {
-            name = args[1];
-        }
+        if (args.length < 1 | args.length > 2) return false;
+        final String name = args[0];
+        final String arenaName = args.length >= 2
+            ? args[1]
+            : null;
         if (plugin.findGame(name) != null) {
             throw new CommandWarn("Game " + name + " already playing!");
         }
-        final Game game;
-        if (args.length >= 1) {
-            final Arena arena;
-            String arenaName = args[0];
-            arena = plugin.arenaMap.get(arenaName);
-            if (arena == null) {
+        if (arenaName != null) {
+            final BuildWorld buildWorld = BuildWorld.findWithPath(arenaName);
+            if (buildWorld == null) {
                 throw new CommandWarn("Arena not found: " + arenaName);
             }
-            if (plugin.findGameInArena(arena) != null) {
-                throw new CommandWarn("Arena already playing: " + arenaName);
+            if (buildWorld.getRow().parsePurpose() != BuildWorldPurpose.MOB_ARENA) {
+                throw new CommandWarn("Not a MobArena world: " + arenaName);
             }
-            game = plugin.startNewGame(arena, name);
-        } else {
-            game = plugin.startNewGame(name);
+            buildWorld.makeLocalCopyAsync(world -> {
+                    plugin.prepareArenaWorld(world);
+                    final Arena arena = new Arena(world, buildWorld);
+                    final Game game = plugin.startNewGame(arena, name);
+                    game.addPlayer(player);
+                    game.bring(player);
+                });
+            return true;
         }
+        final Game game = plugin.startNewGame(name);
         game.addPlayer(player);
         game.bring(player);
         player.sendMessage(text("Game started: " + game.getName(), YELLOW));
@@ -253,15 +262,15 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
     }
 
     private void eventLock(CommandSender sender) {
-        if (plugin.config.isLocked()) throw new CommandWarn("Already locked");
-        plugin.config.setLocked(true);
+        if (plugin.getMobArenaConfig().isLocked()) throw new CommandWarn("Already locked");
+        plugin.getMobArenaConfig().setLocked(true);
         plugin.exportConfig();
         sender.sendMessage(text("Config locked", AQUA));
     }
 
     private void eventUnlock(CommandSender sender) {
-        if (!plugin.config.isLocked()) throw new CommandWarn("Not locked");
-        plugin.config.setLocked(false);
+        if (!plugin.getMobArenaConfig().isLocked()) throw new CommandWarn("Not locked");
+        plugin.getMobArenaConfig().setLocked(false);
         plugin.exportConfig();
         sender.sendMessage(text("Config unlocked", AQUA));
     }
@@ -272,14 +281,7 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
             throw new CommandWarn("Event already playing!");
         }
         final Arena arena;
-        List<String> options = new ArrayList<>(plugin.arenaMap.keySet());
-        for (Game game : plugin.gameList) {
-            options.remove(game.getArena().getName());
-        }
-        if (options.isEmpty()) {
-            throw new CommandWarn("No empty arena found!");
-        }
-        Game game = plugin.startNewGame(name);
+        final Game game = plugin.startNewGame(name);
         game.addPlayer(player);
         game.bring(player);
         player.sendMessage(text("Event game started", AQUA));

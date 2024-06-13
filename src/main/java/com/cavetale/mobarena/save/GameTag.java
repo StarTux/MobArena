@@ -1,8 +1,10 @@
 package com.cavetale.mobarena.save;
 
 import com.cavetale.enemy.EnemyType;
+import com.cavetale.mobarena.Arena;
 import com.cavetale.mobarena.state.GameState;
 import com.cavetale.mobarena.wave.WaveType;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Data;
@@ -14,9 +16,10 @@ import lombok.Data;
  * on their respective type, expressed by their respective enums.
  */
 @Data
-public final class GameTag {
+public final class GameTag implements Serializable {
     // Arena
-    protected String arenaName;
+    protected Arena arena;
+    protected List<String> usedArenaNames = new ArrayList<>();
 
     // GameState
     protected GameState state; // Enum

@@ -8,14 +8,12 @@ import com.cavetale.core.event.player.PlayerTPAEvent;
 import com.cavetale.core.event.skills.SkillsMobKillRewardEvent;
 import com.cavetale.mytems.event.combat.DamageCalculationEvent;
 import com.winthier.shutdown.event.ShutdownTriggerEvent;
-import com.winthier.spawn.Spawn;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
-import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -46,7 +44,6 @@ import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
-import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 import static com.cavetale.mobarena.util.Items.sendBrokenElytra;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
@@ -65,17 +62,6 @@ public final class EventListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     private void onPlayerQuit(PlayerQuitEvent event) {
-    }
-
-    @EventHandler(priority = EventPriority.NORMAL)
-    private void onPlayerSpawnLocation(PlayerSpawnLocationEvent event) {
-        Location at = event.getSpawnLocation();
-        for (Arena arena : plugin.arenaMap.values()) {
-            if (arena.isInArena(at)) {
-                event.setSpawnLocation(Spawn.get());
-                return;
-            }
-        }
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
@@ -210,7 +196,7 @@ public final class EventListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     private void onPlayerToggleGlide(EntityToggleGlideEvent event) {
-        if (plugin.config.isAllowFlight()) return;
+        if (plugin.getMobArenaConfig().isAllowFlight()) return;
         if (!(event.getEntity() instanceof Player player)) return;
         if (!event.isGliding()) return;
         if (!plugin.isArenaWorld(player.getLocation().getWorld())) return;
@@ -254,7 +240,7 @@ public final class EventListener implements Listener {
         case VOID: break;
         default: return;
         }
-        Game game = plugin.getNearbyGame(player.getLocation());
+        final Game game = plugin.getGameIn(player.getLocation().getWorld());
         Bukkit.getScheduler().runTask(plugin, () -> {
                 player.setFallDistance(0.0f);
                 if (game == null) {

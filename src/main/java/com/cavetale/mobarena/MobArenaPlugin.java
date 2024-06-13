@@ -1,6 +1,5 @@
 package com.cavetale.mobarena;
 
-import com.cavetale.area.struct.AreasFile;
 import com.cavetale.core.font.GuiOverlay;
 import com.cavetale.core.util.Json;
 import com.cavetale.mobarena.save.Config;
@@ -8,16 +7,13 @@ import com.cavetale.mytems.Mytems;
 import com.cavetale.mytems.util.Gui;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 import java.util.logging.Level;
+import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
@@ -33,13 +29,13 @@ import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.JoinConfiguration.noSeparators;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
+@Getter
 public final class MobArenaPlugin extends JavaPlugin {
     protected static MobArenaPlugin instance;
     protected final MobArenaCommand mobarenaCommand = new MobArenaCommand(this);
     protected final MobArenaAdminCommand mobarenaAdminCommand = new MobArenaAdminCommand(this);
     protected final EventListener eventListener = new EventListener(this);
-    protected Config config;
-    protected final Map<String, Arena> arenaMap = new HashMap<>();
+    protected Config mobArenaConfig;
     protected final List<Game> gameList = new ArrayList<>();
     protected final Random random = ThreadLocalRandom.current();
     protected File gamesFolder;
@@ -58,7 +54,6 @@ public final class MobArenaPlugin extends JavaPlugin {
         mobarenaCommand.enable();
         mobarenaAdminCommand.enable();
         eventListener.enable();
-        loadArenas();
         loadGames();
     }
 
@@ -69,7 +64,6 @@ public final class MobArenaPlugin extends JavaPlugin {
             game.disable();
         }
         gameList.clear();
-        arenaMap.clear();
     }
 
     protected void importConfig() {
@@ -77,36 +71,19 @@ public final class MobArenaPlugin extends JavaPlugin {
         if (!configFile.exists()) {
             Json.save(configFile, new Config(), true);
         }
-        config = Json.load(configFile, Config.class, Config::new);
+        mobArenaConfig = Json.load(configFile, Config.class, Config::new);
     }
 
     protected void exportConfig() {
-        if (config == null) return;
-        Json.save(configFile, config, true);
+        if (mobArenaConfig == null) return;
+        Json.save(configFile, mobArenaConfig, true);
     }
 
-    protected void loadArenas() {
-        Set<String> loadWorldNames = new HashSet<>();
-        loadWorldNames.add("halloween_arenas");
-        loadWorldNames.addAll(getConfig().getStringList("Worlds"));
-        getLogger().info("Worlds: " + loadWorldNames);
-        for (String worldName : loadWorldNames) {
-            loadArenas(worldName);
-        }
-    }
-
-    protected void loadArenas(String worldName) {
-        World world = Bukkit.getWorld(worldName);
-        if (world == null) {
-            getLogger().severe("Arena world not found: " + worldName);
-            return;
-        }
-        worldNames.add(world.getName());
+    public void prepareArenaWorld(World world) {
         world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, true);
         world.setGameRule(GameRule.COMMAND_BLOCK_OUTPUT, true);
         world.setGameRule(GameRule.DISABLE_ELYTRA_MOVEMENT_CHECK, true);
         world.setGameRule(GameRule.DISABLE_RAIDS, true);
-        world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
         world.setGameRule(GameRule.DO_ENTITY_DROPS, false);
         world.setGameRule(GameRule.DO_FIRE_TICK, false);
         world.setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, false);
@@ -138,14 +115,6 @@ public final class MobArenaPlugin extends JavaPlugin {
         world.setGameRule(GameRule.SPECTATORS_GENERATE_CHUNKS, false);
         world.setGameRule(GameRule.UNIVERSAL_ANGER, true);
         world.setDifficulty(Difficulty.HARD);
-        world.setTime(18000L);
-        int count = 0;
-        for (Arena arena : loadArenas(world)) {
-            arenaMap.put(arena.name, arena);
-            arena.purge();
-            count += 1;
-        }
-        getLogger().info(worldName + ": " + count + " arenas loaded");
     }
 
     protected void loadGames() {
@@ -165,21 +134,6 @@ public final class MobArenaPlugin extends JavaPlugin {
             gameList.add(game);
             getLogger().info("Loaded game " + name);
         }
-    }
-
-    protected List<Arena> loadArenas(World world) {
-        AreasFile areasFile = AreasFile.load(world, "MobArena");
-        if (areasFile == null) return List.of();
-        List<Arena> result = new ArrayList<>(areasFile.areas.size());
-        for (var entry : areasFile.areas.entrySet()) {
-            try {
-                Arena arena = new Arena(world, entry.getKey(), entry.getValue());
-                result.add(arena);
-            } catch (Exception e) {
-                getLogger().log(Level.SEVERE, "Loading Arena " + entry.getKey(), e);
-            }
-        }
-        return result;
     }
 
     public Game startNewGame(Arena arena, String name) {
@@ -203,13 +157,6 @@ public final class MobArenaPlugin extends JavaPlugin {
         return null;
     }
 
-    public Game findGameInArena(Arena arena) {
-        for (Game game : gameList) {
-            if (arena.equals(game.arena)) return game;
-        }
-        return null;
-    }
-
     public Game gameAt(Location location) {
         for (Game game : gameList) {
             if (game.getArena().isOnPlane(location) && game.getArena().isInWorld(location)) {
@@ -222,7 +169,7 @@ public final class MobArenaPlugin extends JavaPlugin {
     public boolean applyGame(Location location, Consumer<Game> consumer) {
         boolean result = false;
         for (Game game : gameList) {
-            if (game.getArena().isOnPlane(location) && game.getArena().isInWorld(location)) {
+            if (game.getArena().isInWorld(location)) {
                 consumer.accept(game);
                 result = true;
             }
@@ -230,44 +177,27 @@ public final class MobArenaPlugin extends JavaPlugin {
         return result;
     }
 
-    public Arena randomUnusedArena() {
-        List<String> options = new ArrayList<>(arenaMap.keySet());
-        for (Game game : gameList) {
-            options.remove(game.getArena().getName());
-        }
-        options.removeAll(config.getDisabledArenas());
-        if (options.isEmpty()) return null;
-        String arenaName = options.get(random.nextInt(options.size()));
-        return arenaMap.get(arenaName);
-    }
-
-    public boolean isArenaInUse(Arena arena) {
-        for (Game game : gameList) {
-            if (game.getArena().getName().equals(arena.getName())) return true;
-        }
-        return false;
-    }
-
     public Game findOrCreateGame() {
-        Game game = null;
+        Game result = null;
         for (Game it : gameList) {
-            if (game == null || it.getName().equals("event")) {
-                game = it;
+            if (result == null || it.getName().equals("event")) {
+                result = it;
             }
         }
-        if (game != null) return game;
-        Arena arena = randomUnusedArena();
-        if (arena == null) return null;
-        game = startNewGame(arena, UUID.randomUUID().toString());
-        return game;
+        return result != null
+            ? result
+            : startNewGame(UUID.randomUUID().toString());
     }
 
-    public Game getNearbyGame(Location location) {
-        String worldName = location.getWorld().getName();
+    public Game getGameAt(Location location) {
+        return getGameIn(location.getWorld());
+    }
+
+    public Game getGameIn(World world) {
         for (Game game : gameList) {
-            if (!worldName.equals(game.arena.getWorldName())) continue;
-            if (!game.arena.isOnPlane(location)) continue;
-            return game;
+            if (game.getArena().isInWorld(world)) {
+                return game;
+            }
         }
         return null;
     }
@@ -286,7 +216,7 @@ public final class MobArenaPlugin extends JavaPlugin {
         if (tryToJoinEvent(player)) {
             return;
         }
-        if (config.isLocked()) {
+        if (mobArenaConfig.isLocked()) {
             player.sendMessage(text("Please wait for Mob Arena to open its gates", GOLD));
             return;
         }

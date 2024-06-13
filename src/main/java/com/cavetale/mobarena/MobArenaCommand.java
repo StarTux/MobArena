@@ -21,6 +21,6 @@ public final class MobArenaCommand extends AbstractCommand<MobArenaPlugin> {
     protected void join(Player player) {
         if (plugin.tryToJoinEvent(player)) return;
         player.sendMessage(text("The event is not open", RED));
-        player.teleport(Spawn.get());
+        Spawn.warp(player);
     }
 }

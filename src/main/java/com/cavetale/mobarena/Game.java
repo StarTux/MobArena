@@ -10,6 +10,9 @@ import com.cavetale.mobarena.wave.Wave;
 import com.cavetale.mobarena.wave.WaveType;
 import com.cavetale.mytems.event.combat.DamageCalculationEvent;
 import com.cavetale.server.ServerPlugin;
+import com.winthier.creative.BuildWorld;
+import com.winthier.creative.BuildWorldPurpose;
+import com.winthier.spawn.Spawn;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,6 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
+import java.util.function.Consumer;
 import lombok.Data;
 import lombok.NonNull;
 import net.kyori.adventure.bossbar.BossBar;
@@ -37,6 +41,7 @@ import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.scheduler.BukkitTask;
 import static com.cavetale.core.font.Unicode.tiny;
 import static com.cavetale.mobarena.util.Items.sendBrokenElytra;
+import static com.winthier.creative.file.Files.deleteWorld;
 import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.textOfChildren;
@@ -55,7 +60,6 @@ import static net.kyori.adventure.text.format.NamedTextColor.*;
 public final class Game {
     protected final MobArenaPlugin plugin;
     protected final String name;
-    protected Arena arena;
     protected GameTag tag;
     protected File gameTagFile;
     protected Wave<?> currentWave;
@@ -69,8 +73,6 @@ public final class Game {
     protected final BossBar bossBar;
     protected Stat currentStat = Stat.DAMAGE;
     protected int currentStatTicks;
-    protected List<String> usedArenaNames = new ArrayList<>();
-    protected List<String> forcedArenaNames = new ArrayList<>();
 
     public Game(final MobArenaPlugin plugin, final String name) {
         this.plugin = plugin;
@@ -96,6 +98,11 @@ public final class Game {
         newHandler.onEnter();
     }
 
+    public Arena getArena() {
+        if (tag == null) return null;
+        return tag.getArena();
+    }
+
     public void addPlayer(Player player) {
         getGamePlayer(player).getTag().setPlaying(true);
         getGamePlayer(player).getTag().setDidPlay(true);
@@ -116,7 +123,7 @@ public final class Game {
                 gamePlayer.tag.setPlaying(false);
                 continue;
             }
-            if (!arena.isOnPlane(player.getLocation())) {
+            if (!getArena().isOnPlane(player.getLocation())) {
                 gamePlayer.tag.setPlaying(false);
                 continue;
             }
@@ -131,7 +138,7 @@ public final class Game {
                 gamePlayer.bossBar = true;
                 player.showBossBar(bossBar);
             }
-            if (player.isGliding() && !plugin.config.isAllowFlight()) {
+            if (player.isGliding() && !plugin.getMobArenaConfig().isAllowFlight()) {
                 player.setGliding(false);
                 sendBrokenElytra(player);
             }
@@ -144,12 +151,14 @@ public final class Game {
                 continue;
             }
             Location playerLocation = player.getLocation();
-            if (!arena.isOnPlane(playerLocation) || !arena.isInWorld(playerLocation)) {
+            if (!getArena().isInWorld(playerLocation)) {
                 gamePlayer.getTag().setPlaying(false);
                 if (gamePlayer.bossBar) {
                     gamePlayer.bossBar = false;
                     player.hideBossBar(bossBar);
                 }
+            } else if (!getArena().isOnPlane(playerLocation) || getArena().isForbidden(playerLocation)) {
+                bring(player);
             }
         }
         if (getActivePlayers().isEmpty()) {
@@ -181,13 +190,14 @@ public final class Game {
             throw new IllegalStateException("Task already exists");
         }
         task = Bukkit.getScheduler().runTaskTimer(plugin, this::tick, 1L, 1L);
-        plugin.reloadConfig();
-        forcedArenaNames.addAll(plugin.getConfig().getStringList("ForcedArenas"));
-        for (String it : List.copyOf(forcedArenaNames)) {
-            if (!plugin.arenaMap.containsKey(it)) {
-                plugin.getLogger().severe("Forced Arena not found: " + it);
-                forcedArenaNames.remove(it);
+        for (GamePlayer gamePlayer : playerMap.values()) {
+            if (!gamePlayer.getTag().isPlaying()) continue;
+            final Player player = gamePlayer.getPlayer();
+            if (player == null) {
+                gamePlayer.getTag().setPlaying(false);
+                continue;
             }
+            bring(player);
         }
     }
 
@@ -227,6 +237,12 @@ public final class Game {
         clearEnemies();
         plugin.gameList.remove(this);
         gameTagFile.delete();
+        if (tag != null && tag.getArena() != null && tag.getArena().getWorld() != null) {
+            for (Player player : tag.getArena().getWorld().getPlayers()) {
+                Spawn.warp(player);
+            }
+            deleteWorld(tag.getArena().getWorld());
+        }
     }
 
     public void clearEnemies() {
@@ -239,21 +255,20 @@ public final class Game {
     /**
      * Start from scratch. Arena required.
      */
-    protected void start(@NonNull Arena inArena) {
-        this.arena = inArena;
+    public void start(@NonNull Arena inArena) {
         this.tag = new GameTag();
-        tag.setArenaName(inArena.getName());
-        changeState(GameState.PREPARE);
-        enable();
+        startCallback(inArena);
     }
 
-    protected void start() {
-        enable();
-        this.arena = randomUnusedArena();
-        plugin.getLogger().info(name + " using arena " + arena.getName());
+    public void start() {
         this.tag = new GameTag();
-        tag.setArenaName(arena.getName());
+        randomArena(this::startCallback);
+    }
+
+    private void startCallback(final Arena inArena) {
+        tag.setArena(inArena);
         changeState(GameState.PREPARE);
+        enable();
     }
 
     /**
@@ -262,10 +277,6 @@ public final class Game {
      */
     protected void load() {
         tag = Objects.requireNonNull(Json.load(gameTagFile, GameTag.class));
-        this.arena = plugin.arenaMap.get(tag.getArenaName());
-        if (arena == null) {
-            throw new IllegalStateException("Arena not found: " + tag.getArenaName());
-        }
         this.stateHandler = tag.getState().handlerCtor.apply(this);
         stateHandler.load(tag.getStateTag());
         if (tag.getCurrentWaveType() != null) {
@@ -297,26 +308,38 @@ public final class Game {
         Json.save(gameTagFile, tag, true);
     }
 
+    /**
+     * Called once by WaveWarmupHandler.
+     */
     public void makeNextWave() {
-        int waveIndex = tag.getCurrentWaveIndex() + 1;
+        final int waveIndex = tag.getCurrentWaveIndex() + 1;
         tag.setCurrentWaveIndex(waveIndex);
-        WaveType waveType = waveIndex % 10 == 0
+        final WaveType waveType = waveIndex % 10 == 0
             ? WaveType.BOSS
             : WaveType.KILL;
         currentWave = waveType.waveCtor.apply(this);
         tag.setCurrentWaveType(currentWave.getWaveType());
         if (waveIndex > 1 && waveIndex % 10 == 1) {
-            Arena newArena = randomUnusedArena();
-            if (newArena != null) {
-                plugin.getLogger().info(name + " switching to arena " + newArena.getName());
-                List<Player> activePlayers = getActivePlayers();
-                this.arena = newArena;
-                this.tag.setArenaName(newArena.getName());
-                for (Player player : activePlayers) {
-                    bring(player);
-                }
-            }
+            randomArena(newArena -> {
+                    plugin.getLogger().info(name + " switching to arena " + newArena.getBuildWorldPath());
+                    final List<Player> activePlayers = getActivePlayers();
+                    final Arena oldArena = tag.getArena();
+                    tag.setArena(newArena);
+                    save();
+                    for (Player player : activePlayers) {
+                        bring(player);
+                    }
+                    if (oldArena != null) {
+                        deleteWorld(oldArena.getWorld());
+                    }
+                    makeNextWaveCallback();
+                });
+        } else {
+            makeNextWaveCallback();
         }
+    }
+
+    private void makeNextWaveCallback() {
         currentWave.create();
         for (GamePlayer gamePlayer : playerMap.values()) {
             gamePlayer.clearWaveStats();
@@ -325,48 +348,54 @@ public final class Game {
             List<Component> lines = List.of(text("/mobarena", GREEN),
                                             textOfChildren(text(tiny("players "), GRAY), text(countActivePlayers(), WHITE),
                                                            space(),
-                                                           text(tiny("wave "), GRAY), text(waveIndex, WHITE)));
+                                                           text(tiny("wave "), GRAY), text(tag.getCurrentWaveIndex(), WHITE)));
             ServerPlugin.getInstance().setServerSidebarLines(lines);
         }
     }
 
-    private Arena randomUnusedArena() {
-        if (!forcedArenaNames.isEmpty()) {
-            String forcedArenaName = forcedArenaNames.remove(random.nextInt(forcedArenaNames.size()));
-            Arena forcedArena = plugin.arenaMap.get(forcedArenaName);
-            if (forcedArena != null && !plugin.isArenaInUse(forcedArena)) {
-                usedArenaNames.add(forcedArenaName);
-                return forcedArena;
-            }
+    private void randomArena(Consumer<Arena> callback) {
+        final Map<String, BuildWorld> buildWorlds = new HashMap<>();
+        for (BuildWorld buildWorld : BuildWorld.findPurposeWorlds(BuildWorldPurpose.MOB_ARENA, true)) {
+            buildWorlds.put(buildWorld.getPath(), buildWorld);
         }
-        List<String> options = new ArrayList<>(plugin.arenaMap.keySet());
-        for (Game game : plugin.gameList) {
-            options.remove(game.getArena().getName());
+        final List<String> paths = new ArrayList<>(buildWorlds.keySet());
+        // Prune used names
+        paths.removeAll(tag.getUsedArenaNames());
+        if (paths.isEmpty()) {
+            tag.getUsedArenaNames().clear();
+            paths.addAll(buildWorlds.keySet());
         }
-        options.removeAll(plugin.config.getDisabledArenas());
-        if (usedArenaNames.size() >= options.size()) {
-            usedArenaNames.clear();
-        } else {
-            options.removeAll(usedArenaNames);
-        }
-        if (options.isEmpty()) return null;
-        final String arenaName = options.get(random.nextInt(options.size()));
-        usedArenaNames.add(arenaName);
-        return plugin.arenaMap.get(arenaName);
+        // Pick one
+        final String thePath = paths.get(random.nextInt(paths.size()));
+        tag.getUsedArenaNames().add(thePath);
+        final BuildWorld buildWorld = buildWorlds.get(thePath);
+        buildWorld.makeLocalCopyAsync(world -> {
+                    plugin.prepareArenaWorld(world);
+                    final Arena arena = new Arena(world, buildWorld);
+                    callback.accept(arena);
+            });
     }
 
     public List<Player> getPresentPlayers() {
-        return arena.getPresentPlayers();
+        return getArena().getPresentPlayers();
     }
 
     public List<Player> getActivePlayers() {
-        List<Player> result = getPresentPlayers();
-        result.removeIf(p -> {
-                switch (p.getGameMode()) {
-                case ADVENTURE: case SURVIVAL: return false;
-                case CREATIVE: case SPECTATOR: default: return true;
-                }
-            });
+        final List<Player> result = new ArrayList<>(playerMap.size());
+        for (GamePlayer gamePlayer : playerMap.values()) {
+            if (!gamePlayer.getTag().isPlaying()) continue;
+            final Player player = gamePlayer.getPlayer();
+            if (player == null) continue;
+            switch (player.getGameMode()) {
+            case ADVENTURE:
+            case SURVIVAL:
+                result.add(player);
+            case CREATIVE:
+            case SPECTATOR:
+            default:
+                break;
+            }
+        }
         return result;
     }
 
@@ -394,8 +423,10 @@ public final class Game {
     }
 
     public void bring(Player player) {
+        if (tag == null || tag.getArena() == null) return;
         player.eject();
-        player.teleport(arena.randomSpawnLocation(), TeleportCause.PLUGIN);
+        player.leaveVehicle();
+        player.teleport(getArena().randomSpawnLocation(), TeleportCause.PLUGIN);
         player.setGameMode(GameMode.ADVENTURE);
     }
 
