@@ -113,6 +113,7 @@ public final class MobArenaPlugin extends JavaPlugin {
         world.setGameRule(GameRule.SPAWN_RADIUS, 0);
         world.setGameRule(GameRule.SPECTATORS_GENERATE_CHUNKS, false);
         world.setGameRule(GameRule.UNIVERSAL_ANGER, true);
+        world.setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, true);
         world.setDifficulty(Difficulty.HARD);
     }
 
