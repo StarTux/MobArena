@@ -41,7 +41,6 @@ public final class MobArenaPlugin extends JavaPlugin {
     protected File gamesFolder;
     protected File configFile;
     public static final Component TITLE = join(noSeparators(), text("Mob", DARK_RED), text("ARENA", DARK_AQUA));
-    protected List<String> worldNames = new ArrayList<>();
 
     @Override
     public void onEnable() {
@@ -248,6 +247,10 @@ public final class MobArenaPlugin extends JavaPlugin {
     }
 
     public boolean isArenaWorld(World world) {
-        return worldNames.contains(world.getName());
+        for (Game game : gameList) {
+            if (game.getArena() == null) continue;
+            if (game.getArena().isInWorld(world)) return true;
+        }
+        return false;
     }
 }
