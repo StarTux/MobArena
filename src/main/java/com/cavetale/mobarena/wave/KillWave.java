@@ -180,7 +180,7 @@ public final class KillWave extends Wave<KillWaveTag> {
                 mobSpawn.setEnemyId(enemy.getEnemyId());
             } else {
                 final Location enemyLocation = enemy.getLocation();
-                if (!game.getArena().isInArena(enemyLocation) || game.getArena().isForbidden(enemyLocation)) {
+                if (doWarpHome || !game.getArena().isInArena(enemyLocation) || game.getArena().isForbidden(enemyLocation)) {
                     LivingEntity livingEntity = enemy instanceof LivingEnemy livingEnemy
                         ? livingEnemy.getLivingEntity()
                         : null;

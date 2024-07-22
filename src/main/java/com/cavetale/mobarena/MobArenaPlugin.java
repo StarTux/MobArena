@@ -115,6 +115,7 @@ public final class MobArenaPlugin extends JavaPlugin {
         world.setGameRule(GameRule.UNIVERSAL_ANGER, true);
         world.setGameRule(GameRule.DO_IMMEDIATE_RESPAWN, true);
         world.setDifficulty(Difficulty.HARD);
+        world.setPVP(false);
     }
 
     protected void loadGames() {
