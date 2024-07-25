@@ -14,6 +14,7 @@ import com.cavetale.mytems.Mytems;
 import com.cavetale.mytems.util.Blocks;
 import com.cavetale.mytems.util.Entities;
 import com.cavetale.mytems.util.Gui;
+import io.papermc.paper.registry.RegistryKey;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,6 +37,7 @@ import org.bukkit.event.Event.Result;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
+import static io.papermc.paper.registry.RegistryAccess.registryAccess;
 import static net.kyori.adventure.text.Component.join;
 import static net.kyori.adventure.text.Component.space;
 import static net.kyori.adventure.text.Component.text;
@@ -347,13 +349,22 @@ public final class RewardHandler extends GameStateHandler<RewardTag> {
                                 new ItemStack(Material.NETHERITE_SCRAP, 1 + random.nextInt(10))));
         }
         List<Enchantment> enchantments = new ArrayList<>();
-        for (Enchantment enchantment : Enchantment.values()) {
-            if (enchantment.isCursed()) continue;
-            if (enchantment.isTreasure() && level < 5) continue;
+        for (Enchantment enchantment : registryAccess().getRegistry(RegistryKey.ENCHANTMENT)) {
+            if (enchantment.isCursed()) {
+                continue;
+            }
+            if (enchantment.isTreasure() && level < 5) {
+                continue;
+            }
+            if (UpgradableItem.isRare(enchantment) && level < 10) {
+                continue;
+            }
             enchantments.add(enchantment);
         }
         final Enchantment enchantment = enchantments.get(random.nextInt(enchantments.size()));
-        final int enchLevel = Math.max(1, Math.min(level, enchantment.getMaxLevel()));
+        final int enchLevel = UpgradableItem.isRare(enchantment)
+            ? 1
+            : Math.max(1, Math.min(level, enchantment.getMaxLevel()));
         ItemStack book = new ItemStack(Material.ENCHANTED_BOOK);
         book.editMeta(m -> {
                 if (m instanceof EnchantmentStorageMeta meta) {

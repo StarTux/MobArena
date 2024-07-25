@@ -1,11 +1,14 @@
 package com.cavetale.mobarena.upgrade;
 
+import io.papermc.paper.registry.RegistryKey;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import lombok.Getter;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
+import static io.papermc.paper.registry.RegistryAccess.registryAccess;
 
 @Getter
 public final class UpgradableItem {
@@ -16,18 +19,13 @@ public final class UpgradableItem {
     public UpgradableItem(final ItemStack itemStack, final int level) {
         this.itemStack = itemStack;
         this.level = level;
-        for (Enchantment enchantment : Enchantment.values()) {
-            final boolean incompatible;
+        for (Enchantment enchantment : registryAccess().getRegistry(RegistryKey.ENCHANTMENT)) {
             if (enchantment.isCursed()) {
                 continue;
-            } else if (itemStack.getType() == Material.CROSSBOW && enchantment.equals(Enchantment.INFINITY)) {
-                incompatible = true;
-            } else if (itemStack.getType() == Material.CROSSBOW && enchantment.equals(Enchantment.FLAME)) {
-                incompatible = true;
-            } else if (!enchantment.canEnchantItem(itemStack)) {
+            }
+            final boolean semiIncompatible = isSemiIncompatible(enchantment);
+            if (!semiIncompatible && !enchantment.canEnchantItem(itemStack)) {
                 continue;
-            } else {
-                incompatible = false;
             }
             final int oldLevel = itemStack.getEnchantmentLevel(enchantment);
             final int maxLevel = enchantment == Enchantment.MULTISHOT
@@ -36,20 +34,13 @@ public final class UpgradableItem {
             if (oldLevel >= maxLevel) {
                 continue;
             }
-            int totalConflictingLevel = 0;
-            boolean conflicts = false;
-            INNER: for (Enchantment oldEnchant : Enchantment.values()) {
-                if (enchantment.equals(oldEnchant)) continue INNER;
-                int conflictingLevel = itemStack.getEnchantmentLevel(oldEnchant);
-                if (conflictingLevel > 0 && enchantment.conflictsWith(oldEnchant)) {
-                    totalConflictingLevel += conflictingLevel;
-                    conflicts = true;
-                }
-            }
+            final int conflictLevel = hasConflicts(enchantment);
             int requiredLevel = oldLevel + 1;
-            if (conflicts) {
-                requiredLevel += 9 + totalConflictingLevel;
-            } else if (incompatible) {
+            if (conflictLevel > 0) {
+                requiredLevel += 9 + conflictLevel;
+            } else if (semiIncompatible) {
+                requiredLevel += 10;
+            } else if (isRare(enchantment)) {
                 requiredLevel += 10;
             }
             if (maxLevel > enchantment.getMaxLevel()) {
@@ -61,5 +52,48 @@ public final class UpgradableItem {
 
     public boolean isEmpty() {
         return upgrades.isEmpty();
+    }
+
+    /**
+     * Semi incompatibility means that an item may or may not be
+     * incompatible in vanilla.  Either way, we allow it, but at a
+     * higher price.
+     */
+    public boolean isSemiIncompatible(Enchantment enchantment) {
+        if (itemStack.getType() == Material.CROSSBOW) {
+            return enchantment.equals(Enchantment.INFINITY) || enchantment.equals(Enchantment.FLAME);
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Check if enchantments conflicts with others so we can up the
+     * price.
+     */
+    public int hasConflicts(Enchantment enchantment) {
+        int result = 0;
+        for (Map.Entry<Enchantment, Integer> entry : itemStack.getEnchantments().entrySet()) {
+            final Enchantment oldEnchant = entry.getKey();
+            if (enchantment.equals(oldEnchant)) {
+                continue;
+            }
+            if (!enchantment.conflictsWith(oldEnchant)) {
+                continue;
+            }
+            final int oldLevel = entry.getValue();
+            result += oldLevel;
+        }
+        return result;
+    }
+
+    /**
+     * Enchantments that are considered rare and hard to get in
+     * vanilla will be more expensive here.
+     */
+    public static boolean isRare(Enchantment enchantment) {
+        return enchantment.equals(Enchantment.WIND_BURST)
+            || enchantment.equals(Enchantment.SWIFT_SNEAK)
+            || enchantment.equals(Enchantment.SOUL_SPEED);
     }
 }
