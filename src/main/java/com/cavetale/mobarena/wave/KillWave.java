@@ -101,6 +101,7 @@ public final class KillWave extends Wave<KillWaveTag> {
         ENTITY_MIN_WAVE_MAP.put(EntityType.MAGMA_CUBE, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.PIGLIN, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.ENDERMAN, idx);
+        ENTITY_MIN_WAVE_MAP.put(EntityType.BOGGED, idx);
         idx = 30;
         ENTITY_MIN_WAVE_MAP.put(EntityType.HOGLIN, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.WITHER_SKELETON, idx);
@@ -119,6 +120,7 @@ public final class KillWave extends Wave<KillWaveTag> {
         ENTITY_MIN_WAVE_MAP.put(EntityType.EVOKER, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.RAVAGER, idx);
         ENTITY_MIN_WAVE_MAP.put(EntityType.ILLUSIONER, idx);
+        ENTITY_MIN_WAVE_MAP.put(EntityType.BREEZE, idx);
         // Weights
         for (EntityType entityType : ENTITY_MIN_WAVE_MAP.keySet()) {
             ENTITY_WEIGHT_MAP.put(entityType, 3);
