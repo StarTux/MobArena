@@ -4,7 +4,6 @@ import com.cavetale.core.font.Unicode;
 import com.cavetale.enemy.Enemy;
 import com.cavetale.enemy.LivingEnemy;
 import com.cavetale.enemy.LivingEnemyWrapper;
-import com.cavetale.enemy.util.ItemBuilder;
 import com.cavetale.mobarena.Game;
 import com.cavetale.mobarena.save.KillWaveTag;
 import com.cavetale.mobarena.state.GameState;
@@ -31,6 +30,7 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.AbstractSkeleton;
+import org.bukkit.entity.Bogged;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Drowned;
 import org.bukkit.entity.Entity;
@@ -234,6 +234,11 @@ public final class KillWave extends Wave<KillWaveTag> {
             } else if (zombie instanceof Husk) {
                 babyChance = 0.1;
             } else if (zombie instanceof PigZombie pigZombie) {
+                if (game.getRandom().nextBoolean()) {
+                    pigZombie.getEquipment().setItemInMainHand(new ItemStack(Material.GOLDEN_AXE));
+                } else {
+                    pigZombie.getEquipment().setItemInMainHand(new ItemStack(Material.GOLDEN_SWORD));
+                }
                 pigZombie.setAngry(true);
                 babyChance = 0.1;
             } else if (zombie instanceof ZombieVillager) {
@@ -251,37 +256,37 @@ public final class KillWave extends Wave<KillWaveTag> {
         } else if (mob instanceof AbstractSkeleton skeleton) {
             skeleton.setShouldBurnInDay(false);
             if (skeleton instanceof Skeleton) {
-                skeleton.getEquipment().setItemInMainHand(mobItem(Material.BOW));
+                skeleton.getEquipment().setItemInMainHand(new ItemStack(Material.BOW));
                 skeleton.getEquipment().setHelmet(SKELETON_SKULL.create());
                 equipZombieOrSkeleton(skeleton);
-            } else if (skeleton instanceof Stray) {
-                skeleton.getEquipment().setItemInMainHand(mobItem(Material.BOW));
+            } else if (skeleton instanceof Stray || skeleton instanceof Bogged) {
+                skeleton.getEquipment().setItemInMainHand(new ItemStack(Material.BOW));
                 equipZombieOrSkeleton(skeleton);
             } else if (skeleton instanceof WitherSkeleton) {
                 if (game.getRandom().nextInt(2) == 0) {
-                    skeleton.getEquipment().setItemInMainHand(mobItem(Material.BOW));
+                    skeleton.getEquipment().setItemInMainHand(new ItemStack(Material.BOW));
                 } else {
-                    skeleton.getEquipment().setItemInMainHand(mobItem(Material.IRON_SWORD));
+                    skeleton.getEquipment().setItemInMainHand(new ItemStack(Material.IRON_SWORD));
                 }
                 skeleton.getEquipment().setArmorContents(new ItemStack[] {
-                        mobItem(Material.NETHERITE_BOOTS),
-                        mobItem(Material.NETHERITE_LEGGINGS),
-                        mobItem(Material.NETHERITE_CHESTPLATE),
-                        mobItem(Material.NETHERITE_HELMET),
+                        new ItemStack(Material.NETHERITE_BOOTS),
+                        new ItemStack(Material.NETHERITE_LEGGINGS),
+                        new ItemStack(Material.NETHERITE_CHESTPLATE),
+                        new ItemStack(Material.NETHERITE_HELMET),
                     });
             }
         } else if (mob instanceof Hoglin hoglin) {
             hoglin.setImmuneToZombification(true);
             hoglin.setIsAbleToBeHunted(false);
         } else if (mob instanceof Pillager pillager) {
-            pillager.getEquipment().setItemInMainHand(mobItem(Material.CROSSBOW));
+            pillager.getEquipment().setItemInMainHand(new ItemStack(Material.CROSSBOW));
         } else if (mob instanceof Vindicator vindicator) {
-            vindicator.getEquipment().setItemInMainHand(mobItem(Material.IRON_AXE));
+            vindicator.getEquipment().setItemInMainHand(new ItemStack(Material.IRON_AXE));
         } else if (mob instanceof PiglinAbstract piglin) {
             if (game.getRandom().nextBoolean()) {
-                piglin.getEquipment().setItemInMainHand(mobItem(Material.GOLDEN_AXE));
+                piglin.getEquipment().setItemInMainHand(new ItemStack(Material.GOLDEN_AXE));
             } else {
-                piglin.getEquipment().setItemInMainHand(mobItem(Material.GOLDEN_SWORD));
+                piglin.getEquipment().setItemInMainHand(new ItemStack(Material.GOLDEN_SWORD));
             }
             piglin.setImmuneToZombification(true);
             if (piglin instanceof Piglin piglin2) {
@@ -294,18 +299,11 @@ public final class KillWave extends Wave<KillWaveTag> {
                 }
             }
         } else if (mob instanceof Evoker evoker) {
-            evoker.getEquipment().setItemInMainHand(mobItem(Material.TOTEM_OF_UNDYING));
+            evoker.getEquipment().setItemInMainHand(new ItemStack(Material.TOTEM_OF_UNDYING));
         } else if (mob instanceof Creeper creeper) {
             creeper.setMaxFuseTicks(Math.max(1, creeper.getMaxFuseTicks() - getEffectiveWave() / 2));
         }
         adjustAttributes(mob);
-    }
-
-    private static ItemStack mobItem(Material mat) {
-        return new ItemBuilder(mat)
-            .removeArmor()
-            .removeDamage()
-            .create();
     }
 
     protected void equipZombieOrSkeleton(Mob mob) {
@@ -369,7 +367,7 @@ public final class KillWave extends Wave<KillWaveTag> {
             if (oldItem != null && oldItem.getType() != Material.AIR) continue;
             Material mat = mats.get(i);
             if (mat == null) continue;
-            ItemStack itemStack = mobItem(mat);
+            ItemStack itemStack = new ItemStack(mat);
             itemStack.editMeta(m -> {
                     if (m instanceof LeatherArmorMeta meta) {
                         if (leatherArmorColor == null) {
