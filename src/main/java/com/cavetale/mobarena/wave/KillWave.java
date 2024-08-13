@@ -5,6 +5,7 @@ import com.cavetale.enemy.Enemy;
 import com.cavetale.enemy.LivingEnemy;
 import com.cavetale.enemy.LivingEnemyWrapper;
 import com.cavetale.mobarena.Game;
+import com.cavetale.mobarena.MobSpawnLocation;
 import com.cavetale.mobarena.save.KillWaveTag;
 import com.cavetale.mobarena.state.GameState;
 import com.cavetale.mobarena.util.Time;
@@ -26,6 +27,7 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.AbstractArrow;
@@ -168,7 +170,7 @@ public final class KillWave extends Wave<KillWaveTag> {
     public void tick() {
         int stillAlive = 0;
         runningTime = Duration.ofMillis(System.currentTimeMillis() - game.getStateHandler().getTag().getStartTime());
-        boolean doWarpHome = (runningTime.toSeconds() % 90L) == 0L && lastWarpHome != runningTime.toSeconds();
+        final boolean doWarpHome = (runningTime.toSeconds() % 90L) == 0L && lastWarpHome != runningTime.toSeconds();
         if (doWarpHome) {
             lastWarpHome = runningTime.toSeconds();
         }
@@ -182,19 +184,18 @@ public final class KillWave extends Wave<KillWaveTag> {
                 game.getEnemies().add(enemy);
                 mobSpawn.setEnemyId(enemy.getEnemyId());
             } else {
+                assert enemy != null;
                 final Location enemyLocation = enemy.getLocation();
                 if (doWarpHome || !game.getArena().isInArena(enemyLocation) || game.getArena().isForbidden(enemyLocation)) {
-                    LivingEntity livingEntity = enemy instanceof LivingEnemy livingEnemy
-                        ? livingEnemy.getLivingEntity()
-                        : null;
-                    boolean flying = livingEntity != null
-                        && livingEntity instanceof Flying;
-                    Location location = flying
-                        ? game.getArena().randomFlyingMobLocation()
-                        : game.getArena().randomMobLocation();
-                    enemy.teleport(location);
-                    if (livingEntity != null) {
-                        livingEntity.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 200, 0, true, false, false));
+                    if (enemy instanceof LivingEnemy livingEnemy && livingEnemy.getLivingEntity() instanceof Mob mob) {
+                        final MobSpawnLocation.Environment environment = livingEnemy instanceof Flying
+                            ? MobSpawnLocation.Environment.FLYING
+                            : MobSpawnLocation.Environment.GROUND;
+                        final MobSpawnLocation mobSpawnLocation = game.getArena().getMobSpawnLocation(MobSpawnLocation.Type.MOB, environment);
+                        mob.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 200, 0, true, false, false));
+                    } else {
+                        final MobSpawnLocation mobSpawnLocation = game.getArena().getMobSpawnLocation(MobSpawnLocation.Type.MOB, MobSpawnLocation.Environment.GROUND);
+                        enemy.teleport(mobSpawnLocation.random(game.getArena().getWorld()));
                     }
                 } else if (!game.getActivePlayers().contains(enemy.getCurrentTarget())) {
                     enemy.findPlayerTarget();
@@ -213,11 +214,12 @@ public final class KillWave extends Wave<KillWaveTag> {
         }
         @SuppressWarnings("unchecked")
         Class<? extends Mob> livingEntityClass = (Class<? extends Mob>) entityClass;
-        boolean flying = Flying.class.isAssignableFrom(livingEntityClass);
-        Location location = flying
-            ? game.getArena().randomFlyingMobLocation()
-            : game.getArena().randomMobLocation();
-        return location.getWorld().spawn(location, livingEntityClass, false, this::spawnMobCallback);
+        final MobSpawnLocation.Environment environment = Flying.class.isAssignableFrom(livingEntityClass)
+            ? MobSpawnLocation.Environment.FLYING
+            : MobSpawnLocation.Environment.GROUND;
+        final MobSpawnLocation mobSpawnLocation = game.getArena().getMobSpawnLocation(MobSpawnLocation.Type.MOB, environment);
+        final World world = game.getArena().getWorld();
+        return mobSpawnLocation.spawn(world, location -> world.spawn(location, livingEntityClass, false, this::spawnMobCallback));
     }
 
     protected void spawnMobCallback(Mob mob) {

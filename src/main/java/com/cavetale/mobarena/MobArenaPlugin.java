@@ -255,4 +255,8 @@ public final class MobArenaPlugin extends JavaPlugin {
         }
         return false;
     }
+
+    public static MobArenaPlugin mobArenaPlugin() {
+        return instance;
+    }
 }

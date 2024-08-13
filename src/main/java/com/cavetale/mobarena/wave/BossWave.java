@@ -5,6 +5,7 @@ import com.cavetale.enemy.Enemy;
 import com.cavetale.enemy.EnemyType;
 import com.cavetale.enemy.boss.LivingBoss;
 import com.cavetale.mobarena.Game;
+import com.cavetale.mobarena.MobSpawnLocation;
 import com.cavetale.mobarena.save.BossWaveTag;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,8 @@ import net.kyori.adventure.title.Title;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
+import org.bukkit.entity.Flying;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.textOfChildren;
@@ -98,28 +101,29 @@ public final class BossWave extends Wave<BossWaveTag> {
         } else if (!boss.isValid()) { // isSpawned
             spawnBoss();
         } else {
+            assert boss != null && boss.isValid();
             Location location = boss.getLocation();
             if (!game.getArena().isInArena(location) || game.getArena().isForbidden(location) || game.getArena().isBossEscape(location)) {
-                boss.teleport(getRandomSpawnLocation());
+                if (boss instanceof LivingBoss livingBoss) {
+                    final MobSpawnLocation.Environment environment = livingBoss.getMob() instanceof Flying
+                        ? MobSpawnLocation.Environment.FLYING
+                        : MobSpawnLocation.Environment.GROUND;
+                    final MobSpawnLocation mobSpawnLocation = game.getArena().getMobSpawnLocation(MobSpawnLocation.Type.BOSS, environment);
+                    mobSpawnLocation.respawn(livingBoss.getMob());
+                } else {
+                    final MobSpawnLocation mobSpawnLocation = game.getArena().getMobSpawnLocation(MobSpawnLocation.Type.BOSS, MobSpawnLocation.Environment.GROUND);
+                    boss.teleport(mobSpawnLocation.random(boss.getWorld()));
+                }
             }
         }
     }
 
-    private Location getRandomSpawnLocation() {
-        return switch (tag.getEnemyType()) {
-        case QUEEN_BEE, SPECTER, GHAST_BOSS -> game.getArena().randomFlyingMobLocation();
-        default -> game.getArena().randomMobLocation();
-        };
-    }
-
     private void spawnBoss() {
-        Enemy boss = getBoss();
+        final Enemy boss = getBoss();
         if (boss == null) {
             game.getPlugin().getLogger().info("[" + game.getName() + "] " + game.getTag().getCurrentWaveIndex() + ": Boss is null: " + tag);
             return;
         }
-        final Location location = getRandomSpawnLocation();
-        boss.setSpawnLocation(location);
         if (boss instanceof LivingBoss livingBoss) {
             final double wave = (double) game.getTag().getCurrentWaveIndex();
             final double players = (double) game.countActivePlayers();
@@ -129,8 +133,25 @@ public final class BossWave extends Wave<BossWaveTag> {
             // https://minecraft.fandom.com/wiki/Attribute#Attributes
             final double max = 1024.0;
             livingBoss.setMaxHealth(Math.min(max, health));
+            final MobSpawnLocation.Environment environment = Flying.class.isAssignableFrom(livingBoss.getEntityType().getEntityClass())
+                ? MobSpawnLocation.Environment.FLYING
+                : MobSpawnLocation.Environment.GROUND;
+            final MobSpawnLocation mobSpawnLocation = game.getArena().getMobSpawnLocation(MobSpawnLocation.Type.BOSS, environment);
+            final Mob bossMob = mobSpawnLocation.spawn(game.getArena().getWorld(), location -> {
+                    boss.spawn(location);
+                    return boss.getMob() instanceof Mob mob
+                        ? mob
+                        : null;
+                });
+            if (bossMob != null) {
+                boss.setSpawnLocation(bossMob.getLocation());
+            }
+        } else {
+            final MobSpawnLocation mobSpawnLocation = game.getArena().getMobSpawnLocation(MobSpawnLocation.Type.BOSS, MobSpawnLocation.Environment.GROUND);
+            final Location location = mobSpawnLocation.random(game.getArena().getWorld());
+            boss.spawn(location);
+            boss.setSpawnLocation(location);
         }
-        boss.spawn(location);
     }
 
     @Override
