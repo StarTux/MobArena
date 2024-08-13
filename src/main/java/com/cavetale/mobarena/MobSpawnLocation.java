@@ -9,6 +9,8 @@ import lombok.Data;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Flying;
 import org.bukkit.entity.Mob;
 import org.bukkit.util.BoundingBox;
 import static com.cavetale.mobarena.MobArenaPlugin.mobArenaPlugin;
@@ -43,6 +45,26 @@ public final class MobSpawnLocation {
         GROUND,
         FLYING,
         ;
+
+        public static Environment of(EntityType entityType) {
+            switch (entityType) {
+            case ALLAY:
+            case BAT:
+            case BEE:
+            case BLAZE:
+            case ENDER_DRAGON:
+            case GHAST:
+            case PARROT:
+            case PHANTOM:
+            case VEX:
+            case WITHER:
+                return FLYING;
+            default:
+                return Flying.class.isAssignableFrom(entityType.getEntityClass())
+                    ? FLYING
+                    : GROUND;
+            }
+        }
     }
 
     public Location random(World world) {
