@@ -127,8 +127,8 @@ public final class BossWave extends Wave<BossWaveTag> {
         if (boss instanceof LivingBoss livingBoss) {
             final double wave = (double) game.getTag().getCurrentWaveIndex();
             final double players = (double) game.countActivePlayers();
-            // +10 per boss level, +10 per player
-            final double health = 100.0 + 1.0 * wave + 10.0 * players;
+            // +10 per boss level
+            final double health = 100.0 + (double) (wave - 10);
             // Maximum health according to the Wiki:
             // https://minecraft.fandom.com/wiki/Attribute#Attributes
             final double max = 1024.0;
