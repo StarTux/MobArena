@@ -5,6 +5,7 @@ import com.cavetale.core.command.CommandArgCompleter;
 import com.cavetale.core.command.CommandNode;
 import com.cavetale.core.command.CommandWarn;
 import com.cavetale.core.util.Json;
+import com.cavetale.enemy.EnemyType;
 import com.cavetale.fam.trophy.Highscore;
 import com.cavetale.mobarena.state.RewardHandler;
 import com.cavetale.mobarena.wave.Wave;
@@ -74,6 +75,10 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
             .description("Test the reward interface")
             .completers(CommandArgCompleter.integer(i -> i > 0))
             .playerCaller(this::testReward);
+        rootNode.addChild("nextboss").arguments("<type>")
+            .description("Set the next boss type")
+            .completers(CommandArgCompleter.enumLowerList(EnemyType.class))
+            .playerCaller(this::nextBoss);
         CommandNode eventNode = rootNode.addChild("event")
             .description("Event subcommands");
         eventNode.addChild("reward").denyTabCompletion()
@@ -248,6 +253,32 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
         final int level = CommandArgCompleter.requireInt(args[0], i -> i > 0);
         new RewardHandler(new Game(plugin, "null")).openRewardChest(player, level);
         return true;
+    }
+
+    private boolean nextBoss(Player player, String[] args) {
+        if (args.length == 0) {
+            final Game game = plugin.gameAt(player.getLocation());
+            if (game == null) {
+                throw new CommandWarn("There is not game here");
+            }
+            final EnemyType nextBoss = game.getNextBoss();
+            if (nextBoss == null) {
+                throw new CommandWarn("Next boss was not set");
+            }
+            game.setNextBoss(null);
+            player.sendMessage(text("Cleared next boss, was " + nextBoss, YELLOW));
+            return true;
+        } else if (args.length == 1) {
+            final Game game = plugin.gameAt(player.getLocation());
+            if (game == null) throw new CommandWarn("There is not game here");
+            final String bossName = args[0];
+            final EnemyType nextBoss = CommandArgCompleter.requireEnum(EnemyType.class, bossName);
+            game.setNextBoss(nextBoss);
+            player.sendMessage(text("Next boss set to " + nextBoss, YELLOW));
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private void eventReward(CommandSender sender) {

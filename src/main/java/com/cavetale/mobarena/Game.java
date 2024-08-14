@@ -3,6 +3,7 @@ package com.cavetale.mobarena;
 import com.cavetale.core.font.Unicode;
 import com.cavetale.core.util.Json;
 import com.cavetale.enemy.Enemy;
+import com.cavetale.enemy.EnemyType;
 import com.cavetale.mobarena.save.GameTag;
 import com.cavetale.mobarena.state.GameState;
 import com.cavetale.mobarena.state.GameStateHandler;
@@ -73,6 +74,7 @@ public final class Game {
     protected final BossBar bossBar;
     protected Stat currentStat = Stat.DAMAGE;
     protected int currentStatTicks;
+    private EnemyType nextBoss;
 
     public Game(final MobArenaPlugin plugin, final String name) {
         this.plugin = plugin;
