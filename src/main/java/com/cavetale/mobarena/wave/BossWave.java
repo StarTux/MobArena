@@ -150,6 +150,7 @@ public final class BossWave extends Wave<BossWaveTag> {
             boss.spawn(location);
             boss.setSpawnLocation(location);
         }
+        boss.setDifficultyLevel(game.getTag().getCurrentWaveIndex() / 10);
     }
 
     @Override

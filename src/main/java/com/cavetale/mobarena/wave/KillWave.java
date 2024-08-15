@@ -180,6 +180,7 @@ public final class KillWave extends Wave<KillWaveTag> {
             if (enemy == null || !enemy.isValid()) {
                 Mob mob = spawnMob(mobSpawn);
                 enemy = new LivingEnemyWrapper(game.getEnemyContext(), mob);
+                enemy.setDifficultyLevel(game.getTag().getCurrentWaveIndex() / 10);
                 game.getEnemies().add(enemy);
                 mobSpawn.setEnemyId(enemy.getEnemyId());
             } else {
