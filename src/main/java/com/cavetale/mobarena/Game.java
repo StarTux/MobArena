@@ -268,6 +268,7 @@ public final class Game {
     }
 
     private void startCallback(final Arena inArena) {
+        plugin.getLogger().info("[" + name + "] Starting arena " + inArena.getBuildWorldPath());
         tag.setArena(inArena);
         changeState(GameState.PREPARE);
         enable();
