@@ -13,7 +13,6 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Flying;
 import org.bukkit.entity.Mob;
 import org.bukkit.util.BoundingBox;
-import static com.cavetale.mobarena.MobArenaPlugin.mobArenaPlugin;
 import static com.cavetale.mytems.util.Collision.collidesWithBlock;
 
 /**
@@ -91,11 +90,6 @@ public final class MobSpawnLocation {
         if (collidesWithMob(mob, mob.getBoundingBox())) {
             shiftForMobs(mob);
         }
-        mobArenaPlugin().getLogger().info("MobSpawnLocation " + mob.getType() + " at"
-                                          + " " + mob.getLocation().getBlockX()
-                                          + " " + mob.getLocation().getBlockY()
-                                          + " " + mob.getLocation().getBlockZ()
-                                          + " shifts:" + blockShifts + "," + mobShifts);
         return mob;
     }
 
