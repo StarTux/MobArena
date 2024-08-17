@@ -160,6 +160,7 @@ public final class MobArenaPlugin extends JavaPlugin {
 
     public Game gameAt(Location location) {
         for (Game game : gameList) {
+            if (game.getArena() == null) continue;
             if (game.getArena().isOnPlane(location) && game.getArena().isInWorld(location)) {
                 return game;
             }
@@ -170,6 +171,7 @@ public final class MobArenaPlugin extends JavaPlugin {
     public boolean applyGame(Location location, Consumer<Game> consumer) {
         boolean result = false;
         for (Game game : gameList) {
+            if (game.getArena() == null) continue;
             if (game.getArena().isInWorld(location)) {
                 consumer.accept(game);
                 result = true;
@@ -196,6 +198,7 @@ public final class MobArenaPlugin extends JavaPlugin {
 
     public Game getGameIn(World world) {
         for (Game game : gameList) {
+            if (game.getArena() == null) continue;
             if (game.getArena().isInWorld(world)) {
                 return game;
             }
