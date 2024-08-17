@@ -13,6 +13,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Flying;
 import org.bukkit.entity.Mob;
 import org.bukkit.util.BoundingBox;
+import static com.cavetale.mobarena.MobArenaPlugin.mobArenaPlugin;
 import static com.cavetale.mytems.util.Collision.collidesWithBlock;
 
 /**
@@ -137,6 +138,7 @@ public final class MobSpawnLocation {
             }
             optionShiftIndex += 1;
         }
+        mobArenaPlugin().getLogger().warning("[MobSpawnLocation] Failed to shift " + mob.getType() + " for blocks");
         return null;
     }
 
