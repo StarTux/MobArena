@@ -133,7 +133,6 @@ public final class MobSpawnLocation {
         final Location location = mob.getLocation();
         final World world = mob.getWorld();
         while (optionShiftIndex < options.size()) {
-            optionShiftIndex += 1;
             blockShifts += 1;
             final Vec3i option = options.get(optionShiftIndex);
             final Location newLocation = option.toCenterFloorLocation(world);
@@ -142,6 +141,7 @@ public final class MobSpawnLocation {
                 mob.teleport(newLocation);
                 return newLocation;
             }
+            optionShiftIndex += 1;
         }
         return null;
     }
@@ -155,7 +155,6 @@ public final class MobSpawnLocation {
         final Location location = mob.getLocation();
         final World world = mob.getWorld();
         while (optionShiftIndex < options.size()) {
-            optionShiftIndex += 1;
             mobShifts += 1;
             final Vec3i option = options.get(optionShiftIndex);
             final Location newLocation = option.toCenterFloorLocation(world);
@@ -164,6 +163,7 @@ public final class MobSpawnLocation {
                 mob.teleport(newLocation);
                 return newLocation;
             }
+            optionShiftIndex += 1;
         }
         return null;
     }
