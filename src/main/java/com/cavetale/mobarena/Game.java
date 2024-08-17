@@ -164,7 +164,7 @@ public final class Game {
             }
         }
         if (getActivePlayers().isEmpty()) {
-            plugin.getLogger().info("Stopping because empty: " + name);
+            plugin.getLogger().info("[" + name + "] Stopping because empty: " + name);
             stop();
             return;
         }
@@ -315,6 +315,7 @@ public final class Game {
      */
     public void makeNextWave() {
         final int waveIndex = tag.getCurrentWaveIndex() + 1;
+        plugin.getLogger().info("[" + name + "] Wave " + (waveIndex + 1));
         tag.setCurrentWaveIndex(waveIndex);
         final WaveType waveType = waveIndex % 10 == 0
             ? WaveType.BOSS
@@ -323,7 +324,7 @@ public final class Game {
         tag.setCurrentWaveType(currentWave.getWaveType());
         if (waveIndex > 1 && waveIndex % 10 == 1) {
             randomArena(newArena -> {
-                    plugin.getLogger().info(name + " switching to arena " + newArena.getBuildWorldPath());
+                    plugin.getLogger().info("[" + name + "] switching to arena " + newArena.getBuildWorldPath());
                     final List<Player> activePlayers = getActivePlayers();
                     final Arena oldArena = tag.getArena();
                     tag.setArena(newArena);
