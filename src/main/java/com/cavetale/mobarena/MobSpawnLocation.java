@@ -33,6 +33,7 @@ public final class MobSpawnLocation {
         this.type = type;
         this.environment = environment;
         this.options = new ArrayList<>(options);
+        Collections.shuffle(options);
     }
 
     public enum Type {
@@ -79,7 +80,6 @@ public final class MobSpawnLocation {
      * @return the mob or null
      */
     public Mob spawn(World world, Function<Location, Mob> callback) {
-        Collections.shuffle(options);
         final Location location = options.get(0).toCenterFloorLocation(world);
         final Mob mob = callback.apply(location);
         if (mob == null) {
