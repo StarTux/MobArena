@@ -190,6 +190,7 @@ public final class KillWave extends Wave<KillWaveTag> {
                     if (enemy instanceof LivingEnemy livingEnemy && livingEnemy.getLivingEntity() instanceof Mob mob) {
                         final MobSpawnLocation mobSpawnLocation = game.getArena().getMobSpawnLocation(MobSpawnLocation.Type.MOB,
                                                                                                       MobSpawnLocation.Environment.of(livingEnemy.getEntityType()));
+                        mobSpawnLocation.respawn(mob);
                         mob.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 200, 0, true, false, false));
                     } else {
                         final MobSpawnLocation mobSpawnLocation = game.getArena().getMobSpawnLocation(MobSpawnLocation.Type.MOB, MobSpawnLocation.Environment.GROUND);
