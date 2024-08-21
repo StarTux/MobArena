@@ -114,7 +114,7 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
         }
         for (Game game : plugin.getGameList()) {
             sender.sendMessage(textOfChildren(text("Game " + game.getName(), YELLOW),
-                                              text(" arena:", GRAY), text(game.getArena().getBuildWorldPath(), WHITE),
+                                              text(" arena:", GRAY), text(game.getArena().getBuildWorld().getPath(), WHITE),
                                               text(" players:", GRAY), text(game.countActivePlayers(), WHITE)));
         }
     }

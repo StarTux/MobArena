@@ -268,7 +268,7 @@ public final class Game {
     }
 
     private void startCallback(final Arena inArena) {
-        plugin.getLogger().info("[" + name + "] Starting arena " + inArena.getBuildWorldPath());
+        plugin.getLogger().info("[" + name + "] Starting arena " + inArena.getBuildWorld().getPath());
         tag.setArena(inArena);
         changeState(GameState.PREPARE);
         enable();
@@ -325,7 +325,7 @@ public final class Game {
         tag.setCurrentWaveType(currentWave.getWaveType());
         if (waveIndex > 1 && waveIndex % 10 == 1) {
             randomArena(newArena -> {
-                    plugin.getLogger().info("[" + name + "] switching to arena " + newArena.getBuildWorldPath());
+                    plugin.getLogger().info("[" + name + "] switching to arena " + newArena.getBuildWorld().getPath());
                     final List<Player> activePlayers = getActivePlayers();
                     final Arena oldArena = tag.getArena();
                     tag.setArena(newArena);

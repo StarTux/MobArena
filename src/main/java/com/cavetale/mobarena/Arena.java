@@ -26,8 +26,7 @@ import static com.cavetale.mobarena.MobArenaPlugin.mobArenaPlugin;
  */
 @Data
 public final class Arena implements Serializable {
-    private String buildWorldPath;
-    private String buildWorldName;
+    private final BuildWorld buildWorld;
     private String worldName;
     private Cuboid arenaArea;
     /**
@@ -44,11 +43,8 @@ public final class Arena implements Serializable {
     private List<Cuboid> forbiddenList = new ArrayList<>();
     private List<Cuboid> bossEscapeList = new ArrayList<>();
 
-    public Arena() { }
-
     public Arena(final World world, final BuildWorld buildWorld) {
-        this.buildWorldPath = buildWorld.getPath();
-        this.buildWorldName = buildWorld.getName();
+        this.buildWorld = buildWorld;
         this.worldName = world.getName();
         // Here we load the areas file, which is still in
         // the old format which assumes multiple arenas
@@ -97,7 +93,7 @@ public final class Arena implements Serializable {
                 bossEscapeList.add(area.toCuboid());
                 break;
             default:
-                MobArenaPlugin.instance.getLogger().warning("Arena " + buildWorldPath + ": Unknown area: " + area);
+                MobArenaPlugin.instance.getLogger().warning("Arena " + buildWorld.getPath() + ": Unknown area: " + area);
             }
         }
         // Ground spawns
@@ -109,24 +105,24 @@ public final class Arena implements Serializable {
         this.flyingBossVectorList = new ArrayList<>(filterFlyingSpawn(flyingboss, world));
         this.bossChestVector = bosschest;
         if (spawnVectorList.isEmpty()) {
-            MobArenaPlugin.instance.getLogger().severe("Arena " + buildWorldPath + ": No spawns!");
+            MobArenaPlugin.instance.getLogger().severe("Arena " + buildWorld.getPath() + ": No spawns!");
         }
         if (mobVectorList.isEmpty()) {
-            MobArenaPlugin.instance.getLogger().severe("Arena " + buildWorldPath + ": No mob spawns!");
+            MobArenaPlugin.instance.getLogger().severe("Arena " + buildWorld.getPath() + ": No mob spawns!");
         }
         if (flyingMobVectorList.isEmpty()) {
-            MobArenaPlugin.instance.getLogger().warning("Arena " + buildWorldPath + ": No flying mob spawns!");
+            MobArenaPlugin.instance.getLogger().warning("Arena " + buildWorld.getPath() + ": No flying mob spawns!");
         }
         if (bossVectorList == null) {
-            MobArenaPlugin.instance.getLogger().warning("Arena " + buildWorldPath + ": No boss spawns!");
+            MobArenaPlugin.instance.getLogger().warning("Arena " + buildWorld.getPath() + ": No boss spawns!");
         }
         if (flyingBossVectorList == null) {
-            MobArenaPlugin.instance.getLogger().warning("Arena " + buildWorldPath + ": No flying boss spawns!");
+            MobArenaPlugin.instance.getLogger().warning("Arena " + buildWorld.getPath() + ": No flying boss spawns!");
         }
         if (bossChestVector == null) {
-            MobArenaPlugin.instance.getLogger().severe("Arena " + buildWorldPath + ": No boss chest!");
+            MobArenaPlugin.instance.getLogger().severe("Arena " + buildWorld.getPath() + ": No boss chest!");
         }
-        mobArenaPlugin().getLogger().info("[" + buildWorldPath + "]"
+        mobArenaPlugin().getLogger().info("[" + buildWorld.getPath() + "]"
                                           + " spawns:" + spawnVectorList.size()
                                           + " mobs:" + mobVectorList.size()
                                           + " flying:" + flyingMobVectorList.size()

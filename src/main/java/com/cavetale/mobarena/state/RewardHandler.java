@@ -14,6 +14,7 @@ import com.cavetale.mytems.Mytems;
 import com.cavetale.mytems.util.Blocks;
 import com.cavetale.mytems.util.Entities;
 import com.cavetale.mytems.util.Gui;
+import com.winthier.creative.review.MapReview;
 import io.papermc.paper.registry.RegistryKey;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -72,6 +73,8 @@ public final class RewardHandler extends GameStateHandler<RewardTag> {
             });
         getTag().setItemDisplayUuid(itemDisplay.getUniqueId());
         block.setType(Material.BARRIER);
+        MapReview.start(game.getArena().getWorld(), game.getArena().getBuildWorld())
+            .remindAll();
     };
 
     @Override
@@ -85,6 +88,7 @@ public final class RewardHandler extends GameStateHandler<RewardTag> {
         }
         Block block = game.getArena().bossChestBlock();
         block.setType(Material.AIR);
+        MapReview.stop(game.getArena().getWorld());
     };
 
     @Override
