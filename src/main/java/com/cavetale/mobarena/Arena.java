@@ -100,11 +100,13 @@ public final class Arena implements Serializable {
                 MobArenaPlugin.instance.getLogger().warning("Arena " + buildWorldPath + ": Unknown area: " + area);
             }
         }
+        // Ground spawns
         this.spawnVectorList = new ArrayList<>(filterGroundSpawn(spawn, world));
         this.mobVectorList = new ArrayList<>(filterGroundSpawn(mob, world));
-        this.flyingMobVectorList = new ArrayList<>(flyingmob);
         this.bossVectorList = new ArrayList<>(filterGroundSpawn(boss, world));
-        this.flyingBossVectorList = new ArrayList<>(flyingboss);
+        // Flying spawns
+        this.flyingMobVectorList = new ArrayList<>(filterFlyingSpawn(flyingmob, world));
+        this.flyingBossVectorList = new ArrayList<>(filterFlyingSpawn(flyingboss, world));
         this.bossChestVector = bosschest;
         if (spawnVectorList.isEmpty()) {
             MobArenaPlugin.instance.getLogger().severe("Arena " + buildWorldPath + ": No spawns!");
@@ -153,6 +155,22 @@ public final class Arena implements Serializable {
             }
             // Floor below must be solid
             if (block.getRelative(0, -1, 0).getCollisionShape().getBoundingBoxes().isEmpty()) {
+                iter.remove();
+                continue;
+            }
+        }
+        return spawns;
+    }
+
+    /**
+     * Filter out non-empty blocks.
+     */
+    private Set<Vec3i> filterFlyingSpawn(Set<Vec3i> spawns, World world) {
+        for (Iterator<Vec3i> iter = spawns.iterator(); iter.hasNext();) {
+            final Vec3i vector = iter.next();
+            final Block block = vector.toBlock(world);
+            // Block itself must be empty
+            if (!block.getCollisionShape().getBoundingBoxes().isEmpty()) {
                 iter.remove();
                 continue;
             }
