@@ -280,6 +280,7 @@ public final class Game {
      */
     protected void load() {
         tag = Objects.requireNonNull(Json.load(gameTagFile, GameTag.class));
+        tag.getArena().onLoad();
         this.stateHandler = tag.getState().handlerCtor.apply(this);
         stateHandler.load(tag.getStateTag());
         if (tag.getCurrentWaveType() != null) {
