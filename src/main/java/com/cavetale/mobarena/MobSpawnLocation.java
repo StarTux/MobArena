@@ -74,7 +74,6 @@ public final class MobSpawnLocation {
 
     /**
      * Spawn a mob and shift it if necessary.
-
      * @param world the world
      * @param callback the function that will spawn the mob
      * @return the mob or null

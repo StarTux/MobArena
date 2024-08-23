@@ -243,6 +243,7 @@ public final class Game {
             for (Player player : tag.getArena().getWorld().getPlayers()) {
                 Spawn.warp(player);
             }
+            tag.getArena().disable();
             deleteWorld(tag.getArena().getWorld());
         }
     }
@@ -270,6 +271,7 @@ public final class Game {
     private void startCallback(final Arena inArena) {
         plugin.getLogger().info("[" + name + "] Starting arena " + inArena.getBuildWorld().getPath());
         tag.setArena(inArena);
+        inArena.enable();
         changeState(GameState.PREPARE);
         enable();
     }
@@ -331,10 +333,12 @@ public final class Game {
                     final Arena oldArena = tag.getArena();
                     tag.setArena(newArena);
                     save();
+                    newArena.enable();
                     for (Player player : activePlayers) {
                         bring(player);
                     }
                     if (oldArena != null) {
+                        oldArena.disable();
                         deleteWorld(oldArena.getWorld());
                     }
                     makeNextWaveCallback();

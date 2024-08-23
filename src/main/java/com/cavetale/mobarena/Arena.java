@@ -13,8 +13,10 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Consumer;
 import lombok.Data;
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -140,6 +142,24 @@ public final class Arena implements Serializable {
                                           + " chest:" + bossChestVector);
     }
 
+    public void enable() {
+        final Cuboid chunkArea = arenaArea.blockToChunk();
+        for (int z = chunkArea.az; z <= chunkArea.bz; z += 1) {
+            for (int x = chunkArea.ax; x <= chunkArea.bx; x += 1) {
+                getWorld().getChunkAtAsync(x, z, (Consumer<Chunk>) chunk -> {
+                        chunk.addPluginChunkTicket(mobArenaPlugin());
+                    });
+            }
+        }
+    }
+
+    public void disable() {
+        getWorld().removePluginChunkTickets(mobArenaPlugin());
+    }
+
+    /**
+     * Must be called after deserialization.
+     */
     public void onLoad() {
         if (buildWorld == null) {
             buildWorld = BuildWorld.findWithPath(buildWorldPath);
