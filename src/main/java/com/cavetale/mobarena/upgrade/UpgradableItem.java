@@ -28,9 +28,7 @@ public final class UpgradableItem {
                 continue;
             }
             final int oldLevel = itemStack.getEnchantmentLevel(enchantment);
-            final int maxLevel = enchantment == Enchantment.MULTISHOT
-                ? 3
-                : enchantment.getMaxLevel();
+            final int maxLevel = enchantment.getMaxLevel();
             if (oldLevel >= maxLevel) {
                 continue;
             }
