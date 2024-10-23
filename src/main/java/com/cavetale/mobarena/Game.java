@@ -486,7 +486,7 @@ public final class Game {
 
     public void onDamageCalculation(DamageCalculationEvent event) {
         final double health = event.getTarget().getHealth();
-        event.addPostDamageAction(() -> {
+        event.addPostDamageAction(false, () -> { // ignoreCancelled = false
                 if (event.targetIsPlayer()) {
                     final GamePlayer gamePlayer = getGamePlayer(event.getTargetPlayer());
                     final double value = Math.min(health, event.getCalculation().getTotalDamage());
