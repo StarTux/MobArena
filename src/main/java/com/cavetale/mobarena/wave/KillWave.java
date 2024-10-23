@@ -60,8 +60,6 @@ import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import static java.awt.Color.HSBtoRGB;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.textOfChildren;
@@ -77,7 +75,6 @@ public final class KillWave extends Wave<KillWaveTag> {
                   + "wOTMyYjJjMjI0YjdjMjE2M2NiYWMwNWYyODZhMDZlNjkyMjUyN2IwMzY2N2M0ZTk2ZjcyOGU1YzRmZmI2NiJ9fX0=",
                   null);
     protected Color leatherArmorColor;
-    protected long lastWarpHome;
     protected Duration runningTime = Duration.ofSeconds(0);
 
     protected KillWave(final Game game) {
@@ -169,10 +166,6 @@ public final class KillWave extends Wave<KillWaveTag> {
     public void tick() {
         int stillAlive = 0;
         runningTime = Duration.ofMillis(System.currentTimeMillis() - game.getStateHandler().getTag().getStartTime());
-        final boolean doWarpHome = (runningTime.toSeconds() % 90L) == 0L && lastWarpHome != runningTime.toSeconds();
-        if (doWarpHome) {
-            lastWarpHome = runningTime.toSeconds();
-        }
         for (KillWaveTag.MobSpawn mobSpawn : tag.getMobSpawnList()) {
             if (mobSpawn.isDead()) continue;
             stillAlive += 1;
@@ -185,13 +178,11 @@ public final class KillWave extends Wave<KillWaveTag> {
                 mobSpawn.setEnemyId(enemy.getEnemyId());
             } else {
                 assert enemy != null;
-                final Location enemyLocation = enemy.getLocation();
-                if (doWarpHome || !game.getArena().isInArena(enemyLocation) || game.getArena().isForbidden(enemyLocation)) {
+                if (shouldWarpHome(enemy)) {
                     if (enemy instanceof LivingEnemy livingEnemy && livingEnemy.getLivingEntity() instanceof Mob mob) {
                         final MobSpawnLocation mobSpawnLocation = game.getArena().getMobSpawnLocation(MobSpawnLocation.Type.MOB,
                                                                                                       MobSpawnLocation.Environment.of(livingEnemy.getEntityType()));
                         mobSpawnLocation.respawn(mob);
-                        mob.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 200, 0, true, false, false));
                     } else {
                         final MobSpawnLocation mobSpawnLocation = game.getArena().getMobSpawnLocation(MobSpawnLocation.Type.MOB, MobSpawnLocation.Environment.GROUND);
                         enemy.teleport(mobSpawnLocation.random(game.getArena().getWorld()));
@@ -203,6 +194,32 @@ public final class KillWave extends Wave<KillWaveTag> {
         }
         tag.setStillAlive(stillAlive);
         if (stillAlive == 0) finished = true;
+    }
+
+    /**
+     * Determine if an enemy needs warping to a free spot.
+     *
+     * Side effect: Set the last damage to now if the respawn reason
+     *   is exceeding the no damage threshold.
+     *
+     * Side effect: Update the glow timer and glowing state of the
+     *   mob, provided the enemy is a LivingEnemy.
+     */
+    private boolean shouldWarpHome(Enemy enemy) {
+        final long now = System.currentTimeMillis();
+        if (enemy instanceof LivingEnemy livingEnemy && livingEnemy.getLivingEntity() instanceof Mob mob) {
+            mob.setGlowing(enemy.getGlowTime() > now);
+        }
+        final Location enemyLocation = enemy.getLocation();
+        if (!game.getArena().isInArena(enemyLocation)) return true;
+        if (game.getArena().isForbidden(enemyLocation)) return true;
+        final long threshold = 30_000L;
+        if (now - enemy.getSpawnTime() > threshold && now - enemy.getLastDamage() > threshold) {
+            enemy.setLastDamage(now);
+            enemy.setGlowTime(now + 3_000L);
+            return true;
+        }
+        return false;
     }
 
     protected Mob spawnMob(KillWaveTag.MobSpawn mobSpawn) {
