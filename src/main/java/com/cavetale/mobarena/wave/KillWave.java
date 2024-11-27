@@ -410,7 +410,7 @@ public final class KillWave extends Wave<KillWaveTag> {
             base = inst.getBaseValue();
             value = func.apply(base);
             inst.setBaseValue(value);
-            if (attribute == Attribute.GENERIC_MAX_HEALTH) {
+            if (attribute == Attribute.MAX_HEALTH) {
                 mob.setHealth(value);
             }
             return true;
@@ -423,12 +423,12 @@ public final class KillWave extends Wave<KillWaveTag> {
     protected void adjustAttributes(Mob mob) {
         final double wave = (double) getEffectiveWave();
         if (mob.getType() != EntityType.BREEZE) {
-            adjustAttribute(mob, Attribute.GENERIC_MAX_HEALTH, base -> base * (1.0 + 0.02 * wave));
-            adjustAttribute(mob, Attribute.GENERIC_ARMOR, base -> base * (1.0 + 0.01 * wave));
-            adjustAttribute(mob, Attribute.GENERIC_ARMOR_TOUGHNESS, base -> base * (1.0 + 0.01 * wave));
+            adjustAttribute(mob, Attribute.MAX_HEALTH, base -> base * (1.0 + 0.02 * wave));
+            adjustAttribute(mob, Attribute.ARMOR, base -> base * (1.0 + 0.01 * wave));
+            adjustAttribute(mob, Attribute.ARMOR_TOUGHNESS, base -> base * (1.0 + 0.01 * wave));
         }
         if (mob.getType() != EntityType.ENDERMAN) {
-            adjustAttribute(mob, Attribute.GENERIC_ATTACK_DAMAGE, base -> base * (1.0 + 0.005 * wave));
+            adjustAttribute(mob, Attribute.ATTACK_DAMAGE, base -> base * (1.0 + 0.005 * wave));
         }
     }
 
