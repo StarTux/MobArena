@@ -375,7 +375,18 @@ public final class Game {
             paths.addAll(buildWorlds.keySet());
         }
         // Pick one
-        final String thePath = paths.get(random.nextInt(paths.size()));
+        final List<String> weightedPaths = new ArrayList<>();
+        for (String path : paths) {
+            final BuildWorld buildWorld = buildWorlds.get(path);
+            // vote scores go from 0 to 500
+            int rating = buildWorld.getRow().getVoteScore() / 100;
+            if (rating == 0) rating = 5;
+            for (int i = 0; i < rating; i += 1) {
+                weightedPaths.add(path);
+            }
+            plugin.getLogger().info("[Game] Rating " + rating + " (" + buildWorld.getRow().getVoteScore() + ") " + buildWorld.getPath());
+        }
+        final String thePath = weightedPaths.get(random.nextInt(weightedPaths.size()));
         tag.getUsedArenaNames().add(thePath);
         final BuildWorld buildWorld = buildWorlds.get(thePath);
         buildWorld.makeLocalCopyAsync(world -> {
