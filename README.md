@@ -9,6 +9,8 @@ Therefore we manually clear the blockList of exploding entities.
 
 ## Areas
 
+Worlds are selected by the Creative plugin "purpose" named `mob_arena`.
+
 Arenas use the Area plugin to define its regions.
 
 Areas File: `MobArena`
@@ -26,8 +28,3 @@ of an arena.  All other regions have to be named like below.
 - `flyingmob`, `flyingmobs` Where flying mobs spawn. Defaults to `mob`
 - `forbidden` Where players and mobs will be warped out of immediately
 - `bossescape` Where bosses are warped out of immediately
-
-## Config
-
-The `config.yml` has the list of all worlds which should be scanned
-for arenas.  The worlds have to be loaded.
