@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -36,6 +37,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
+import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
@@ -251,6 +253,15 @@ public final class EventListener implements Listener {
             });
     }
 
+    @EventHandler(ignoreCancelled = true)
+    private void onArmorStandDamage(EntityDamageEvent event) {
+        final Game game = plugin.getGameIn(event.getEntity().getLocation().getWorld());
+        if (game == null) return;
+        if (game != null && event.getEntity() instanceof ArmorStand armorStand) {
+            event.setCancelled(true);
+        }
+    }
+
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     private void onDamageCalculation(DamageCalculationEvent event) {
         plugin.applyGame(event.getTarget().getLocation(), game -> game.onDamageCalculation(event));
@@ -291,5 +302,12 @@ public final class EventListener implements Listener {
         plugin.applyGame(event.getPlayer().getLocation(), game -> {
                 event.multiplyFactor(0.5 + (game.getTag().getCurrentWaveIndex() * 0.01 * 0.5));
             });
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+    private void onPlayerArmorStandManipulate(PlayerArmorStandManipulateEvent event) {
+        final Game game = plugin.getGameIn(event.getPlayer().getLocation().getWorld());
+        if (game == null) return;
+        event.setCancelled(true);
     }
 }
