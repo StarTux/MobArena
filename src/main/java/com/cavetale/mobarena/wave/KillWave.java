@@ -424,7 +424,7 @@ public final class KillWave extends Wave<KillWaveTag> {
         final double wave = (double) ((getEffectiveWave() / 10) * 10);
         final double players = (double) game.countActivePlayers();
         if (mob.getType() != EntityType.BREEZE) {
-            adjustAttribute(mob, Attribute.MAX_HEALTH, base -> base * (1.0 + 0.5 * players));
+            adjustAttribute(mob, Attribute.MAX_HEALTH, base -> base * (1.0 + 0.1 * players));
             adjustAttribute(mob, Attribute.ARMOR, base -> base * (1.0 + 0.005 * wave));
         }
         if (mob.getType() != EntityType.ENDERMAN) {
