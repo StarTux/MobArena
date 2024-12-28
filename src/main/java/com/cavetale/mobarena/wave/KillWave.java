@@ -135,7 +135,7 @@ public final class KillWave extends Wave<KillWaveTag> {
     @Override
     public void create() {
         final int wave = getEffectiveWave();
-        final int mobCount = Math.max(8, (wave / 4) + (3 * game.countActivePlayers()));
+        final int mobCount = Math.max(8, (wave / 10) + (4 * game.countActivePlayers()));
         List<EntityType> entityTypeList = new ArrayList<>();
         for (EntityType entityType : ENTITY_MIN_WAVE_MAP.keySet()) {
             int min = ENTITY_MIN_WAVE_MAP.get(entityType);
@@ -421,11 +421,11 @@ public final class KillWave extends Wave<KillWaveTag> {
     }
 
     protected void adjustAttributes(Mob mob) {
-        final double wave = (double) getEffectiveWave();
+        final double wave = (double) ((getEffectiveWave() / 10) * 10);
+        final double players = (double) game.countActivePlayers();
         if (mob.getType() != EntityType.BREEZE) {
-            adjustAttribute(mob, Attribute.MAX_HEALTH, base -> base * (1.0 + 0.02 * wave));
-            adjustAttribute(mob, Attribute.ARMOR, base -> base * (1.0 + 0.01 * wave));
-            adjustAttribute(mob, Attribute.ARMOR_TOUGHNESS, base -> base * (1.0 + 0.01 * wave));
+            adjustAttribute(mob, Attribute.MAX_HEALTH, base -> base * (1.0 + 0.5 * players));
+            adjustAttribute(mob, Attribute.ARMOR, base -> base * (1.0 + 0.005 * wave));
         }
         if (mob.getType() != EntityType.ENDERMAN) {
             adjustAttribute(mob, Attribute.ATTACK_DAMAGE, base -> base * (1.0 + 0.005 * wave));
