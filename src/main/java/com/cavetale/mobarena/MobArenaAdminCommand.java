@@ -14,6 +14,8 @@ import com.winthier.creative.BuildWorld;
 import com.winthier.creative.BuildWorldPurpose;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -284,12 +286,17 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
     private void eventReward(CommandSender sender) {
         Game eventGame = plugin.findGame("event");
         if (eventGame == null) throw new CommandWarn("No event game!");
-        int count = Highscore.reward(eventGame.getStatMap(Stat.DAMAGE),
+        final Map<UUID, Integer> statMap = eventGame.getStatMap(Stat.DAMAGE);
+        int count = Highscore.reward(statMap,
                                      "mob_arena",
                                      TrophyCategory.AXE,
                                      MobArenaPlugin.TITLE,
                                      hi -> "You dealt " + hi.getScore() + " damage!");
         sender.sendMessage(text("Rewarded " + count + " players with trophies", YELLOW));
+        for (Highscore hi : Highscore.of(statMap)) {
+            if (hi.getPlacement() > 5) break;
+            sender.sendMessage(hi.sidebar());
+        }
     }
 
     private void eventLock(CommandSender sender) {
