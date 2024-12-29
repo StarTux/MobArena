@@ -421,14 +421,14 @@ public final class KillWave extends Wave<KillWaveTag> {
     }
 
     protected void adjustAttributes(Mob mob) {
-        final double wave = (double) ((getEffectiveWave() / 10) * 10);
-        final double players = (double) game.countActivePlayers();
+        final double wave = (double) (getEffectiveWave() / 10);
+        final double players = (double) Math.max(0, game.countActivePlayers() - 1);
         if (mob.getType() != EntityType.BREEZE) {
-            adjustAttribute(mob, Attribute.MAX_HEALTH, base -> base * (1.0 + 0.1 * players));
-            adjustAttribute(mob, Attribute.ARMOR, base -> base * (1.0 + 0.005 * wave));
+            adjustAttribute(mob, Attribute.MAX_HEALTH, base -> base * (1.0 + Math.max(0.1 * players, 0.05 * wave)));
+            adjustAttribute(mob, Attribute.ARMOR, base -> base * (1.0 + 0.05 * wave));
         }
         if (mob.getType() != EntityType.ENDERMAN) {
-            adjustAttribute(mob, Attribute.ATTACK_DAMAGE, base -> base * (1.0 + 0.005 * wave));
+            adjustAttribute(mob, Attribute.ATTACK_DAMAGE, base -> base * (1.0 + 0.05 * wave));
         }
     }
 
