@@ -190,7 +190,7 @@ public final class EventListener implements Listener {
     private void onPlayerTeleport(PlayerTeleportEvent event) {
         switch (event.getCause()) {
         case ENDER_PEARL:
-        case CHORUS_FRUIT:
+        case CONSUMABLE_EFFECT:
             plugin.applyGame(event.getPlayer().getLocation(), game -> event.setCancelled(true));
         default: break;
         }
