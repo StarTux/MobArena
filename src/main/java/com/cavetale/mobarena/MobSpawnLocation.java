@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.function.Function;
 import lombok.Data;
 import org.bukkit.Location;
+import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -68,8 +69,16 @@ public final class MobSpawnLocation {
         }
     }
 
+    private Location toLocation(Vec3i vec, World world) {
+        final Location result = vec.toCenterFloorLocation(world);
+        if (Tag.WOOL_CARPETS.isTagged(vec.toBlock(world).getType())) {
+            result.add(0.0, 0.125, 0.0);
+        }
+        return result;
+    }
+
     public Location random(World world) {
-        return options.get(0).toCenterFloorLocation(world);
+        return toLocation(options.get(0), world);
     }
 
     /**
@@ -79,7 +88,7 @@ public final class MobSpawnLocation {
      * @return the mob or null
      */
     public Mob spawn(World world, Function<Location, Mob> callback) {
-        final Location location = options.get(0).toCenterFloorLocation(world);
+        final Location location = toLocation(options.get(0), world);
         final Mob mob = callback.apply(location);
         if (mob == null) {
             return null;
@@ -108,7 +117,7 @@ public final class MobSpawnLocation {
      */
     public void respawn(Mob mob) {
         final World world = mob.getWorld();
-        final Location location = options.get(0).toCenterFloorLocation(world);
+        final Location location = toLocation(options.get(0), world);
         mob.teleport(location);
         if (collidesWithBlock(world, mob.getBoundingBox())) {
             shiftForBlocks(mob);
@@ -129,7 +138,7 @@ public final class MobSpawnLocation {
         while (optionShiftIndex < options.size()) {
             blockShifts += 1;
             final Vec3i option = options.get(optionShiftIndex);
-            final Location newLocation = option.toCenterFloorLocation(world);
+            final Location newLocation = toLocation(option, world);
             bb = bb.shift(newLocation.subtract(location));
             if (!collidesWithBlock(world, bb)) {
                 mob.teleport(newLocation);
@@ -152,7 +161,7 @@ public final class MobSpawnLocation {
         while (optionShiftIndex < options.size()) {
             mobShifts += 1;
             final Vec3i option = options.get(optionShiftIndex);
-            final Location newLocation = option.toCenterFloorLocation(world);
+            final Location newLocation = toLocation(option, world);
             bb = bb.shift(newLocation.subtract(location));
             if (!collidesWithMob(mob, bb)) {
                 mob.teleport(newLocation);
