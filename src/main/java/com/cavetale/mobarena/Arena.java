@@ -18,6 +18,7 @@ import lombok.Data;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
+import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -177,8 +178,9 @@ public final class Arena implements Serializable {
         for (Iterator<Vec3i> iter = spawns.iterator(); iter.hasNext();) {
             final Vec3i vector = iter.next();
             final Block block = vector.toBlock(world);
+            final boolean carpet = Tag.WOOL_CARPETS.isTagged(block.getType());
             // Block itself must be empty
-            if (!block.getCollisionShape().getBoundingBoxes().isEmpty()) {
+            if (!carpet && !block.getCollisionShape().getBoundingBoxes().isEmpty()) {
                 iter.remove();
                 continue;
             }
@@ -188,7 +190,7 @@ public final class Arena implements Serializable {
                 continue;
             }
             // Floor below must be solid
-            if (block.getRelative(0, -1, 0).getCollisionShape().getBoundingBoxes().isEmpty()) {
+            if (!carpet && block.getRelative(0, -1, 0).getCollisionShape().getBoundingBoxes().isEmpty()) {
                 iter.remove();
                 continue;
             }
