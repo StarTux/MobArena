@@ -8,6 +8,7 @@ import com.cavetale.core.event.player.PlayerTPAEvent;
 import com.cavetale.core.event.skills.SkillsMobKillRewardEvent;
 import com.cavetale.mytems.event.combat.DamageCalculationEvent;
 import com.winthier.shutdown.event.ShutdownTriggerEvent;
+import io.papermc.paper.event.player.PlayerItemFrameChangeEvent;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -306,6 +307,13 @@ public final class EventListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     private void onPlayerArmorStandManipulate(PlayerArmorStandManipulateEvent event) {
+        final Game game = plugin.getGameIn(event.getPlayer().getLocation().getWorld());
+        if (game == null) return;
+        event.setCancelled(true);
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+    private void onPlayerItemFrameChange(PlayerItemFrameChangeEvent event) {
         final Game game = plugin.getGameIn(event.getPlayer().getLocation().getWorld());
         if (game == null) return;
         event.setCancelled(true);
