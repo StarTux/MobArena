@@ -14,6 +14,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Flying;
 import org.bukkit.entity.Mob;
 import org.bukkit.util.BoundingBox;
+import org.bukkit.util.Vector;
 import static com.cavetale.mobarena.MobArenaPlugin.mobArenaPlugin;
 import static com.cavetale.mytems.util.Collision.collidesWithBlock;
 
@@ -119,6 +120,8 @@ public final class MobSpawnLocation {
         final World world = mob.getWorld();
         final Location location = toLocation(options.get(0), world);
         mob.teleport(location);
+        mob.setFallDistance(0f);
+        mob.setVelocity(new Vector());
         if (collidesWithBlock(world, mob.getBoundingBox())) {
             shiftForBlocks(mob);
         }
