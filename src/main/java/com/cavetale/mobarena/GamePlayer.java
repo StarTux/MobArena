@@ -9,7 +9,8 @@ import org.bukkit.entity.Player;
 @Data
 public final class GamePlayer {
     protected final GamePlayerTag tag;
-    protected boolean bossBar;
+    private Stat sidebarStat = Stat.DAMAGE;
+    private StatDomain sidebarStatDomain = StatDomain.GAME;
 
     public GamePlayer(final Player player) {
         this.tag = new GamePlayerTag();
@@ -33,22 +34,25 @@ public final class GamePlayer {
         return getPlayer() != null;
     }
 
+    public boolean isPlaying() {
+        return tag.isPlaying();
+    }
+
+    public String getName() {
+        return tag.getName();
+    }
+
     public void changeStat(Stat stat, double value) {
         tag.getStats().compute(stat, (e, i) -> (i != null ? i + value : value));
         tag.getWaveStats().compute(stat, (e, i) -> (i != null ? i + value : value));
     }
 
-    public double getStat(Stat stat) {
-        return tag.getStats().getOrDefault(stat, 0.0);
+    public double getStat(Stat stat, StatDomain domain) {
+        return tag.getStats(domain).getOrDefault(stat, 0.0);
     }
 
-    public int getIntStat(Stat stat) {
-        double result = tag.getStats().getOrDefault(stat, 0.0);
-        return (int) Math.round(result);
-    }
-
-    public int getIntWaveStat(Stat stat) {
-        double result = tag.getWaveStats().getOrDefault(stat, 0.0);
+    public int getIntStat(Stat stat, StatDomain domain) {
+        final double result = tag.getStats(domain).getOrDefault(stat, 0.0);
         return (int) Math.round(result);
     }
 

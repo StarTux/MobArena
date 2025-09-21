@@ -168,6 +168,16 @@ public final class MobArenaPlugin extends JavaPlugin {
         return null;
     }
 
+    public Game gameIn(World world) {
+        for (Game game : gameList) {
+            if (game.getArena() == null) continue;
+            if (game.getArena().isInWorld(world)) {
+                return game;
+            }
+        }
+        return null;
+    }
+
     public boolean applyGame(Location location, Consumer<Game> consumer) {
         boolean result = false;
         for (Game game : gameList) {

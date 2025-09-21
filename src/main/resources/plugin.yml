@@ -25,7 +25,7 @@ softdepend: []
 commands:
 
   mobarena:
-    aliases: []
+    aliases: [ma]
     description: MobArena Command
     permission: mobarena.mobarena
     usage: |-

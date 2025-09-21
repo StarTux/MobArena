@@ -1,6 +1,7 @@
 package com.cavetale.mobarena.save;
 
 import com.cavetale.mobarena.Stat;
+import com.cavetale.mobarena.StatDomain;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.UUID;
@@ -14,4 +15,11 @@ public final class GamePlayerTag {
     protected boolean didPlay;
     protected Map<Stat, Double> stats = new EnumMap<>(Stat.class);
     protected Map<Stat, Double> waveStats = new EnumMap<>(Stat.class);
+
+    public Map<Stat, Double> getStats(StatDomain domain) {
+        return switch (domain) {
+        case WAVE -> waveStats;
+        case GAME -> stats;
+        };
+    }
 }

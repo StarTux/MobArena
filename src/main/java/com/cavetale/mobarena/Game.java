@@ -1,6 +1,5 @@
 package com.cavetale.mobarena;
 
-import com.cavetale.core.font.Unicode;
 import com.cavetale.core.util.Json;
 import com.cavetale.enemy.Enemy;
 import com.cavetale.enemy.EnemyType;
@@ -16,6 +15,7 @@ import com.winthier.creative.BuildWorldPurpose;
 import com.winthier.spawn.Spawn;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,8 +72,6 @@ public final class Game {
     protected final Random random;
     protected final Map<UUID, GamePlayer> playerMap = new HashMap<>();
     protected final BossBar bossBar;
-    protected Stat currentStat = Stat.DAMAGE;
-    protected int currentStatTicks;
     private EnemyType nextBoss;
 
     public Game(final MobArenaPlugin plugin, final String name) {
@@ -136,10 +134,6 @@ public final class Game {
         // Create players
         for (Player player : getPresentPlayers()) {
             GamePlayer gamePlayer = getGamePlayer(player);
-            if (!gamePlayer.bossBar) {
-                gamePlayer.bossBar = true;
-                player.showBossBar(bossBar);
-            }
             if (player.isGliding() && !plugin.getMobArenaConfig().isAllowFlight()) {
                 player.setGliding(false);
                 sendBrokenElytra(player);
@@ -155,10 +149,6 @@ public final class Game {
             Location playerLocation = player.getLocation();
             if (!getArena().isInWorld(playerLocation)) {
                 gamePlayer.getTag().setPlaying(false);
-                if (gamePlayer.bossBar) {
-                    gamePlayer.bossBar = false;
-                    player.hideBossBar(bossBar);
-                }
             } else if (!getArena().isOnPlane(playerLocation) || getArena().isForbidden(playerLocation)) {
                 bring(player);
             }
@@ -174,14 +164,6 @@ public final class Game {
             changeState(newState);
         }
         stateHandler.updateBossBar(bossBar);
-        currentStatTicks += 1;
-        if (currentStatTicks > 1200) {
-            currentStatTicks = 0;
-            Stat[] stats = Stat.values();
-            int statIndex = currentStat.ordinal() + 1;
-            if (statIndex >= stats.length) statIndex = 0;
-            currentStat = stats[statIndex];
-        }
     }
 
     /**
@@ -216,10 +198,6 @@ public final class Game {
         }
         for (GamePlayer gamePlayer : playerMap.values()) {
             Player player = gamePlayer.getPlayer();
-            if (gamePlayer.bossBar && player != null) {
-                gamePlayer.bossBar = false;
-                player.hideBossBar(bossBar);
-            }
         }
         playerMap.clear();
         clearTemporaryEntities();
@@ -378,7 +356,7 @@ public final class Game {
         final List<String> weightedPaths = new ArrayList<>();
         for (String path : paths) {
             final BuildWorld buildWorld = buildWorlds.get(path);
-            // vote scores go from 0 to 500
+            // Vote scores go from 0 to 500
             int rating = buildWorld.getRow().getVoteScore() / 100;
             if (rating == 0) rating = 5;
             for (int i = 0; i < rating; i += 1) {
@@ -403,7 +381,7 @@ public final class Game {
     public List<Player> getActivePlayers() {
         final List<Player> result = new ArrayList<>(playerMap.size());
         for (GamePlayer gamePlayer : playerMap.values()) {
-            if (!gamePlayer.getTag().isPlaying()) continue;
+            if (!gamePlayer.isPlaying()) continue;
             final Player player = gamePlayer.getPlayer();
             if (player == null) continue;
             switch (player.getGameMode()) {
@@ -415,6 +393,15 @@ public final class Game {
             default:
                 break;
             }
+        }
+        return result;
+    }
+
+    public List<GamePlayer> getActiveGamePlayers() {
+        final List<GamePlayer> result = new ArrayList<>(playerMap.size());
+        for (GamePlayer gamePlayer : playerMap.values()) {
+            if (!gamePlayer.isPlaying()) continue;
+            result.add(gamePlayer);
         }
         return result;
     }
@@ -452,23 +439,44 @@ public final class Game {
 
     protected void onPlayerSidebar(Player player, List<Component> lines) {
         if (currentWave != null) {
-            lines.add(textOfChildren(text(Unicode.tiny("wave "), GRAY),
+            lines.add(textOfChildren(text(tiny("wave "), GRAY),
                                      text(tag.getCurrentWaveIndex(), GREEN)));
         }
         stateHandler.onPlayerSidebar(player, lines);
-        GamePlayer gamePlayer = getGamePlayer(player);
+        final GamePlayer gamePlayer = getGamePlayer(player);
         if (gamePlayer != null && gamePlayer.getTag().isPlaying()) {
-            lines.add(textOfChildren(text(Unicode.tiny("kills "), GRAY), text(gamePlayer.getIntWaveStat(Stat.KILLS), RED)));
-            lines.add(textOfChildren(text(Unicode.tiny("dmg "), GRAY), text(gamePlayer.getIntWaveStat(Stat.DAMAGE), RED)));
+            for (Stat stat : Stat.values()) {
+                if (stat == Stat.ROUNDS) {
+                    lines.add(textOfChildren(text(stat.getTinyName(), GRAY),
+                                             space(),
+                                             text(gamePlayer.getIntStat(stat, StatDomain.GAME), StatDomain.GAME.getColor())));
+                } else {
+                    lines.add(textOfChildren(text(stat.getTinyName(), GRAY),
+                                             space(),
+                                             text(gamePlayer.getIntStat(stat, StatDomain.GAME), StatDomain.GAME.getColor()),
+                                             text(" | ", GRAY),
+                                             text(gamePlayer.getIntStat(stat, StatDomain.WAVE), StatDomain.WAVE.getColor())));
+                }
+            }
         }
-        lines.add(text(Unicode.tiny("total " + currentStat.displayName.toLowerCase()), RED));
-        List<Player> players = getActivePlayers();
-        players.sort((b, a) -> Double.compare(getGamePlayer(a).getStat(currentStat),
-                                              getGamePlayer(b).getStat(currentStat)));
-        for (Player it : players) {
-            lines.add(textOfChildren(text("" + getGamePlayer(it).getIntStat(currentStat), RED),
-                                     text(" "),
-                                     it.displayName()));
+        final Stat sidebarStat;
+        final StatDomain sidebarStatDomain;
+        if (gamePlayer != null) {
+            sidebarStat = gamePlayer.getSidebarStat();
+            sidebarStatDomain = gamePlayer.getSidebarStatDomain();
+        } else {
+            sidebarStat = Stat.DAMAGE;
+            sidebarStatDomain = StatDomain.GAME;
+        }
+        if (sidebarStat != null) {
+            lines.add(text(sidebarStatDomain.getTitlePrefix() + " " + sidebarStat.getDisplayName(), sidebarStatDomain.getColor()));
+            final List<GamePlayer> gamePlayers = getActiveGamePlayers();
+            gamePlayers.sort(Comparator.comparingDouble((GamePlayer gp) -> gp.getStat(sidebarStat, sidebarStatDomain)).reversed());
+            for (GamePlayer gp : gamePlayers) {
+                lines.add(textOfChildren(text(gp.getIntStat(sidebarStat, sidebarStatDomain), sidebarStatDomain.getColor()),
+                                         space(),
+                                         text(gp.getName(), WHITE)));
+            }
         }
     }
 
@@ -540,7 +548,7 @@ public final class Game {
     public Map<UUID, Integer> getStatMap(Stat stat) {
         Map<UUID, Integer> result = new HashMap<>();
         for (GamePlayer gamePlayer : playerMap.values()) {
-            result.put(gamePlayer.getUuid(), gamePlayer.getIntStat(stat));
+            result.put(gamePlayer.getUuid(), gamePlayer.getIntStat(stat, StatDomain.GAME));
         }
         return result;
     }
