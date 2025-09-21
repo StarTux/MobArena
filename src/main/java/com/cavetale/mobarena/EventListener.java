@@ -74,6 +74,7 @@ public final class EventListener implements Listener {
         List<Component> lines = new ArrayList<>();
         boolean inGame = plugin.applyGame(player.getLocation(), game -> {
                 game.onPlayerSidebar(player, lines);
+                event.bossbar(PlayerHudPriority.HIGHEST, game.getBossBar());
             });
         if (!inGame && !"admin".equals(plugin.gameList.get(0).getName())) {
             int waveIndex = plugin.gameList.get(0).getTag().getCurrentWaveIndex();
