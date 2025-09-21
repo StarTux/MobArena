@@ -297,6 +297,9 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
             if (hi.getPlacement() > 5) break;
             sender.sendMessage(hi.sidebar());
         }
+        for (Component line : Highscore.rewardMoneyWithFeedback(plugin, statMap, "Mob Arena")) {
+            sender.sendMessage(line);
+        }
     }
 
     private void eventLock(CommandSender sender) {
