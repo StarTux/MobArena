@@ -33,7 +33,6 @@ import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.AbstractSkeleton;
 import org.bukkit.entity.Bogged;
-import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Drowned;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -317,8 +316,6 @@ public final class KillWave extends Wave<KillWaveTag> {
             }
         } else if (mob instanceof Evoker evoker) {
             evoker.getEquipment().setItemInMainHand(new ItemStack(Material.TOTEM_OF_UNDYING));
-        } else if (mob instanceof Creeper creeper) {
-            creeper.setMaxFuseTicks(Math.max(1, creeper.getMaxFuseTicks() - getEffectiveWave() / 2));
         }
         adjustAttributes(mob);
     }
