@@ -421,14 +421,12 @@ public final class KillWave extends Wave<KillWaveTag> {
     }
 
     protected void adjustAttributes(Mob mob) {
-        final double wave = (double) (getEffectiveWave() / 10);
-        final double players = (double) Math.max(0, game.countActivePlayers() - 1);
+        final double tenthWave = (double) (getEffectiveWave() / 10);
         if (mob.getType() != EntityType.BREEZE) {
-            adjustAttribute(mob, Attribute.MAX_HEALTH, base -> base * (1.0 + Math.max(0.1 * players, 0.05 * wave)));
-            adjustAttribute(mob, Attribute.ARMOR, base -> base * (1.0 + 0.01 * wave));
+            adjustAttribute(mob, Attribute.MAX_HEALTH, base -> base + tenthWave);
         }
         if (mob.getType() != EntityType.ENDERMAN) {
-            adjustAttribute(mob, Attribute.ATTACK_DAMAGE, base -> base * (1.0 + 0.05 * wave));
+            adjustAttribute(mob, Attribute.ATTACK_DAMAGE, base -> base + tenthWave);
         }
     }
 
@@ -473,9 +471,9 @@ public final class KillWave extends Wave<KillWaveTag> {
         if (!(proj.getShooter() instanceof LivingEntity living)) return;
         Enemy enemy = Enemy.of(living);
         if (enemy == null || !game.getEnemies().contains(enemy)) return;
-        double base = arrow.getDamage();
-        double wave = (double) game.getTag().getCurrentWaveIndex();
-        arrow.setDamage(base + 0.05 * wave);
+        final double base = arrow.getDamage();
+        final double tenthWave = (double) (game.getTag().getCurrentWaveIndex() / 10);
+        arrow.setDamage(base + tenthWave);
     }
 
     /**
@@ -487,9 +485,9 @@ public final class KillWave extends Wave<KillWaveTag> {
         if (!event.targetIsPlayer() || !(event.getCalculation().getProjectile() instanceof Fireball fireball)) return;
         Enemy enemy = Enemy.of(event.getAttacker());
         if (enemy == null || !game.getEnemies().contains(enemy)) return;
-        double base = event.getCalculation().getBaseDamage();
-        double wave = (double) game.getTag().getCurrentWaveIndex();
-        event.getCalculation().setBaseDamage(base + 0.05 * wave);
+        final double base = event.getCalculation().getBaseDamage();
+        final double tenthWave = (double) (game.getTag().getCurrentWaveIndex() / 10);
+        event.getCalculation().setBaseDamage(base + tenthWave);
     }
 
     @Override
