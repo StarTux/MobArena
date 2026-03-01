@@ -422,7 +422,7 @@ public final class KillWave extends Wave<KillWaveTag> {
 
     protected void adjustAttributes(Mob mob) {
         final double tenthWave = (double) (getEffectiveWave() / 10);
-        if (mob.getType() != EntityType.BREEZE) {
+        if (mob.getType() != EntityType.BREEZE && mob.getType() != EntityType.SILVERFISH && mob.getType() != EntityType.VEX) {
             adjustAttribute(mob, Attribute.MAX_HEALTH, base -> base + tenthWave);
         }
         if (mob.getType() != EntityType.ENDERMAN) {
