@@ -425,7 +425,6 @@ public final class Game {
         if (currentWave != null) {
             currentWave.onDeath(enemy);
         }
-        enemy.remove();
         enemies.remove(enemy);
     }
 
