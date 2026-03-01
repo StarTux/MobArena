@@ -24,6 +24,7 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import static net.kyori.adventure.text.Component.join;
 import static net.kyori.adventure.text.Component.newline;
@@ -389,6 +390,7 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
             throw new CommandWarn("There is no game here");
         }
         for (Enemy enemy : game.getEnemies()) {
+            final LivingEntity entity = enemy.getLivingEntity();
             final String xyz;
             final Location location = enemy.getLocation();
             xyz = location.getBlockX()
@@ -406,7 +408,11 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
                     )
                     .hoverEvent(showText(text(cmd, GRAY)))
                     .clickEvent(runCommand(cmd))
-                    .insertion(xyz)
+                    .insertion(xyz),
+                    (entity != null
+                     ? text(" dead:" + entity.isDead() + " valid:" + entity.isValid(), GRAY)
+                     : text("")
+                    )
                 )
             );
         }
