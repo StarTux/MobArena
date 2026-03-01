@@ -1,5 +1,6 @@
 package com.cavetale.mobarena.save;
 
+import com.cavetale.enemy.Enemy;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Data;
@@ -17,5 +18,9 @@ public final class KillWaveTag extends WaveTag {
         protected EntityType entityType;
         protected int enemyId;
         protected boolean dead;
+
+        public Enemy getEnemy() {
+            return Enemy.ofEnemyId(enemyId);
+        }
     }
 }

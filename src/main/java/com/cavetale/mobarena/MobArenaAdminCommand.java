@@ -5,9 +5,12 @@ import com.cavetale.core.command.CommandArgCompleter;
 import com.cavetale.core.command.CommandNode;
 import com.cavetale.core.command.CommandWarn;
 import com.cavetale.core.util.Json;
+import com.cavetale.enemy.Enemy;
 import com.cavetale.enemy.EnemyType;
 import com.cavetale.fam.trophy.Highscore;
+import com.cavetale.mobarena.save.KillWaveTag;
 import com.cavetale.mobarena.state.RewardHandler;
+import com.cavetale.mobarena.wave.KillWave;
 import com.cavetale.mobarena.wave.Wave;
 import com.cavetale.mytems.item.trophy.TrophyCategory;
 import com.winthier.creative.BuildWorld;
@@ -19,6 +22,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import static net.kyori.adventure.text.Component.join;
@@ -26,6 +30,8 @@ import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.textOfChildren;
 import static net.kyori.adventure.text.JoinConfiguration.separator;
+import static net.kyori.adventure.text.event.ClickEvent.runCommand;
+import static net.kyori.adventure.text.event.HoverEvent.showText;
 import static net.kyori.adventure.text.format.NamedTextColor.*;
 
 public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> {
@@ -81,6 +87,12 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
             .description("Set the next boss type")
             .completers(CommandArgCompleter.enumLowerList(EnemyType.class))
             .playerCaller(this::nextBoss);
+        rootNode.addChild("listmobspawns").denyTabCompletion()
+            .description("List all Mob Spawns")
+            .playerCaller(this::listMobSpawns);
+        rootNode.addChild("listenemies").denyTabCompletion()
+            .description("List all Enemies")
+            .playerCaller(this::listEnemies);
         CommandNode eventNode = rootNode.addChild("event")
             .description("Event subcommands");
         eventNode.addChild("reward").denyTabCompletion()
@@ -326,5 +338,78 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
         game.addPlayer(player);
         game.bring(player);
         player.sendMessage(text("Event game started", AQUA));
+    }
+
+    private void listMobSpawns(Player player) {
+        final Game game = plugin.gameAt(player.getLocation());
+        if (game == null) {
+            throw new CommandWarn("There is no game here");
+        }
+        if (!(game.getCurrentWave() instanceof KillWave wave)) {
+            throw new CommandWarn("This is no kill wave");
+        }
+        final KillWaveTag tag = wave.getTag();
+        for (KillWaveTag.MobSpawn mobSpawn : tag.getMobSpawnList()) {
+            final Enemy enemy = mobSpawn.getEnemy();
+            final String xyz;
+            if (enemy != null) {
+                final Location location = enemy.getLocation();
+                xyz = location.getBlockX()
+                    + " " + location.getBlockY()
+                    + " " + location.getBlockZ();
+            } else {
+                xyz = "";
+            }
+            final String cmd = "/tp " + xyz;
+            player.sendMessage(
+                textOfChildren(
+                    text("- ", DARK_GRAY),
+                    text("" + mobSpawn.getEntityType(), mobSpawn.isDead() ? DARK_RED : GREEN),
+                    (enemy != null
+                     ? (textOfChildren(
+                            text(" " + (int) enemy.getHealth(), WHITE),
+                            text("/", GRAY),
+                            text((int) enemy.getMaxHealth(), WHITE),
+                            text(" " + xyz, BLUE)
+                        )
+                        .hoverEvent(showText(text(cmd, GRAY)))
+                        .clickEvent(runCommand(cmd))
+                        .insertion(xyz))
+                     : text(" N/A", DARK_GRAY)
+                    )
+                )
+            );
+        }
+        player.sendMessage(text("Total " + tag.getMobSpawnList().size() + " mob spawns", YELLOW));
+    }
+
+    private void listEnemies(Player player) {
+        final Game game = plugin.gameAt(player.getLocation());
+        if (game == null) {
+            throw new CommandWarn("There is no game here");
+        }
+        for (Enemy enemy : game.getEnemies()) {
+            final String xyz;
+            final Location location = enemy.getLocation();
+            xyz = location.getBlockX()
+                + " " + location.getBlockY()
+                + " " + location.getBlockZ();
+            final String cmd = "/tp " + xyz;
+            player.sendMessage(
+                textOfChildren(
+                    text("- ", DARK_GRAY),
+                    textOfChildren(
+                        text(" " + (int) enemy.getHealth(), WHITE),
+                        text("/", GRAY),
+                        text((int) enemy.getMaxHealth(), WHITE),
+                        text(" " + xyz, BLUE)
+                    )
+                    .hoverEvent(showText(text(cmd, GRAY)))
+                    .clickEvent(runCommand(cmd))
+                    .insertion(xyz)
+                )
+            );
+        }
+        player.sendMessage(text("Total " + game.getEnemies().size() + " enemies", YELLOW));
     }
 }
