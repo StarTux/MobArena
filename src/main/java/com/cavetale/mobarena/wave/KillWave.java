@@ -134,7 +134,7 @@ public final class KillWave extends Wave<KillWaveTag> {
     @Override
     public void create() {
         final int wave = getEffectiveWave();
-        final int mobCount = Math.max(8, (wave / 10) + (4 * game.countActivePlayers()));
+        final int mobCount = 8 + 4 * (wave / 10) + 2 * game.countActivePlayers();
         List<EntityType> entityTypeList = new ArrayList<>();
         for (EntityType entityType : ENTITY_MIN_WAVE_MAP.keySet()) {
             int min = ENTITY_MIN_WAVE_MAP.get(entityType);
