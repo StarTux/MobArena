@@ -24,6 +24,7 @@ import java.util.function.Function;
 import java.util.logging.Level;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.util.TriState;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -42,6 +43,7 @@ import org.bukkit.entity.Hoglin;
 import org.bukkit.entity.Husk;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
+import org.bukkit.entity.Phantom;
 import org.bukkit.entity.PigZombie;
 import org.bukkit.entity.Piglin;
 import org.bukkit.entity.PiglinAbstract;
@@ -243,6 +245,7 @@ public final class KillWave extends Wave<KillWaveTag> {
             slime.setSize(3);
         } else if (mob instanceof Zombie zombie) {
             zombie.setShouldBurnInDay(false);
+            zombie.setVisualFire(TriState.FALSE);
             zombie.setCanBreakDoors(false);
             final double babyChance;
             if (zombie instanceof Drowned) {
@@ -271,6 +274,7 @@ public final class KillWave extends Wave<KillWaveTag> {
             }
         } else if (mob instanceof AbstractSkeleton skeleton) {
             skeleton.setShouldBurnInDay(false);
+            skeleton.setVisualFire(TriState.FALSE);
             if (skeleton instanceof Skeleton) {
                 skeleton.getEquipment().setItemInMainHand(new ItemStack(Material.BOW));
                 skeleton.getEquipment().setHelmet(SKELETON_SKULL.create());
@@ -316,6 +320,9 @@ public final class KillWave extends Wave<KillWaveTag> {
             }
         } else if (mob instanceof Evoker evoker) {
             evoker.getEquipment().setItemInMainHand(new ItemStack(Material.TOTEM_OF_UNDYING));
+        } else if (mob instanceof Phantom phantom) {
+            phantom.setShouldBurnInDay(false);
+            phantom.setVisualFire(TriState.FALSE);
         }
         adjustAttributes(mob);
     }
