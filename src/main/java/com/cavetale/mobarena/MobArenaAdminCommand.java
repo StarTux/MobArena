@@ -89,6 +89,10 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
             .description("Set the next boss type")
             .completers(CommandArgCompleter.enumLowerList(EnemyType.class))
             .playerCaller(this::nextBoss);
+        rootNode.addChild("nextmap").arguments("<path>")
+            .description("Set the next map name")
+            .completers(CommandArgCompleter.supplyList(MobArenaAdminCommand::listArenaNames))
+            .playerCaller(this::nextMap);
         rootNode.addChild("listmobspawns").denyTabCompletion()
             .description("List all Mob Spawns")
             .playerCaller(this::listMobSpawns);
@@ -295,6 +299,15 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
         } else {
             return false;
         }
+    }
+
+    private boolean nextMap(Player player, String[] args) {
+        if (args.length != 1) return false;
+        final Game game = plugin.gameAt(player.getLocation());
+        if (game == null) throw new CommandWarn("There is not game here");
+        game.setNextMap(args[0]);
+        player.sendMessage(text("Next map: " + game.getNextMap(), YELLOW));
+        return true;
     }
 
     private void eventReward(CommandSender sender) {

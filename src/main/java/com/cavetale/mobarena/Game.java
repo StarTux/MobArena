@@ -73,6 +73,7 @@ public final class Game {
     protected final Map<UUID, GamePlayer> playerMap = new HashMap<>();
     protected final BossBar bossBar;
     private EnemyType nextBoss;
+    private String nextMap;
 
     public Game(final MobArenaPlugin plugin, final String name) {
         this.plugin = plugin;
@@ -305,25 +306,34 @@ public final class Game {
         currentWave = waveType.waveCtor.apply(this);
         tag.setCurrentWaveType(currentWave.getWaveType());
         if (waveIndex > 1 && waveIndex % 10 == 1) {
-            randomArena(newArena -> {
-                    plugin.getLogger().info("[" + name + "] switching to arena " + newArena.getBuildWorld().getPath());
-                    final List<Player> activePlayers = getActivePlayers();
-                    final Arena oldArena = tag.getArena();
-                    tag.setArena(newArena);
-                    save();
-                    newArena.enable();
-                    for (Player player : activePlayers) {
-                        bring(player);
-                    }
-                    if (oldArena != null) {
-                        oldArena.disable();
-                        deleteWorld(oldArena.getWorld());
-                    }
-                    makeNextWaveCallback();
-                });
+            if (nextMap != null) {
+                plugin.getLogger().info("[" + name + "] Loading next map: " + nextMap + "...");
+                final String nextMapName = nextMap;
+                nextMap = null;
+                nonRandomArena(nextMapName, this::newArenaLoaded);
+            } else {
+                randomArena(this::newArenaLoaded);
+            }
         } else {
             makeNextWaveCallback();
         }
+    }
+
+    private void newArenaLoaded(Arena newArena) {
+        plugin.getLogger().info("[" + name + "] switching to arena " + newArena.getBuildWorld().getPath());
+        final List<Player> activePlayers = getActivePlayers();
+        final Arena oldArena = tag.getArena();
+        tag.setArena(newArena);
+        save();
+        newArena.enable();
+        for (Player player : activePlayers) {
+            bring(player);
+        }
+        if (oldArena != null) {
+            oldArena.disable();
+            deleteWorld(oldArena.getWorld());
+        }
+        makeNextWaveCallback();
     }
 
     private void makeNextWaveCallback() {
@@ -368,10 +378,27 @@ public final class Game {
         tag.getUsedArenaNames().add(thePath);
         final BuildWorld buildWorld = buildWorlds.get(thePath);
         buildWorld.makeLocalCopyAsync(world -> {
+                plugin.prepareArenaWorld(world);
+                final Arena arena = new Arena(world, buildWorld);
+                callback.accept(arena);
+            });
+    }
+
+    private void nonRandomArena(String thePath, Consumer<Arena> callback) {
+        final BuildWorld buildWorld = BuildWorld.findWithPath(thePath);
+        if (buildWorld == null) {
+            plugin.getLogger().warning("[" + name + "] Map not found: " + thePath);
+            randomArena(callback);
+        } else if (buildWorld.getRow().parsePurpose() != BuildWorldPurpose.MOB_ARENA) {
+            plugin.getLogger().warning("[" + name + "] Map not made for MA: " + thePath);
+            randomArena(callback);
+        } else {
+            buildWorld.makeLocalCopyAsync(world -> {
                     plugin.prepareArenaWorld(world);
                     final Arena arena = new Arena(world, buildWorld);
                     callback.accept(arena);
-            });
+                });
+        }
     }
 
     public List<Player> getPresentPlayers() {
