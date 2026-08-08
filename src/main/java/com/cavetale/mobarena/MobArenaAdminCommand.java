@@ -15,6 +15,7 @@ import com.cavetale.mobarena.wave.Wave;
 import com.cavetale.mytems.item.trophy.TrophyCategory;
 import com.winthier.creative.BuildWorld;
 import com.winthier.creative.BuildWorldPurpose;
+import com.winthier.kit.Kits;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -310,9 +311,8 @@ public final class MobArenaAdminCommand extends AbstractCommand<MobArenaPlugin> 
             if (hi.getPlacement() > 5) break;
             sender.sendMessage(hi.sidebar());
         }
-        for (Component line : Highscore.rewardMoneyWithFeedback(plugin, statMap, "Mob Arena")) {
-            sender.sendMessage(line);
-        }
+        Highscore.rewardMoneyWithFeedback(sender, plugin, statMap, "Mob Arena");
+        Kits.autoCreateKit(sender, "mob_arena", statMap.keySet());
     }
 
     private void eventLock(CommandSender sender) {
